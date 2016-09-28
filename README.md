@@ -8,3 +8,4 @@ Use one.slx and then two.slx to understand. The one_support contains functions f
 
 Use switch-case to pick the relevanti distribution
 
+See the related problem
