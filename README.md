@@ -46,3 +46,4 @@ Future Stuff
     what happens if we move from X scalar to X vector 
 
 
+See the related problem

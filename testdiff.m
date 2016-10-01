@@ -1,3 +1,4 @@
+W = sym('w',[3,3]);
 X = sym('x',[3,2]);
 assume(X,'real');
 Y = sym('y',[2,4]);
