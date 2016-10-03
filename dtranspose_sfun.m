@@ -18,9 +18,17 @@ function setup(block)
   block.SetPreCompOutPortInfoToDynamic;
  
   block.InputPort(1).DirectFeedthrough = true;
+  block.NumDworks = 0;
   
   %% Set block sample time to inherited
-  block.SampleTimes = [-1 0];
+%  block.RegBlockMethod('SetOutputPortSampleTime',@DoSetOutputPortSampleTime);
+%  block.RegBlockMethod('SetInputPortSampleTime',@DoSetInputPortSa0mpleTime);
+
+%  block.SetAllowConstantSampleTime(true);
+%  block.SampleTimes = inf;
+%  block.OutputPort(1).SampleTime = inf;
+%  block.SampleTimes = [-1,0];
+%  block.OutputPort(1).SampleTime = [-1,0];
   
   %% Set the block simStateCompliance to default (i.e., same as a built-in block)
   block.SimStateCompliance = 'DefaultSimState';
@@ -33,38 +41,38 @@ function setup(block)
   
   block.RegBlockMethod('SetInputPortDimensions', @SetInPortDims);
   block.RegBlockMethod('PostPropagationSetup', @DoPostPropSetup);
-  
 %endfunction
 
+function DoSetOutputPortSampleTime(block,port,time)
+ block.OutputPort(port).SampleTime = Inf;
+ %end SetOutputPortSampleTime
+function DoSetInputPortSampleTime(block,port,time)
+ block.InputPort(port).SampleTime = time;
+
+
 function DoPostPropSetup(block)
-  block.NumDworks = 1;
+
   
-  block.Dwork(1).Name            = 'V';
-  block.Dwork(1).DatatypeID      = 0;      % double
-  block.Dwork(1).Complexity      = 'Real'; % real
-  block.Dwork(1).UsedAsDiscState = false;
-  block.Dwork(1).Usage = 'Scratch';
-      
-    v = block.InputPort(1).Dimensions;
+function Output(block)
+
+ %if block.IsDoingConstantOutput
+     
+         v = block.InputPort(1).Dimensions;
     n = v(1);
     m = v(2);
     d = m*n;
-    block.Dwork(1).Dimensions = [d,d];
 
-    Tmn = zeros(d,d);
+        
+        Tmn = zeros(d,d);
     i = 1:d;
     rI = 1+m.*(i-1)-(m*n-1).*floor((i-1)./n);
     I1s = sub2ind([d d],rI,1:d);
     Tmn(I1s) = 1;
     Tmn = Tmn';
 
-    block.Dwork(1).Data = Tmn;
-  
-
-  
-function Output(block)
-
-  block.OutputPort(1).Data = block.Dwork(1).Data;
+        
+  block.OutputPort(1).Data = Tmn;
+% end
 
 function SetInPortDims(block, idx, di)
   
