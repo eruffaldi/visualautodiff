@@ -2,6 +2,19 @@
 
 %implements "dtranspose_sfun" "C"
 
+%function BlockInstanceSetup(block, system) 
+%%
+  %<LibBlockSetIsExpressionCompliant(block)>
+  %%
+
+%assign Tmn = block.ParamSettings.Tmn[0]
+static double __%<Name>__tmp[] = {
+  %assign rollVars = ["U", "Y"]
+  %roll idx = RollRegions, lcv = RollThreshold, block, "Roller", rollVars
+        %<Tmn>, 
+  %endroll
+};
+%endfunction
 
 %% Function: Outputs ===========================================================
 %%
@@ -11,8 +24,7 @@
   /* Multiply input by two */
   %assign rollVars = ["U", "Y"]
   %roll idx = RollRegions, lcv = RollThreshold, block, "Roller", rollVars
-    %<LibBlockOutputSignal(0, "", lcv, idx)> = \
-    %<LibBlockDWork(DWork[0], "", lcv, idx)>;
+    %<LibBlockOutputSignal(0, "", lcv, idx)> = __%<Name>__tmp[%<lcv>]; 
   %endroll
 
 %endfunction

@@ -11,22 +11,23 @@ function setup(block)
   %% Register number of input and output ports
   block.NumInputPorts  = 1;
   block.NumOutputPorts = 1;
-
+    
+  
   %% Setup functional port properties to dynamically
   %% inherited.
   block.SetPreCompInpPortInfoToDynamic;
   block.SetPreCompOutPortInfoToDynamic;
  
   block.InputPort(1).DirectFeedthrough = true;
-  block.NumDworks = 0;
   
   %% Set block sample time to inherited
-%  block.RegBlockMethod('SetOutputPortSampleTime',@DoSetOutputPortSampleTime);
-%  block.RegBlockMethod('SetInputPortSampleTime',@DoSetInputPortSa0mpleTime);
+  block.RegBlockMethod('SetOutputPortSampleTime',@DoSetOutputPortSampleTime);
+  block.RegBlockMethod('SetInputPortSampleTime',@DoSetInputPortSampleTime);
+  block.RegBlockMethod('WriteRTW',                @WriteRTW);
 
-%  block.SetAllowConstantSampleTime(true);
+  block.SetAllowConstantSampleTime(true);
 %  block.SampleTimes = inf;
-%  block.OutputPort(1).SampleTime = inf;
+  block.OutputPort(1).SampleTime = [inf,0];
 %  block.SampleTimes = [-1,0];
 %  block.OutputPort(1).SampleTime = [-1,0];
   
@@ -44,18 +45,19 @@ function setup(block)
 %endfunction
 
 function DoSetOutputPortSampleTime(block,port,time)
- block.OutputPort(port).SampleTime = Inf;
+ block.OutputPort(port).SampleTime = time;
  %end SetOutputPortSampleTime
+ 
 function DoSetInputPortSampleTime(block,port,time)
  block.InputPort(port).SampleTime = time;
+  block.OutputPort(1).SampleTime = [inf,0];
 
 
 function DoPostPropSetup(block)
 
-  
 function Output(block)
 
- %if block.IsDoingConstantOutput
+ if block.IsDoingConstantOutput
      
          v = block.InputPort(1).Dimensions;
     n = v(1);
@@ -70,9 +72,8 @@ function Output(block)
     Tmn(I1s) = 1;
     Tmn = Tmn';
 
-        
-  block.OutputPort(1).Data = Tmn;
-% end
+    block.OutputPort(1).Data = Tmn;
+ end
 
 function SetInPortDims(block, idx, di)
   
@@ -84,6 +85,25 @@ function SetInPortDims(block, idx, di)
   block.OutputPort(1).Dimensions = [n,n];
   block.InputPort(idx).Dimensions    = di;
 
+function WriteRTW(block)
+  
 
+         v = block.InputPort(1).Dimensions;
+    n = v(1);
+    m = v(2);
+    d = m*n;
+
+        
+        Tmn = zeros(d,d);
+    i = 1:d;
+    rI = 1+m.*(i-1)-(m*n-1).*floor((i-1)./n);
+    I1s = sub2ind([d d],rI,1:d);
+    Tmn(I1s) = 1;
+    Tmn = Tmn';
+
+    
+  block.WriteRTWParam('matrix', 'Tmn', Tmn(:));
+
+  
 %endfunction
 
