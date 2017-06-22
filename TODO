@@ -1,0 +1,27 @@
+
+- SGD and miniSGD
+	stateflow
+- softmax num stab (easy)
+- expansion
+	e.g. 
+	W X + b
+	[out, in] [in, batch] + rep([out,1],batch)
+
+- logistic regression
+	predictor = softmax(W x + b)
+	outcome = argmax_1(predictor)
+	loss = -mean(log(predictor))
+
+  NOTE: the output function 
+  http://deeplearning.net/tutorial/logreg.html
+
+
+  Approach:
+  	data set D
+  	probability P(Y|...) = softmax (Wx+b) -- over all classes
+  	probability P(Y=i|...) = softmax_i (Wx+b)
+  	likelihood L = sum_D(i) log( P(Y=y(i) |... ) ) -- replace sum with mean
+  	loss l = -L
+
+  In theano the likelihood is: [T.arange(y.shape[0]), y]
+  
