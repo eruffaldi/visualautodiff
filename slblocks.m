@@ -8,5 +8,6 @@ function blkStruct = slblocks
 
 		Browser.Name = 'AutoDiff';
 		% 'My Library' is the library name that appears in the Library Browser
-Browser.IsFlat  = 1;
-		blkStruct.Browser = Browser; 
+        %Browser.IsFlat  = 1;
+        blkStruct.Browser = Browser; 
+		
