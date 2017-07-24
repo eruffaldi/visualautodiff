@@ -14,6 +14,8 @@ classdef (Abstract) DeepOp < handle
         grad(obj,up)
         gradshape(obj,up)
     end
+   
+    % add sum as AddOp
     
     methods
         function reset(obj)
