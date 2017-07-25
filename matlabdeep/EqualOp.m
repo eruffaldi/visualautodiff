@@ -1,17 +1,13 @@
-classdef EqualOp < DeepOp
+classdef EqualOp < BinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
-        right
     end
     
     methods
         function obj = EqualOp(a,b)
-            obj = obj@DeepOp();
-            obj.left = a;
-            obj.right = b;
+            obj = obj@BinaryOp(a,b);
         end
         
         function r = eval(obj)

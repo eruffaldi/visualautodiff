@@ -1,9 +1,8 @@
-classdef MaxPoolOp < DeepOp
+classdef MaxPoolOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
         ksize
         strides
         pad
@@ -14,8 +13,7 @@ classdef MaxPoolOp < DeepOp
             assert(all(ksize == [1,2,2,1]),'only size [1,2,2,1]');
             assert(all(strides == [1,2,2,1]),'only size [1,2,2,1]');
             assert(strcmp(pad,'SAME'),'only pad SAME');
-            obj = obj@DeepOp();
-            obj.left = x;
+            obj = obj@UnaryOp(x);
             obj.ksize = ksize;
             obj.strides = strides;
             obj.pad = pad;

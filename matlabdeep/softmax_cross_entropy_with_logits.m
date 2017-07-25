@@ -1,4 +1,4 @@
-classdef softmax_cross_entropy_with_logits < DeepOp
+classdef softmax_cross_entropy_with_logits < BinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -9,7 +9,7 @@ classdef softmax_cross_entropy_with_logits < DeepOp
     
     methods
         function obj = softmax_cross_entropy_with_logits(labels,logits)
-            obj = obj@DeepOp();
+            obj = obj@BinaryOp(labels,logits);
             obj.labels = labels;
             obj.logits = logits;
         end

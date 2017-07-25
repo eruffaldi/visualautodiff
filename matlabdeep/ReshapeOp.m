@@ -1,16 +1,14 @@
-classdef ReshapeOp < DeepOp
+classdef ReshapeOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
         eshape
     end
     
     methods
         function obj = ReshapeOp(a,s)
-            obj = obj@DeepOp();
-            obj.left = a;
+            obj = obj@UnaryOp(a);
             obj.eshape = s;
         end
             

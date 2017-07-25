@@ -5,6 +5,7 @@ classdef GradientDescentOptimizer < Optimizer
     properties
         precision
         target
+        variables
     end
     
     methods 
@@ -12,6 +13,7 @@ classdef GradientDescentOptimizer < Optimizer
             obj = obj@Optimizer();
             obj.precision = precision;
             obj.target = target;
+            obj.variables = VariableCollector().collect(target);
             target.reset();
         end
         

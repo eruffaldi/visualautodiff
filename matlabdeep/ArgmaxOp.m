@@ -1,4 +1,4 @@
-classdef ArgmaxOp < DeepOp
+classdef ArgmaxOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -9,8 +9,7 @@ classdef ArgmaxOp < DeepOp
     
     methods
         function obj = ArgmaxOp(a,axis)
-            obj = obj@DeepOp();
-            obj.left = a;
+            obj = obj@UnaryOp(a);
             obj.axis = axis;
         end
         

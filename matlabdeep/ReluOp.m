@@ -1,15 +1,13 @@
-classdef ReluOp < DeepOp
+classdef ReluOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
     end
     
     methods
         function obj = ReluOp(a)
-            obj = obj@DeepOp();
-            obj.left = a;
+            obj = obj@UnaryOp(a);
         end
         
         function r = eval(obj)

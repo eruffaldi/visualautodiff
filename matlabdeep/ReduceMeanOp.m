@@ -1,17 +1,15 @@
-classdef ReduceMeanOp < DeepOp
+classdef ReduceMeanOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
     end
     
     methods
         % only full reduction
         function obj = ReduceMeanOp(x)
             
-            obj = obj@DeepOp();
-            obj.left = x;
+            obj = obj@UnaryOp(x);
         end
         
         function r = eval(obj)

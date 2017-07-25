@@ -1,4 +1,4 @@
-classdef AdversarialOp < DeepOp
+classdef AdversarialOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -8,8 +8,7 @@ classdef AdversarialOp < DeepOp
     
     methods
          function obj = AdversarialOp(left)
-            obj = obj@DeepOp();
-            obj.left = left;
+            obj = obj@UnaryOp(left);
          end
         
           function r = eval(obj)

@@ -1,4 +1,4 @@
-classdef SplitOp < DeepOp
+classdef SplitOp < BinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -9,9 +9,7 @@ classdef SplitOp < DeepOp
     
     methods
         function obj = SplitOp(a,b)
-            obj = obj@DeepOp();
-            obj.left = a;
-            obj.right = b;
+            obj = obj@BinaryOp(a,b);
         end
         
         function r = eval(obj)

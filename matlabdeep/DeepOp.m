@@ -30,6 +30,10 @@ classdef (Abstract) DeepOp < handle
         
         function reset(obj)
         end
+        
+        function visit(obj,fx)
+            fx(obj);
+        end
     end
     
 end
