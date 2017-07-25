@@ -1,6 +1,5 @@
 %%
-addpath ../logrest_mnist
-run ('../logrest_mnist/prepare.m');
+addpath ../logreg_mnist
 %%
 x = Placeholder('float',[-1, 784]);
   W = Variable(zeros([784, 10]));
@@ -11,19 +10,27 @@ x = Placeholder('float',[-1, 784]);
 
   %Plain:
   %   ReduceMeanOp(-ReduceSumOp(y_ * LogOp(SoftMaxOp(y)),1)
-  %Optimized:
+  %Optimized:0
   % A 1-D Tensor of length batch_size of the same type as logits with the softmax cross entropy loss.
-  cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y));
+  %cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y));
+  cross_entropy = -ReduceMeanOp(MatmulwiseOp(y,LogOp(y_)), 1);
   train_step = GradientDescentOptimizer(0.5,cross_entropy);
    train_step.variables
    
 %%
+mtr = MnistBatcher("train");
+mte = MnistBatcher("test");
+train_step.reset();
+for I=1:1000
+    [batch_xs,batch_ys] = mb.next(100);
+    train_step.evalwith({x,batch_xs,y_,batch_ys});
+end
 
-  train_step.evalwith({x,zeros(10,784),y_,zeros(10,10)});
-  
-  correct_prediction = EqualOp(ArgmaxOp(y, 1), ArgmaxOp(y_, 1));
-  accuracy = ReduceMeanOp(correct_prediction); 
+correct_prediction = EqualOp(ArgmaxOp(y, 1), ArgmaxOp(y_, 1));
+accuracy = ReduceMeanOp(correct_prediction); 
 
-  train_accuracy = accuracy.evalwith({x,zeros(128,784),y_,zeros(128,10)});
+test_images,test_labels = mte.whole();
+train_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
   
+train_accuracy
   % batches of 100

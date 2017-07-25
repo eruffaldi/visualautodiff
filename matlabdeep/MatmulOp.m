@@ -44,12 +44,6 @@ classdef MatmulOp < BinaryOp
         end
         
   
-
-        function reset(obj)
-            obj.left.reset();
-            obj.right.reset();
-        end
-
     end
     
 end
