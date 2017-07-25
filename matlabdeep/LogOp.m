@@ -1,4 +1,4 @@
-classdef LogOp < UnaryOp
+classdef LogOp < ElementWiseUnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -8,12 +8,12 @@ classdef LogOp < UnaryOp
     
     methods
         function obj = LogOp(a)
-            obj = obj@UnaryOp(a);
+            obj = obj@ElementWiseUnaryOp(a);
         end
         
         function r = eval(obj)
-            r = obj.left.eval();
-            obj.xvalue = log(r);
+            x = obj.left.eval();
+            obj.xvalue = log(x);
             r = obj.xvalue;
         end
 
@@ -23,12 +23,7 @@ classdef LogOp < UnaryOp
         end
 
         function grad(obj,up)
-            % TODO
-        end
-
-        function gradshape(obj,up)
-            % TODO
-            obj.left.evalshape(up);
+            obj.left.grad(up .* 1./obj.left.xvalue);
         end
 
     end

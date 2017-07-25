@@ -12,9 +12,13 @@ classdef SoftmaxOp < UnaryOp
         end
         
         function r = eval(obj)
-            r = obj.left.eval();
+            X = obj.left.eval();
+            
+            % Copyright vl_nnsoftmax
+            E = exp(bsxfun(@minus, X, max(X,[],3))) ;
+            L = sum(E,3) ;
+            r = bsxfun(@rdivide, E, L) ;
             obj.xvalue = r;
-            r = obj.xvalue;
         end
 
         function r = evalshape(obj)
@@ -23,12 +27,11 @@ classdef SoftmaxOp < UnaryOp
         end
 
         function grad(obj,up)
-            % TODO
-        end
-
-        function gradshape(obj,up)
-            % TODO
-            obj.left.evalshape(up);
+            % Copyright vl_nnsoftmax
+            dzdY = up;
+            Y = obj.xvalue;
+            Y = Y .* bsxfun(@minus, dzdY, sum(dzdY .* Y, 3));
+            obj.left.grad(up);
         end
 
     end

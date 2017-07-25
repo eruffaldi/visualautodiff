@@ -13,21 +13,23 @@ classdef ArgmaxOp < UnaryOp
         end
         
         function r = eval(obj)
-            r = obj.left.eval();
-            obj.xvalue = 0;
+            x = obj.left.eval();
+            obj.xvalue = max(x,[],obj.axis);
             r = obj.xvalue;
         end
 
         function r = evalshape(obj)
-            r = obj.left.evalshape();
+            s = obj.left.evalshape();
+            s(obj.axis) = [];
+            obj.xshape = s;
+            r = obj.xshape;
         end
 
         function grad(obj,up)
-            % TODO
+            error('ArgmaxOp has no gradient');
         end
 
         function gradshape(obj,up)
-            % TODO
             obj.left.evalshape(up);
         end
 

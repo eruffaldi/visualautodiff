@@ -3,23 +3,32 @@ classdef GradientDescentOptimizer < Optimizer
     %   Detailed explanation goes here
     
     properties
-        precision
+        learning_rate
         target
         variables
     end
     
     methods 
-        function obj = GradientDescentOptimizer(precision,target)
+        function obj = GradientDescentOptimizer(learning_rate,target)
             obj = obj@Optimizer();
-            obj.precision = precision;
+            obj.learning_rate = learning_rate;
             obj.target = target;
-            obj.variables = VariableCollector().collect(target);
+            vc = VariableCollector();
+            obj.variables = vc.collect(target);
+            disp(sprintf('Parameters %d',vc.paramcount()));
             target.reset();
         end
         
         % step using pairs of cell arrays
-        function r = eval(obj)
-           r = 0;
+        function loss = eval(obj)
+            obj.target.reset();
+            loss = obj.target.eval();
+            obj.target.grad(1);
+            for I=1:length(obj.variables)
+                v = obj.variables{I};
+                obj.variable{I}.increment(-obj.learningrate * v.xgrad);
+            end
+        
         end
     end
    

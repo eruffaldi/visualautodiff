@@ -36,13 +36,16 @@ classdef Variable < DeepOp
          function r = eval(obj)
              r = obj.xvalue;
          end
-         
+
+         function increment(obj,v)
+             obj.xvalue = obj.xvalue + v;
+         end
+
          function grad(obj,up)
              obj.xgrad = obj.xgrad + up;
          end
          
          function gradshape(obj,up)
-             % ignore
          end
          
          function g = getgrad(obj)

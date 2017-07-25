@@ -19,10 +19,16 @@ classdef Conv2dOp < BinaryOp
         end
         
         function r = eval(obj)
-            obj.left.eval();
-            obj.right.eval();
-            obj.xvalue = mzeros(obj.xshape);
-            r = obj.xvalue;
+            A = obj.left.eval();
+            W = obj.right.eval();
+            xs = obj.left.xshape;
+            r = mzeros(obj.xshape);
+            for iB=1:xs(1)
+                for iC=1:xs(4) 
+                    r(iB,:,:,iC) = conv2(A(iB,:,:,iC),W,'same');
+                end
+            end
+            obj.xvalue = r;
         end
         
         function r = evalshape(obj)
@@ -38,12 +44,23 @@ classdef Conv2dOp < BinaryOp
         end
         
         function grad(obj,up)
-            obj.left.grad(up);
+            % See http://deeplearning.net/software/theano/tutorial/conv_arithmetic.html
+            
+            % special case of seed=1 and pad=SAME
+            %
+            % the gradient is the sum of the image?
+            dzdx = zeros(1);
+            dzdW = zeros(1);
+            for iB=1:xs(1)
+                for iC=1:xs(4) 
+                    
+                end
+            end
+            
+            obj.left.grad(dzdx);
+            obj.right.grad(dzdW);
         end
         
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
-        end
     end
     
 end

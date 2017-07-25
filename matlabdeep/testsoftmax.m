@@ -1,4 +1,8 @@
-  x = Placeholder('float',[-1, 784]);
+%%
+addpath ../logrest_mnist
+run ('../logrest_mnist/prepare.m');
+%%
+x = Placeholder('float',[-1, 784]);
   W = Variable(zeros([784, 10]));
   b = Variable(zeros([10,1]));
   y = AddOp(MatmulOp(x,W),b);
@@ -13,6 +17,8 @@
   train_step = GradientDescentOptimizer(0.5,cross_entropy);
    train_step.variables
    
+%%
+
   train_step.evalwith({x,zeros(10,784),y_,zeros(10,10)});
   
   correct_prediction = EqualOp(ArgmaxOp(y, 1), ArgmaxOp(y_, 1));

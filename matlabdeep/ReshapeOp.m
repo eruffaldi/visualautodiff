@@ -28,21 +28,14 @@ classdef ReshapeOp < UnaryOp
         
         function r = eval(obj)  
             xl = obj.left.eval();
-            size(xl)
-            obj.xshape
             obj.xvalue = reshape(xl,obj.xshape);
             r = obj.xvalue;
         end
         
         function grad(obj,up)
-            warning('ReshapeOp implement grad');
-            obj.left.grad(up);
+            obj.left.grad(reshape(up,size(obj.left.xshape)));
         end
         
-        function gradshape(obj,up)
-            warning('ReshapeOp implement gradshape');
-            obj.left.gradshape(up); 
-        end
     end
     
 end

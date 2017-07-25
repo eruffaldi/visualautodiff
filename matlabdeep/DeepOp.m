@@ -1,6 +1,4 @@
 classdef (Abstract) DeepOp < handle
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
     
     properties
         xvalue
@@ -14,9 +12,7 @@ classdef (Abstract) DeepOp < handle
         evalshape(obj)
         grad(obj,up)
         gradshape(obj,up)
-    end
-   
-    % add sum as AddOp
+    end   
     
     methods
         function r = evalwith(obj,placeholders)

@@ -22,17 +22,17 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
         end
         
         function r = evalshape(obj)
-             obj.labels.evalshape();
-             obj.logits.evalshape();
+             sl =obj.labels.evalshape();
+             sr = obj.logits.evalshape();
+             assert(all(sl == sr),'same inputs in softmax');
              obj.xshape = obj.labels.xshape;
              r = obj.xshape;
         end
         
         function grad(obj,up)
+            error('softmax_cross_entropy_with_logits not implemented');
         end
         
-        function gradshape(obj,up)
-        end
     end
     
 end

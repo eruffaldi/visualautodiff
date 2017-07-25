@@ -1,15 +1,16 @@
-classdef SplitOp < BinaryOp
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+%
+% allows to use a sub-expression twice in the tree by collecting the
+% gradient
+%
+classdef SplitOp < UnaryOp
     
     properties
-        left
-        right
     end
     
     methods
-        function obj = SplitOp(a,b)
-            obj = obj@BinaryOp(a,b);
+        function obj = SplitOp(a)
+            obj = obj@UnaryOp(a);
+            error('not yet');
         end
         
         function r = eval(obj)

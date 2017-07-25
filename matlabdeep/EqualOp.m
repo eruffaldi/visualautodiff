@@ -20,15 +20,16 @@ classdef EqualOp < BinaryOp
         function r = evalshape(obj)
             ox = obj.right.evalshape();
             obj.xshape = obj.left.evalshape();
+            assert(all(obj.xshape==ox),'same shape');
             r = obj.xshape;
         end
 
         function grad(obj,up)
-            warning('EqualOp gradient not implemented');
+            error('EqualOp gradient not implemented');
         end
 
         function gradshape(obj,up)
-            warning('EqualOp gradient not implemented');
+            error('EqualOp gradient not implemented');
         end
 
          function reset(obj)

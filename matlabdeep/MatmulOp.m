@@ -13,8 +13,8 @@ classdef MatmulOp < BinaryOp
         function r = eval(obj)
             xl = obj.left.eval() ;
             xr = obj.right.eval();
-            size(xl)
-            size(xr)
+            
+            % why not? bsxfun(@times, xl,xr)
             obj.xvalue = xl*xr;
             r = obj.xvalue;
         end
@@ -26,15 +26,24 @@ classdef MatmulOp < BinaryOp
         end
 
         function grad(obj,up)
-            warning('not implemented MatmulOp grad');
-            obj.left.grad(up);
-            obj.right.grad(up);            
+                % using Scale.m in vl_nnet
+                inputs = obj.left.xvalue;
+                params = obj.right.xvalue;
+                args = horzcat(inputs,params);
+                sz = [size(args{2}) 1 1 1 1] ;
+                sz = sz(1:4) ;
+                dargs{1} = bsxfun(@times, up, args{2}) ;
+                dargs{2} = up .* args{1} ;
+                for k = find(sz == 1)
+                 dargs{2} = sum(dargs{2}, k) ;
+                end
+                derInputs = dargs(1:numel(inputs)) ;
+                derParams = dargs(numel(inputs)+(1:numel(params))) ;
+                obj.left.grad(derInputs);
+                obj.right.grad(derParams);
         end
         
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
-            obj.right.gradshape(up);
-        end
+  
 
         function reset(obj)
             obj.left.reset();

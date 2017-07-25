@@ -1,4 +1,4 @@
-classdef ReduceMeanOp < UnaryOp
+classdef ReduceSumOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -7,13 +7,13 @@ classdef ReduceMeanOp < UnaryOp
     
     methods
         % only full reduction
-        function obj = ReduceMeanOp(x)            
+        function obj = ReduceSumOp(x)            
             obj = obj@UnaryOp(x);
         end
         
         function r = eval(obj)
             x = obj.left.eval();
-            r = mean(x(:));
+            r = sum(x(:));
         end
         
         function r = evalshape(obj)
@@ -23,10 +23,10 @@ classdef ReduceMeanOp < UnaryOp
         end
         
         function grad(obj,up)
-            assert(numel(up) == 1);
+            assert(numel(up)  == 1);
             % f = sum x(ijkl) / N
             % df/dx = 1/N
-            obj.left.grad(up/numel(obj.left.xvalue));
+            obj.left.grad(up);
         end        
     end
     

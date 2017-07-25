@@ -45,6 +45,13 @@ classdef VariableCollector < handle
              end
          end
          
+         function r = paramcount(obj)
+             r = 0;
+             for I=1:length(obj.collected)
+                 r = r + prod(obj.collected{I}.xshape);
+             end
+         end
+         
 
     end
     

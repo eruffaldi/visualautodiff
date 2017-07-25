@@ -1,13 +1,11 @@
-classdef ReluOp < UnaryOp
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+classdef ReluOp < ElementWiseUnaryOp
     
     properties
     end
     
     methods
         function obj = ReluOp(a)
-            obj = obj@UnaryOp(a);
+            obj = obj@ElementWiseUnaryOp(a);
         end
         
         function r = eval(obj)
@@ -17,16 +15,14 @@ classdef ReluOp < UnaryOp
         end
 
         function r = evalshape(obj)
-            r = obj.left.evalshape();
+            obj.xshape = obj.left.evalshape();
+            r = obj.xshape;
         end
 
         function grad(obj,up)
-            % TODO
-            obj.left.grad(up);
-        end
-
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
+            x = obj.left.xvalue;
+            % Copyright vl_nn
+            obj.left.grad(up .* (x > 0));
         end
 
     end

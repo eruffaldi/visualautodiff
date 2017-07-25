@@ -21,14 +21,16 @@ classdef BinaryOp < DeepOp
              obj.left.visit(fx);
              obj.right.visit(fx);
          end
-
-        
-
+       
          function reset(obj)
             obj.left.reset()
             obj.right.reset();
          end
 
+          function gradshape(obj,up)
+            obj.left.gradshape(up);
+            obj.right.gradshape(up);
+        end
     end
     
 end
