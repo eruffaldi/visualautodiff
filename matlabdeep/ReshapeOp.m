@@ -28,8 +28,11 @@ classdef ReshapeOp < DeepOp
             r = obj.xshape;
         end
         
-        function r = eval(obj)    
-            obj.xvalue = reshape(obj.left.eval(),obj.xshape);
+        function r = eval(obj)  
+            xl = obj.left.eval();
+            size(xl)
+            obj.xshape
+            obj.xvalue = reshape(xl,obj.xshape);
             r = obj.xvalue;
         end
         

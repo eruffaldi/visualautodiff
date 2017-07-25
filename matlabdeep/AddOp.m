@@ -21,12 +21,24 @@ classdef AddOp < DeepOp
             disp('AddOp')
             size(xl)
             size(xr)
-            if all(size(xl) == size(xr))
+            if length(xr) == length(xl) && all(size(xl) == size(xr))
                 obj.xvalue = xl+xr;
             else
-                if size(xr,2) == 1 & size(xl,2) == size(xr,1)
-                    % [a b] + [b 1]
-                    obj.xvalue = xl + repmat(xr',size(xl,1),1);
+                xld = ndims(xl);
+                if size(xr,2) == 1 & size(xl,xld) == size(xr,1)
+                    % [a1..ak b] + [b 1]
+                    w = size(xl);
+                    w(end) = 1;
+                    w1 = ones(1,length(xl));
+                    w1(end) = size(xr,1);
+                    obj.xvalue = xl + repmat(reshape(xr,w1),w);
+                elseif size(xr,1) == 1 & size(xl,xld) == size(xr,2)
+                    % [a1..ak b] + [1 b]
+                    w = size(xl);
+                    w(end) = 1;
+                    w1 = ones(1,ndims(xl));
+                    w1(end) = size(xr,2);
+                    obj.xvalue = xl + repmat(reshape(xr,w1),w);
                 end
             end
             r = obj.xvalue;

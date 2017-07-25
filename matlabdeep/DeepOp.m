@@ -6,6 +6,7 @@ classdef (Abstract) DeepOp < handle
         xvalue
         xshape
         xgrad
+        name
     end
     
     methods (Abstract)        
@@ -23,6 +24,7 @@ classdef (Abstract) DeepOp < handle
             for I=1:2:length(placeholders)
                 placeholders{I}.set(placeholders{I+1});
             end
+            obj.evalshape();
             r = obj.eval();
         end
         

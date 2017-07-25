@@ -21,15 +21,18 @@ classdef MaxPoolOp < DeepOp
             obj.pad = pad;
         end
         
+        % [batch fw fh channels]
         function r = eval(obj)
             obj.left.eval();
-            obj.xvalue = 0;
+            obj.xvalue = mzeros(obj.xshape);
             r = obj.xvalue;
         end
         
         function r = evalshape(obj)
-            obj.xshape = obj.left.evalshape();
-            
+            xl = obj.left.evalshape();
+% special case
+            obj.xshape = xl./obj.strides; %./obj.ksize;
+            r = obj.xshape;
         end
         
         function grad(obj,up)

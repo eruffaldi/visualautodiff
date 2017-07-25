@@ -1,4 +1,5 @@
 
+
 weight_variable = @(shape) Variable(truncated_normal_gen(shape,0,0.1,'float'));
 bias_variable = @(shape) Variable(0.1*mones(shape));
 max_pool_2x2 =@(x) MaxPoolOp(x,[1, 2, 2, 1],[1, 2, 2, 1],'SAME'); 
@@ -34,12 +35,12 @@ y_conv = AddOp(MatmulOp(h_fc1_drop, W_fc2),b_fc2);
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv));
 train_step = AdamOptimizer(1e-4,cross_entropy);
 
-train_step.evalwith({x,zeros(128,728),y_,zeros(128,10),keep_prob, 0.5});
+train_step.evalwith({x,zeros(128,784),y_,zeros(128,10),keep_prob, 0.5});
 
 correct_prediction = EqualOp(ArgmaxOp(y_conv, 1), ArgmaxOp(y_, 1));
 accuracy = ReduceMeanOp(correct_prediction); 
 
-train_accuracy = accuracy.evalwith({x,zeros(128,728),y_,zeros(128,10),keep_prob, 1.0});
+train_accuracy = accuracy.evalwith({x,zeros(128,784),y_,zeros(128,10),keep_prob, 1.0});
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});
 
