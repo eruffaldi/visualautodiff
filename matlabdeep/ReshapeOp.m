@@ -21,10 +21,14 @@ classdef ReshapeOp < DeepOp
             else
                 obj.xshape = obj.eshape;
             end
+            % make it row
+            if length(obj.xshape) == 1
+                obj.xshape = [obj.xshape,1];
+            end
             r = obj.xshape;
         end
         
-        function r = eval(obj)            
+        function r = eval(obj)    
             obj.xvalue = reshape(obj.left.eval(),obj.xshape);
             r = obj.xvalue;
         end

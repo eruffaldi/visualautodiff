@@ -22,15 +22,22 @@ classdef MaxPoolOp < DeepOp
         end
         
         function r = eval(obj)
+            obj.left.eval();
+            obj.xvalue = 0;
+            r = obj.xvalue;
         end
         
         function r = evalshape(obj)
+            obj.xshape = obj.left.evalshape();
+            
         end
         
         function grad(obj,up)
+            obj.left.grad(up);
         end
         
         function gradshape(obj,up)
+            obj.left.gradshape(up);
         end
     end
     

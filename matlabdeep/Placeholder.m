@@ -23,6 +23,7 @@ classdef Placeholder < DeepOp
          end
         
          function r = eval(obj)
+             assert(~isempty(obj.xvalue),'placeholder needs assignment');
              r = obj.xvalue;
          end
          
@@ -34,7 +35,8 @@ classdef Placeholder < DeepOp
          end
          
          function r = evalshape(obj)
-             r = size(obj.xvalue);
+             obj.xshape = size(obj.xvalue);
+             r = obj.xshape;
          end
     end
     

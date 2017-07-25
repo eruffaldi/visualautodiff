@@ -17,6 +17,8 @@ classdef MatmulOp < DeepOp
         function r = eval(obj)
             xl = obj.left.eval() ;
             xr = obj.right.eval();
+            size(xl)
+            size(xr)
             obj.xvalue = xl*xr;
             r = obj.xvalue;
         end

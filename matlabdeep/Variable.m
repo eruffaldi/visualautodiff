@@ -12,10 +12,11 @@ classdef Variable < DeepOp
             obj.initvalue = initvalue;
             if isa(initvalue,'function_handle')
                 v = initvalue();
-                obj.xshape = size(v);
             else
-                obj.xshape = size(initvalue);
+                v = initvalue;
             end
+            obj.xvalue = v;
+            obj.xshape = size(v);
          end
          
          function r = evalshape(obj)
@@ -28,6 +29,7 @@ classdef Variable < DeepOp
              else
                  obj.xvalue = obj.initvalue;
              end
+             obj.xshape = size(obj.xvalue);
              obj.xgrad = mzeros(obj.xshape);
          end
         

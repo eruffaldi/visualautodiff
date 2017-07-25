@@ -18,19 +18,24 @@ classdef AddOp < DeepOp
             xl = obj.left.eval() ;
             xr = obj.right.eval();
             sxl = size(xl);
-            if ndims(xl) == ndims(xr)+1
-                obj.xvalue = xl + repmat(xr,size(xl,1));
-            elseif sxl(end) == size(xr,1)
-                obj.xvalue = xl + squeeze(repmat(xr,size(xl,1)));
-            else
+            disp('AddOp')
+            size(xl)
+            size(xr)
+            if all(size(xl) == size(xr))
                 obj.xvalue = xl+xr;
+            else
+                if size(xr,2) == 1 & size(xl,2) == size(xr,1)
+                    % [a b] + [b 1]
+                    obj.xvalue = xl + repmat(xr',size(xl,1),1);
+                end
             end
             r = obj.xvalue;
         end
 
         function r = evalshape(obj)
-            ox = obj.right.evalshape();
-            obj.xshape = obj.left.evalshape();
+            sl = obj.left.evalshape();
+            sr = obj.right.evalshape();
+            obj.xshape =sl;
             r = obj.xshape;
         end
 

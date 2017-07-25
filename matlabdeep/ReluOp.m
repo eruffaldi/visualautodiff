@@ -19,15 +19,16 @@ classdef ReluOp < DeepOp
         end
 
         function r = evalshape(obj)
-            r = obj.evalshape();
+            r = obj.left.evalshape();
         end
 
         function grad(obj,up)
             % TODO
+            obj.left.grad(up);
         end
 
         function gradshape(obj,up)
-            obj.left.evalshape(up);
+            obj.left.gradshape(up);
         end
 
     end

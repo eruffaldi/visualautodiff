@@ -8,7 +8,7 @@ classdef (Abstract) DeepOp < handle
         xgrad
     end
     
-    methods (Abstract)
+    methods (Abstract)        
         eval(obj)
         evalshape(obj)
         grad(obj,up)
@@ -18,6 +18,14 @@ classdef (Abstract) DeepOp < handle
     % add sum as AddOp
     
     methods
+        function r = evalwith(obj,placeholders)
+            obj.reset();
+            for I=1:2:length(placeholders)
+                placeholders{I}.set(placeholders{I+1});
+            end
+            r = obj.eval();
+        end
+        
         function reset(obj)
         end
     end
