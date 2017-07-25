@@ -1,25 +1,25 @@
-classdef ArgmaxOp < UnaryOp
+classdef LogOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        axis
+        
     end
     
     methods
-        function obj = ArgmaxOp(a,axis)
+        function obj = LogOp(a)
             obj = obj@UnaryOp(a);
-            obj.axis = axis;
         end
         
         function r = eval(obj)
             r = obj.left.eval();
-            obj.xvalue = 0;
+            obj.xvalue = log(r);
             r = obj.xvalue;
         end
 
         function r = evalshape(obj)
-            r = obj.left.evalshape();
+            obj.xshape = obj.left.evalshape();
+            r = obj.xshape;
         end
 
         function grad(obj,up)
