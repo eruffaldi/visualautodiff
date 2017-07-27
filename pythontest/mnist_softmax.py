@@ -76,9 +76,12 @@ def main(_):
   sess = tf.InteractiveSession()
   tf.global_variables_initializer().run()
   # Train
-  for _ in range(1000):
+  for i in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(100)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+    if i % 100 == 0:
+        train_accuracy = accuracy.eval(feed_dict={x: batch_xs[0], y_: batch_ys[1]})
+        print('step %d, training accuracy %g' % (i, train_accuracy))
 
   # Test trained model
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))

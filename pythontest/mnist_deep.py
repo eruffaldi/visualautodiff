@@ -36,7 +36,7 @@ import tensorflow as tf
 FLAGS = None
 
 
-def deepnn(x):
+def deepnn(x,filter1_size=5,features1=32,filters2_size=5,features2=64,densesize=1024,classes=10):
   """deepnn builds the graph for a deep net for classifying digits.
 
   Args:
@@ -55,16 +55,16 @@ def deepnn(x):
   x_image = tf.reshape(x, [-1, 28, 28, 1])
 
   # First convolutional layer - maps one grayscale image to 32 feature maps.
-  W_conv1 = weight_variable([5, 5, 1, 32])
-  b_conv1 = bias_variable([32])
+  W_conv1 = weight_variable([filter1_size, filter1_size, 1, features1])
+  b_conv1 = bias_variable([features1])
   h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 
   # Pooling layer - downsamples by 2X.
   h_pool1 = max_pool_2x2(h_conv1)
 
   # Second convolutional layer -- maps 32 feature maps to 64.
-  W_conv2 = weight_variable([5, 5, 32, 64])
-  b_conv2 = bias_variable([64])
+  W_conv2 = weight_variable([filters2_size, filters2_size, features1, features2])
+  b_conv2 = bias_variable([features2])
   h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 
   # Second pooling layer.
@@ -72,10 +72,12 @@ def deepnn(x):
 
   # Fully connected layer 1 -- after 2 round of downsampling, our 28x28 image
   # is down to 7x7x64 feature maps -- maps this to 1024 features.
-  W_fc1 = weight_variable([7 * 7 * 64, 1024])
-  b_fc1 = bias_variable([1024])
 
-  h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
+  # 7 is imagewidth/4
+  W_fc1 = weight_variable([7 * 7 * features2, densesize])
+  b_fc1 = bias_variable([densesize])
+    
+  h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*features2])
   h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
   # Dropout - controls the complexity of the model, prevents co-adaptation of
@@ -84,8 +86,8 @@ def deepnn(x):
   h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
   # Map the 1024 features to 10 classes, one for each digit
-  W_fc2 = weight_variable([1024, 10])
-  b_fc2 = bias_variable([10])
+  W_fc2 = weight_variable([densesize, classes])
+  b_fc2 = bias_variable([classes])
 
   y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
   return y_conv, keep_prob
@@ -125,7 +127,7 @@ def main(_):
   y_ = tf.placeholder(tf.float32, [None, 10])
 
   # Build the graph for the deep net
-  y_conv, keep_prob = deepnn(x)
+  y_conv, keep_prob = deepnn(x,filter1_size=FLAGS.filter1,filter2_size=FLAGS.filter2,features1=FLAGS.features2,features2=FLAGS.features2,densesize=FLAGS.dense)
 
   total_parameters = 0
   for variable in tf.trainable_variables():
@@ -166,5 +168,10 @@ if __name__ == '__main__':
   parser.add_argument('--data_dir', type=str,
                       default='/tmp/tensorflow/mnist/input_data',
                       help='Directory for storing input data')
+  parser.add_argument('-a', '--filter1',type=int,default=5,'first filter size');
+  parser.add_argument('-b','--filter2',type=int,default=5,'second filter size');
+  parser.add_argument('-d','--dense',type=int,default=1024,'dense bank');
+  parser.add_argument('-A','--features1',type=int,default=32,'features of first');
+  parser.add_argument('-B','--features2',type=int,default=64,'features of second');
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
