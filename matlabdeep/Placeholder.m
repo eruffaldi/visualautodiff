@@ -19,7 +19,6 @@ classdef Placeholder < DeepOp
          end
          
          function reset(obj)             
-             obj.xgrad = zeros(obj.xshape);
          end
         
          function r = eval(obj)
@@ -28,10 +27,11 @@ classdef Placeholder < DeepOp
          end
          
          function grad(obj,up)
-             obj.xgrad = obj.xgrad + up;
+             % no gradient for placeholder!
          end
          
          function gradshape(obj,up)
+             % no gradient for placeholder!
          end
          
          function r = evalshape(obj)

@@ -8,6 +8,10 @@ classdef MaxPoolOp < UnaryOp
         pad
     end
     
+    properties (Transient)
+        maxindices
+    end
+    
     methods
         % Tensorflow supports NHWC or NCHW
         function obj = MaxPoolOp(x,ksize,strides,pad)
@@ -25,20 +29,23 @@ classdef MaxPoolOp < UnaryOp
             obj.left.eval();
             xs = obj.left.xshape;
             r = mzeros(obj.xshape);
+            o = mzeros(obj.xshape); 
             ksize = obj.ksize;
             strides = obj.strides; %
+            
             for iB=1:xs(1)
                 for iC=1:xs(4) 
                     for iX=1:2:xs(2)-1
                         for iY=1:2:xs(3)-1
-                            r(iB,iX,iY,iC) = max(A(iB,iX:iX+1,iY:iY+1,iC),W,'same');
+                            [r(iB,iX,iY,iC),o(iB,iX,iY,iC)] = max(A(iB,iX:iX+1,iY:iY+1,iC),W,'same');
                         end
                         % TODO last row for nan
                     end
                     % TODO last column for nan
                 end 
             end
-            obj.xvalue = 0;
+            obj.maxindices = o;
+            obj.xvalue = r;
         end
         
         function r = evalshape(obj)

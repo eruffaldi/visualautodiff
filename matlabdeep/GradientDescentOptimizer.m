@@ -22,11 +22,12 @@ classdef GradientDescentOptimizer < Optimizer
         % step using pairs of cell arrays
         function loss = eval(obj)
             obj.target.reset();
+            obj.target.evalshape();
             loss = obj.target.eval();
             obj.target.grad(1);
             for I=1:length(obj.variables)
                 v = obj.variables{I};
-                obj.variable{I}.increment(-obj.learningrate * v.xgrad);
+                obj.variables{I}.increment(-obj.learning_rate * v.xgrad);
             end
         
         end

@@ -17,20 +17,30 @@ classdef Variable < DeepOp
             end
             obj.xvalue = v;
             obj.xshape = size(v);
+             obj.xgrad = mzeros(obj.xshape);
          end
          
          function r = evalshape(obj)
              r = obj.xshape;
          end
-         
-         function reset(obj)             
-             if isa(obj.initvalue,'function_handle')
-                 obj.xvalue = obj.initvalue();
-             else
-                 obj.xvalue = obj.initvalue;
-             end
-             obj.xshape = size(obj.xvalue);
+
+         function resetgrad(obj)             
              obj.xgrad = mzeros(obj.xshape);
+         end
+
+        function resetvalue(obj)             
+            if isa(initvalue,'function_handle')
+                v = initvalue();
+            else
+                v = initvalue;
+            end
+            obj.xvalue = v;
+            obj.xshape = size(v);
+             obj.xgrad = mzeros(obj.xshape);
+         end
+
+         function reset(obj)             
+            % no reset
          end
         
          function r = eval(obj)

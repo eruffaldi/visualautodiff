@@ -50,6 +50,7 @@ classdef AdamOptimizer < Optimizer
         % step using pairs of cell arrays
         function loss = eval(obj)
             obj.target.reset();
+            obj.target.evalshape();
             loss = obj.target.eval();
             obj.target.grad(1);
 

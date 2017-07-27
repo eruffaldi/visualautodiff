@@ -24,11 +24,7 @@ classdef AdversarialOp < UnaryOp
           function grad(obj,up)
               obj.left.grad(-up);
           end
-         
-          function gradshape(obj,up)
-              obj.left.gradshape(up);
-          end
-
+     
     end
     
 end

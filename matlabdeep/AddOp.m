@@ -15,6 +15,7 @@ classdef AddOp < BinaryOp
         function r = eval(obj)
             xl = obj.left.eval() ;
             xr = obj.right.eval();
+            % r = bsxfun(@plus,a,b); 
             switch(obj.broadcastmode)
                 case 0
                     obj.xvalue = xl+xr;

@@ -22,7 +22,7 @@ classdef MatmulwiseOp < BinaryOp
              xl = obj.left.evalshape();
              xr = obj.right.evalshape();
              assert(length(xl) == length(xr) & all(xl == xr));
-             r = xl.xshape;
+             r = xl;
              obj.xshape = r;
         end
 
