@@ -20,7 +20,12 @@ classdef AddOp < BinaryOp
                 case 0
                     obj.xvalue = xl+xr;
                 otherwise
-                    obj.xvalue = xl + repmat(reshape(xr,obj.w1),obj.w);
+                   % obj.xvalue = xl + repmat(reshape(xr,obj.w1),obj.w);
+                   if(size(xl,2) == size(xr,2))
+                       obj.xvalue = xl+xr;
+                   else
+                   obj.xvalue = xl + xr';
+                   end
             end
             r = obj.xvalue;
         end
@@ -65,17 +70,25 @@ classdef AddOp < BinaryOp
             % Then: right can have smaller size
             switch(obj.broadcastmode)
                 case 0
-                case -1
+                    % if not broadcast then it is just the input u
+                otherwise
                     % up = [a1 ... a2 b]
                     % xr = [b 1] or [1 b]
                     %
                     % we need to sum up all the first dimensions
                     % MAYBE RESHAPE
-                    y = up;
-                    for I=1:ndims(y)-1
-                        y = sum(y,I);
+                    %y = up;
+                    %for I=1:ndims(y)-1
+                    %    y = sum(y,I);
+                    %end
+                   % up = reshape(y,size(obj.right.xvalue));
+                    if obj.right.xshape(1) == 1
+                        up = sum(up,1);
+                    else
+                        up = sum(up,1)';
                     end
-                    up = reshape(y,size(obj.right.xvalue));
+                    assert(all(size(up)==obj.right.xshape),'preserve size');
+                    
             end                    
             obj.right.grad(up);
         end

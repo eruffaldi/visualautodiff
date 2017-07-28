@@ -4,6 +4,7 @@ classdef Conv2dOp < BinaryOp
     
     properties
         stride
+        matlabconv
     end
     
     methods
@@ -16,6 +17,7 @@ classdef Conv2dOp < BinaryOp
             assert(length(W.xshape) == 4,'W should have 4D shape: K K 1 F');
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
+            obj.matlabconv = 1;
         end
         
         function r = eval(obj)
@@ -23,9 +25,13 @@ classdef Conv2dOp < BinaryOp
             W = obj.right.eval();
             xs = obj.left.xshape;
             r = mzeros(obj.xshape);
-            for iB=1:xs(1)
-                for iC=1:xs(4) 
-                    r(iB,:,:,iC) = conv2(A(iB,:,:,iC),W,'same');
+            
+            if obj.matlabconv == 1
+                % classic
+                for iB=1:xs(1)
+                    for iC=1:xs(4) 
+                        r(iB,:,:,iC) = conv2(A(iB,:,:,iC),W,'same');
+                    end
                 end
             end
             obj.xvalue = r;
@@ -38,17 +44,16 @@ classdef Conv2dOp < BinaryOp
             assert(length(xr) == 4);
             assert(xl(4) == xr(3),'in_channel same');
             
+            % General case
+            %h_out = (h_x - h_filter + 2 * padding) / stride + 1
+            %w_out = (w_x - w_filter + 2 * padding) / stride + 1
+            
             % assuming stride 1 
-            obj.xshape = [xl(1) xl(2) xl(3) xr(4)]; 
+            obj.xshape = xl;
             r = obj.xshape;
         end
         
         function grad(obj,up)
-            % See http://deeplearning.net/software/theano/tutorial/conv_arithmetic.html
-            
-            % special case of seed=1 and pad=SAME
-            %
-            % the gradient is the sum of the image?
             dzdx = zeros(1);
             dzdW = zeros(1);
             for iB=1:xs(1)

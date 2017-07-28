@@ -1,4 +1,4 @@
-classdef LogOp < ElementWiseUnaryOp
+classdef MatInvOp < ElementWiseUnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -7,13 +7,13 @@ classdef LogOp < ElementWiseUnaryOp
     end
     
     methods
-        function obj = LogOp(a)
+        function obj = MatInvOp(a)
             obj = obj@ElementWiseUnaryOp(a);
         end
         
         function r = eval(obj)
             x = obj.left.eval();
-            obj.xvalue = log(x);
+            obj.xvalue = inv(x);
             r = obj.xvalue;
         end
 
@@ -23,7 +23,8 @@ classdef LogOp < ElementWiseUnaryOp
         end
 
         function grad(obj,up)
-            obj.left.grad(up ./max(obj.left.xvalue,1e-8));
+            % - inv(X) U inv(X)
+            obj.left.grad(-obj.xvalue*up*obj.xvalue);
         end
 
     end

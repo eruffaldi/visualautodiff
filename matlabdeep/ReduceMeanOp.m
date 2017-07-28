@@ -3,30 +3,47 @@ classdef ReduceMeanOp < UnaryOp
     %   Detailed explanation goes here
     
     properties
+        axis 
     end
     
     methods
         % only full reduction
-        function obj = ReduceMeanOp(x)            
+        function obj = ReduceMeanOp(x,axis)            
             obj = obj@UnaryOp(x);
+            obj.axis = axis;
         end
         
         function r = eval(obj)
             x = obj.left.eval();
-            r = mean(x(:));
+            if obj.axis == 0
+                r = mean(x(:));
+            else
+                r = squeeze(mean(x,obj.axis));
+            end
         end
         
         function r = evalshape(obj)
             obj.left.evalshape();
-            obj.xshape = 1;
-            r = 1;
+            if obj.axis == 0
+                obj.xshape = 1;
+            else
+                % remove the given axis
+                s = obj.left.xshape;
+                s(obj.axis) = [];
+                obj.xshape = s;
+            end
+            r = obj.xshape;
         end
         
         function grad(obj,up)
-            assert(numel(up) == 1);
             % f = sum x(ijkl) / N
             % df/dx = 1/N
-            obj.left.grad(up/numel(obj.left.xvalue));
+            if obj.axis == 0
+                obj.left.grad((up/numel(obj.left.xvalue))); %*mones(obj.left.xshape));
+            else
+                error('not implemented');
+            end
+                
         end        
     end
     

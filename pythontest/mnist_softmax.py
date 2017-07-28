@@ -58,30 +58,12 @@ def main(_):
       tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
   train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-  total_parameters = 0
-  for variable in tf.trainable_variables():
-      # shape is an array of tf.Dimension
-      shape = variable.get_shape()
-      print(shape)
-      print(len(shape))
-      variable_parametes = 1
-      for dim in shape:
-          print(dim)
-          variable_parametes *= dim.value
-      print(variable_parametes)
-      total_parameters += variable_parametes
-  print(total_parameters)
-
-
   sess = tf.InteractiveSession()
   tf.global_variables_initializer().run()
   # Train
-  for i in range(1000):
+  for _ in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(100)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-    if i % 100 == 0:
-        train_accuracy = accuracy.eval(feed_dict={x: batch_xs[0], y_: batch_ys[1]})
-        print('step %d, training accuracy %g' % (i, train_accuracy))
 
   # Test trained model
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))

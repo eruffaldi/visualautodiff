@@ -1,4 +1,6 @@
 # Modified ER
+# https://github.com/jerryjingli/cs231_assignment/blob/master/winter1516_assignment2/cs231n/im2col.py
+#
 import numpy as np
 import array,struct
 import sys

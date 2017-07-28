@@ -17,6 +17,7 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
         function r = eval(obj)
             xl =obj.labels.eval();
             xr = obj.logits.eval();
+            error('unknown');
             obj.xvalues = xl; % TODO
             r = obj.xvaues;            
         end

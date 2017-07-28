@@ -4,7 +4,7 @@ addpath ../logreg_mnist
 x = Placeholder('float',[-1, 784]);
   W = Variable(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
   W.name = 'W';
-  b = Variable(0.1*mones([10,1])); %zeros([10,1]));
+  b = Variable(0.1*mones([1,10])); %zeros([10,1]));
   b.name = 'b';
   y = AddOp(MatmulOp(x,W),b);
   %y = AddOp(y,b); % for testing unique variable selection
@@ -15,9 +15,11 @@ x = Placeholder('float',[-1, 784]);
   %Optimized:0
   % A 1-D Tensor of length batch_size of the same type as logits with the softmax cross entropy loss.
   %cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y));
-  cross_entropy = ReduceMeanOp(NegateOp(ReduceSumOp(MatmulwiseOp(y_,LogOp(SoftmaxOp(y))))));
+  p_y_given_x = SoftmaxOp(y);
+  rs = ReduceSumOp(MatmulwiseOp(y_,LogOp(p_y_given_x)),2); 
+  cross_entropy = ReduceMeanOp(NegateOp(rs),0);
   train_step = GradientDescentOptimizer(0.5,cross_entropy);
-   train_step.variables
+  train_step.variables
    
 %%
 disp('Initial Values')
@@ -25,10 +27,10 @@ for I=1:length(train_step.variables)
     train_step.variables{I}.xvalue
 end
 
-correct_prediction = EqualOp(ArgmaxOp(y, 1), ArgmaxOp(y_, 1));
-accuracy = ReduceMeanOp(correct_prediction); 
+correct_prediction = EqualOp(ArgmaxOp(y, 2), ArgmaxOp(y_, 2));
+accuracy = ReduceMeanOp(correct_prediction,0); 
 
-accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y, 1), ArgmaxOp(y_, 1))); 
+%accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y, 2), ArgmaxOp(y_, 2))); 
 
 
 mtr = MnistBatcher("train");
@@ -46,19 +48,21 @@ for I=1:1000
     end
 
 end
-
-
+accuracyhistory
+plot(accuracyhistory)
+%%
 [test_images,~,test_labels] = mte.whole();
 test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels})
+prediction = ArgmaxOp(y, 2).evalwith({x,test_images});
 
 %should give 1.0
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y_, 1), ArgmaxOp(y_, 1))); 
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})
-
+%%
 disp('Final Values')
 for I=1:length(train_step.variables)
     v = train_step.variables{I};
     disp(sprintf('Variable %s',v.name))
-   	v.xvalue
+   	v.xvalue;
 end
 

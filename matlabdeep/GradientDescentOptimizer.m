@@ -27,7 +27,7 @@ classdef GradientDescentOptimizer < Optimizer
             obj.target.grad(1);
             for I=1:length(obj.variables)
                 v = obj.variables{I};
-                obj.variables{I}.increment(-obj.learning_rate * v.xgrad);
+                 obj.variables{I}.increment(-obj.learning_rate * v.xgrad);
             end
         
         end
