@@ -18,7 +18,9 @@ x = Placeholder('float',[-1, 784]);
   p_y_given_x = SoftmaxOp(y);
   rs = ReduceSumOp(MatmulwiseOp(y_,LogOp(p_y_given_x)),2); 
   cross_entropy = ReduceMeanOp(NegateOp(rs),0);
-  train_step = GradientDescentOptimizer(0.5,cross_entropy);
+%  train_step = GradientDescentOptimizer(0.5,cross_entropy);
+train_step = AdamOptimizer(0.001,cross_entropy);
+
   train_step.variables
    
 %%
@@ -65,4 +67,7 @@ for I=1:length(train_step.variables)
     disp(sprintf('Variable %s',v.name))
    	v.xvalue;
 end
+
+% Tensorflow: 91%
+% Tensorflow ADAM: 92%
 

@@ -1,6 +1,13 @@
 classdef AdamOptimizer < Optimizer
     %Kingma et. al., 2014 (pdf).
     
+%TensorFlow: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08.
+%Keras: lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0.
+%Blocks: learning_rate=0.002, beta1=0.9, beta2=0.999, epsilon=1e-08, decay_factor=1.
+%Lasagne: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08
+%Caffe: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08
+%MxNet: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8
+%Torch: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8
     properties
         learningrate
         target
@@ -9,6 +16,7 @@ classdef AdamOptimizer < Optimizer
         beta2
         epsilon
         locking
+        precision 
         
                
     end
@@ -17,6 +25,7 @@ classdef AdamOptimizer < Optimizer
         t
         m_t
         v_t
+        s_t
     end
     
     methods 
@@ -25,20 +34,21 @@ classdef AdamOptimizer < Optimizer
             obj.beta1 = 0.9;
             obj.beta2 = 0.999;
             obj.epsilon = 1e-8;
-            obj.locking = False;
+            obj.locking = 0;
             obj.precision = learningrate;
             obj.target = target;
             vc = VariableCollector();
             obj.variables = vc.collect(target);
             disp(sprintf('Parameters %d',vc.paramcount()));
-            obj.m_t = cell(length(obj.variables,1));
-            obj.s_t = cell(length(obj.variables,1));
-            obj.reset();
+            obj.m_t = cell(length(obj.variables),1);
+            obj.s_t = cell(length(obj.variables),1);
+            obj.hardreset();
             target.reset();
+            
         end
         
-        function reset(obj)
-            obj.t = 0;
+        function hardreset(obj)
+             obj.t = 1;
             for I=1:length(obj.variables)
                 v = obj.variables{I}.xvalue;
                 obj.m_t{I} = mzeros(size(v));
@@ -49,19 +59,22 @@ classdef AdamOptimizer < Optimizer
         
         % step using pairs of cell arrays
         function loss = eval(obj)
+           
+            
             obj.target.reset();
             obj.target.evalshape();
             loss = obj.target.eval();
             obj.target.grad(1);
 
-            lr_t = obj.learning_rate * sqrt(1 - obj.beta2^obj.t) / (1 - obj.beta1^obj.t);
             beta1 = obj.beta1;
             beta2 = obj.beta2;
+            % bias correction is here
+            lr_t = -obj.precision * sqrt(1 - beta2^obj.t) / (1 - beta1^obj.t);
             for I=1:length(obj.variables)
                 g = obj.variables{I}.xgrad;
                 obj.m_t{I} = beta1*obj.m_t{I}+ (1-beta1)*g;
                 obj.s_t{I} = beta2*obj.s_t{I}+ (1-beta2)*g.*g;
-                obj.variable{I}.increment(-lr_t * obj.m_t{I} ./ (sqrt(obj.s_t{I}) + obj.epsilon));
+                obj.variables{I}.increment(lr_t * obj.m_t{I} ./ (sqrt(obj.s_t{I}) + obj.epsilon));
             end
             
             obj.t = obj.t + 1;
