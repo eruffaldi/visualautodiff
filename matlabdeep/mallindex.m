@@ -18,6 +18,15 @@ elseif length(shape) == 4
             end
         end
     end
+elseif length(shape) == 3
+    r = zeros(shape);
+    for I=1:shape(1)
+        for J=1:shape(2)
+            for I2=1:shape(3)
+                    r(I,J,I2) = 100*I+J*10+I2;
+            end
+        end
+    end
 else
     error('unsupported size');
 end

@@ -4,19 +4,22 @@
 import numpy as np
 import array,struct
 import sys
-def get_im2col_indices(x_shape, field_height, field_width, padding=1, stridex=1, stridey=1):
+
+def get_im2col_indices(x_shape, field_height, field_width, padding=1, stridex=1,stridey=1,verbose=False):
   # First figure out what the size of the output should be
   N, C, H, W = x_shape
-  assert (H + 2 * padding - field_height) % stridex == 0
-  assert (W + 2 * padding - field_height) % stridey == 0
-  out_height = (H + 2 * padding - field_height) / stridex + 1
-  out_width = (W + 2 * padding - field_width) / stridex + 1
+  assert (H + 2 * padding - field_height) % stridey == 0
+  assert (W + 2 * padding - field_height) % stridex == 0
+  out_height = (H + 2 * padding - field_height) / stridey + 1
+  out_width = (W + 2 * padding - field_width) / stridex+ 1
+  if verbose:
+    print "get_im2col_indices",x_shape,field_height,field_width,padding,stridex,stridey,"out",out_height,out_width
 
   i0 = np.repeat(np.arange(field_height), field_width)
   i0 = np.tile(i0, C)
-  i1 = stridex * np.repeat(np.arange(out_height), out_width)
+  i1 = stridey * np.repeat(np.arange(out_height), out_width)
   j0 = np.tile(np.arange(field_width), field_height * C)
-  j1 = stridey * np.tile(np.arange(out_width), out_height)
+  j1 = stridex * np.tile(np.arange(out_width), out_height)
   i = i0.reshape(-1, 1) + i1.reshape(1, -1)
   j = j0.reshape(-1, 1) + j1.reshape(1, -1)
 
@@ -25,16 +28,17 @@ def get_im2col_indices(x_shape, field_height, field_width, padding=1, stridex=1,
   return (k, i, j,out_height,out_width)
 
 
-def im2col_indices(x, field_height, field_width, padding=1, stridex=1,stridey=1):
+def im2col_indices(x, field_height, field_width, padding=1, stridex=1,stridey=1,verbose=False):
   """ An implementation of im2col based on some fancy indexing """
   # Zero-pad the input
   p = padding
   x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode='constant')
 
   k, i, j, out_height, out_width = get_im2col_indices(x.shape, field_height, field_width, padding,
-                               stridex,stridey)
+                               stridex,stridey,verbose)
 
   cols = x_padded[:, k, i, j]
+  print "int cols is",cols.shape
   C = x.shape[1]
   cols = cols.transpose(1, 2, 0).reshape(field_height * field_width * C, -1)
   return cols
@@ -76,21 +80,24 @@ def main():
     return
   outfile = sys.argv[1]
   C,rows,cols,field_height,field_width,padding,stridex,stridey = [int(y) for y in sys.argv[2:]]
-  try:
-    k,i,j,out_height,out_width = get_im2col_indices((1,C,rows,cols),field_height,field_width,padding,stridex,stridey)
-  except:
-    print sys.exc_info()
-    x = open(outfile,"w")
-    x.close()
-    return
 
-  x = open(outfile,"w")
-  writeint(out_height,x)
-  writeint(out_width,x)
-  writenp(k,x)
-  writenp(i,x)
-  writenp(j,x)
-  x.close()
+  if outfile == "!":
+    r = im2col_indices(np.ones((7,C,rows,cols)),field_height,field_width,padding,stridex,stridey,verbose=True)
+  else:
+    try:
+      k,i,j,out_height,out_width = get_im2col_indices((1,C,rows,cols),field_height,field_width,padding,stridex,stridey)
+    except:
+      print sys.exc_info()
+      x = open(outfile,"w")
+      x.close()
+      return
+    x = open(outfile,"w")
+    writeint(out_height,x)
+    writeint(out_width,x)
+    writenp(k,x)
+    writenp(i,x)
+    writenp(j,x)
+    x.close()
 
 if __name__ == '__main__':
   main()
