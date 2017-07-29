@@ -27,7 +27,8 @@ classdef ReshapeOp < UnaryOp
         end
         
         function r = eval(obj)  
-            obj.xvalue = reshape(obj.left.eval(),obj.xshape);
+            xl = obj.left.eval();
+            obj.xvalue = reshape(xl,obj.xshape);
             r = obj.xvalue;
         end
         

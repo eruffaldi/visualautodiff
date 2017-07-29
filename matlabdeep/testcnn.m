@@ -2,8 +2,8 @@
 filtersize1 = 5;
 filtersize2 = 5;
 features1 = 16;
-features2 = 32;
-densesize = 256;
+features2 = 16;
+densesize = 128;
 classes = 10;
 batchsize = 128;
 
@@ -27,8 +27,8 @@ b_conv2 = bias_variable('b_conv2',[features2]);
 h_conv2 = ReluOp(AddOp(conv2d(h_pool1, W_conv2),b_conv2));
 h_pool2 = max_pool_2x2(h_conv2);
 W_fc1 = weight_variable('W_fc1',[7 * 7 * features2, densesize]);
-b_fc1 = bias_variable('b_fc1',[1024]);
-h_pool2_flat = ReshapeOp(h_pool2, [-1, 7*7*densesize]);
+b_fc1 = bias_variable('b_fc1',[densesize]);
+h_pool2_flat = ReshapeOp(h_pool2, [-1, 7*7*features2]);
 h_fc1 = ReluOp(AddOp(MatmulOp(h_pool2_flat, W_fc1),b_fc1));
 
 keep_prob = Placeholder('keep_prob',1);
@@ -43,9 +43,9 @@ train_step = AdamOptimizer(1e-4,cross_entropy);
 
 train_step.evalshapewith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
 
-%%
-train_step.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
+%strain_step.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
 
+%%
 correct_prediction = EqualOp(ArgmaxOp(y_conv, 2), ArgmaxOp(y_, 2));
 accuracy = ReduceMeanOp(correct_prediction,0); 
 

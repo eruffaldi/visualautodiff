@@ -19,7 +19,7 @@ classdef Conv2dOp < BinaryOp
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
             obj.matlabconv = 1;
-            obj.padding = 0;
+            obj.padding = -1;
         end
         
         function r = eval(obj)
@@ -55,9 +55,19 @@ classdef Conv2dOp < BinaryOp
             w_filter = xr(3);
             padding = obj.padding;
             stride = obj.stride(1);
-            h_out = floor((h_x - h_filter + 2 * padding) / stride + 1);
-            w_out = floor((w_x - w_filter + 2 * padding) / stride + 1);
+            if obj.padding == -1
+                paddingh = (h_filter-1)/2;
+                paddingw = (w_filter-1)/2;
+            else
+                paddingh = padding;
+                paddingw = padding;
+            end
+                
+            h_out = floor((h_x - h_filter + 2 * paddingh) / stride + 1);
+            w_out = floor((w_x - w_filter + 2 * paddingw) / stride + 1);
             assert(all([h_out,w_out] > 0),'all output should be positive');
+            w_out = max(1,w_out);
+            h_out = max(1,h_out);
             % assuming stride 1 
             obj.xshape = [xl(1) h_out w_out xr(end)];
             r = obj.xshape;

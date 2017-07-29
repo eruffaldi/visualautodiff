@@ -10,7 +10,6 @@ classdef AdamOptimizer < Optimizer
 %Torch: learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-8
     properties
         learningrate
-        target
         variables
         beta1
         beta2
@@ -59,8 +58,7 @@ classdef AdamOptimizer < Optimizer
         
         % step using pairs of cell arrays
         function loss = eval(obj)
-           
-            
+                       
             obj.target.reset();
             obj.target.evalshape();
             loss = obj.target.eval();

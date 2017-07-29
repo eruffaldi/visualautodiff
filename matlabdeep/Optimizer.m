@@ -3,6 +3,7 @@ classdef (Abstract) Optimizer < DeepOp
     %   Detailed explanation goes here
     
     properties
+        target
     end
       
     % add sum as AddOp
@@ -15,6 +16,8 @@ classdef (Abstract) Optimizer < DeepOp
         end
         function r = evalshape(obj)
             r = 1;
+            obj.target.evalshape();
+            obj.xshape = 1;
         end
    
     end
