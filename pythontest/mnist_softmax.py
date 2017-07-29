@@ -59,7 +59,15 @@ def main(_):
       tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
   train_step = tf.train.AdamOptimizer(0.01).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-  sess = tf.InteractiveSession()
+  kw = {}
+  if FLAGS.no_gpu:
+    kw["device_count"] = {'GPU': 0  }
+  if FLAGS.singlecore:
+    kw["intra_op_parallelism_threads"]=1
+    kw["inter_op_parallelism_threads"]=1
+
+  config = tf.ConfigProto(**kw)
+  sess = tf.InteractiveSession(config=config)
   tf.global_variables_initializer().run()
   # Train
   for _ in range(1000):
@@ -76,5 +84,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',
                       help='Directory for storing input data')
+  parser.add_argument('--no-gpu',action="store_true")
+  parser.add_argument('--singlecore',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

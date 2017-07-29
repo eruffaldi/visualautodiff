@@ -5,6 +5,7 @@ classdef Conv2dOp < BinaryOp
     properties
         stride
         matlabconv
+        padding 
     end
     
     methods
@@ -18,6 +19,7 @@ classdef Conv2dOp < BinaryOp
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
             obj.matlabconv = 1;
+            obj.padding = 0;
         end
         
         function r = eval(obj)
@@ -26,14 +28,16 @@ classdef Conv2dOp < BinaryOp
             xs = obj.left.xshape;
             r = mzeros(obj.xshape);
             
-            if obj.matlabconv == 1
-                % classic
-                for iB=1:xs(1)
-                    for iC=1:xs(4) 
-                        r(iB,:,:,iC) = conv2(A(iB,:,:,iC),W,'same');
-                    end
-                end
-            end
+%             if obj.matlabconv == 1
+%                 % for every input
+%                 % for every input channel
+%                 % for every output
+%                 for iB=1:xs(1)
+%                     for iC=1:xs(4) 
+%                         r(iB,:,:,iC) = conv2(squeeze(A(iB,:,:,iC)),W(:,:,,'same');
+%                     end
+%                 end
+%             end
             obj.xvalue = r;
         end
         
@@ -45,11 +49,17 @@ classdef Conv2dOp < BinaryOp
             assert(xl(4) == xr(3),'in_channel same');
             
             % General case
-            %h_out = (h_x - h_filter + 2 * padding) / stride + 1
-            %w_out = (w_x - w_filter + 2 * padding) / stride + 1
+            h_x = xl(2);
+            w_x = xl(3);
+            h_filter = xr(2);
+            w_filter = xr(3);
+            padding = obj.padding;
+            stride = obj.stride(1);
+            h_out = floor((h_x - h_filter + 2 * padding) / stride + 1);
+            w_out = floor((w_x - w_filter + 2 * padding) / stride + 1);
             
             % assuming stride 1 
-            obj.xshape = xl;
+            obj.xshape = [xl(1) h_out w_out xr(end)];
             r = obj.xshape;
         end
         

@@ -8,6 +8,7 @@ classdef MnistBatcher < handle
         allimages
         alllabelshot
         n
+        indices
     end
     
 
@@ -34,19 +35,32 @@ classdef MnistBatcher < handle
                 obj.allimages = Teimages;
              end
              obj.n = size(obj.alllabels,1);
+             obj.indices = randperm(obj.n);
         end
         
         function [i,l,lh] = next(obj,items)
             left = min(items,obj.n-obj.iteration);
-            if left == 0
+            if left > 0
+                Q = obj.indices(obj.iteration:obj.iteration+left-1);
+                i = obj.allimages(Q,:);
+                l = obj.alllabels(Q,:);
+                lh = obj.alllabelshot(Q,:);
+                obj.iteration = obj.iteration + left;
+            else
+                i = [];
+                l = [];
+                lh = [];
+            end               
+            if left < items
+                % new epoch reshuffle and recurse
                 obj.iteration = 1;
-                obj.epoch = obj.epoch + 1;
-                left = min(items,obj.n);
-            end
-            i = obj.allimages(obj.iteration:obj.iteration+left-1,:);
-            l = obj.alllabels(obj.iteration:obj.iteration+left-1,:);
-            lh = obj.alllabelshot(obj.iteration:obj.iteration+left-1,:);
-            obj.iteration = obj.iteration + left;
+                obj.epoch = obj.epoch + 1;                
+                obj.indices = randperm(obj.n);
+                [ti,tl,tlh] = obj.next(items-left);
+                i = [i;ti];
+                l = [l;tl];
+                lh = [lh;tlh];
+            end            
         end   
         
         function [i,l, lh] = whole(obj)
