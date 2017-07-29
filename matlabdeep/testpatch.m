@@ -1,4 +1,4 @@
-
+% TODO: make the new patch/unpatch N Iw Ih C more in line with the W:
 nC = 3;
 nB = 5;
 a = mallindex([10,10,nC,nB]);
@@ -117,4 +117,3 @@ distro = reshape(outpaddedm*Sel,nB,size(a,1),size(a,2),nC); % [nB,Ih, Iw,C]
 
 squeeze(distro(1,:,:,1))
 
-% TODO unpatch needs 
