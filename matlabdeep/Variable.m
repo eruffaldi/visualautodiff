@@ -7,8 +7,9 @@ classdef Variable < DeepOp
     end
     
     methods
-         function obj = Variable(initvalue)
+         function obj = Variable(name,initvalue)
             obj = obj@DeepOp();
+            obj.name = name;
             obj.initvalue = initvalue;
             if isa(initvalue,'function_handle')
                 v = initvalue();
@@ -26,6 +27,11 @@ classdef Variable < DeepOp
 
          function resetgrad(obj)             
              obj.xgrad = mzeros(obj.xshape);
+         end
+         
+         function set(obj,value)
+             obj.xvalue = value;
+             obj.xshape = size(value);
          end
 
         function resetvalue(obj)             
@@ -48,11 +54,13 @@ classdef Variable < DeepOp
          end
 
          function increment(obj,v)
+             assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'increment same size or scalar');
              obj.xvalue = obj.xvalue + v;
          end
 
-         function grad(obj,up)
-             obj.xgrad = obj.xgrad + up;
+         function grad(obj,v)
+             assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'gradient same size or scalar');
+             obj.xgrad = obj.xgrad + v;
          end
          
          function gradshape(obj,up)

@@ -36,7 +36,7 @@ import tensorflow as tf
 FLAGS = None
 
 
-def deepnn(x,filter1_size=5,features1=32,filters2_size=5,features2=64,densesize=1024,classes=10):
+def deepnn(x,filter1_size=5,features1=32,filter2_size=5,features2=64,densesize=1024,classes=10):
   """deepnn builds the graph for a deep net for classifying digits.
 
   Args:
@@ -63,7 +63,7 @@ def deepnn(x,filter1_size=5,features1=32,filters2_size=5,features2=64,densesize=
   h_pool1 = max_pool_2x2(h_conv1)
 
   # Second convolutional layer -- maps 32 feature maps to 64.
-  W_conv2 = weight_variable([filters2_size, filters2_size, features1, features2])
+  W_conv2 = weight_variable([filter2_size, filter2_size, features1, features2])
   b_conv2 = bias_variable([features2])
   h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 
@@ -152,7 +152,7 @@ def main(_):
 
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for i in range(20000):
+    for i in range(1000):
       batch = mnist.train.next_batch(50)
       if i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
@@ -168,10 +168,31 @@ if __name__ == '__main__':
   parser.add_argument('--data_dir', type=str,
                       default='/tmp/tensorflow/mnist/input_data',
                       help='Directory for storing input data')
-  parser.add_argument('-a', '--filter1',type=int,default=5,'first filter size');
-  parser.add_argument('-b','--filter2',type=int,default=5,'second filter size');
-  parser.add_argument('-d','--dense',type=int,default=1024,'dense bank');
-  parser.add_argument('-A','--features1',type=int,default=32,'features of first');
-  parser.add_argument('-B','--features2',type=int,default=64,'features of second');
+  parser.add_argument('-a', '--filter1',type=int,default=5,help='first filter size');
+  parser.add_argument('-b','--filter2',type=int,default=5,help='second filter size');
+  parser.add_argument('-d','--dense',type=int,default=1024,help='dense bank');
+  parser.add_argument('-A','--features1',type=int,default=32,help='features of first');
+  parser.add_argument('-B','--features2',type=int,default=64,help='features of second');
+  parser.add_argument('--original',help='picks original Tensorflow values (3.5M parameters)')
+  parser.add_argument('--light',help='light values (400k parameters)')
+  parser.add_argument('--lighter',help='lighter values (100k parameters)')
   FLAGS, unparsed = parser.parse_known_args()
+  if FLAGS.original:
+    FLAGS.filter1 = 5
+    FLAGS.filter2 = 5
+    FLAGS.dense = 1024
+    FLAGS.features1 = 32
+    FLAGS.features2 = 64
+  elif FLAGS.light:
+    FLAGS.filter1 = 5
+    FLAGS.filter2 = 5
+    FLAGS.dense = 256
+    FLAGS.features1 = 16
+    FLAGS.features2 = 32
+  elif FLAGS.lighter:
+    FLAGS.filter1 = 5
+    FLAGS.filter2 = 5
+    FLAGS.dense = 128
+    FLAGS.features1 = 16
+    FLAGS.features2= 16
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

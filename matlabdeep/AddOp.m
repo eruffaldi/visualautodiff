@@ -17,15 +17,17 @@ classdef AddOp < BinaryOp
             xr = obj.right.eval();
             % r = bsxfun(@plus,a,b); 
             switch(obj.broadcastmode)
-                case 0
+                case 0 % same
                     obj.xvalue = xl+xr;
+                case 1 %  2D + 1D row using broadcast 
+                    obj.xvalue = xl+xr;
+                case 2 %  2D + 1D col
+                    obj.xvalue = xl+xr';
+                case 3 %  xD + 1D with last shared
+                    % input (C1,...K) ->reshaped ((C1...CK),K) -> broadcash
+                    obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
                 otherwise
-                   % obj.xvalue = xl + repmat(reshape(xr,obj.w1),obj.w);
-                   if(size(xl,2) == size(xr,2))
-                       obj.xvalue = xl+xr;
-                   else
-                   obj.xvalue = xl + xr';
-                   end
+                    error('not implemented');
             end
             r = obj.xvalue;
         end
@@ -35,67 +37,42 @@ classdef AddOp < BinaryOp
             sxr = obj.right.evalshape();
             if length(sxl) == length(sxr) && all(sxl == sxr)
                 obj.broadcastmode = 0;
-            elseif sxr(2) == 1 & sxl(end) == sxr(1)
-                obj.broadcastmode = -1;
-                % [a1..ak b] + [b 1]
-                w = sxl;
-                w(end) = 1;
-                w1 = ones(1,length(sxl));
-                w1(end) = sxr(1);
-                obj.w = w;
-                obj.w1 = w1;
-            elseif sxr(1) == 1 & sxl(end) == sxr(2)
+                obj.w = [];
+            % 2D + 1D row            
+            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(1) == 1
                 obj.broadcastmode = 1;
-                % [a1..ak b] + [1 b]
-                w = sxl;
-                w(end) = 1;
-                w1 = ones(1,length(sxl));
-                w1(end) = sxr(2);
-                obj.w = w;
-                obj.w1 = w1;
+                obj.w = [sxl(1) sxr(2)];
+            % 2D + 1D col
+            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 2
+                obj.broadcastmode = 2;
+                obj.w = [sxl(1) sxr(2)];
+            % xD + 1D with last dimension of xD == length of vector
+            elseif length(sxl) > 2 && length(sxr) == 2 && min(sxr) == 1 && max(sxr) == sxl(end)
+                obj.broadcastmode = 3;
+                obj.w = [prod(sxl(1:end-1)) sxl(end)];
             else
-                sxl
-                sxr
-                error('unsupported AddOp broadcast');
-            end
-                
-            obj.xshape =sxl;
+                error('unsupported broadcast mode in AddOp %s %s',num2str(sxl(:)'),num2str(sxr(:)'));
+            end                
+            obj.xshape = sxl;
             r = obj.xshape;
         end
 
         function grad(obj,up)
-            % Assumption: left is always FULL size
-            obj.left.grad(up);
+            obj.left.grad(up); % always same size
             
-            % Then: right can have smaller size
             switch(obj.broadcastmode)
                 case 0
                     % if not broadcast then it is just the input u
+                case 1 %  2D + 1D row using broadcast 
+                    up = sum(reshape(up,obj.w),1);
+                case 2 %  2D + 1D col
+                    up = sum(reshape(up,obj.w),1);
+                case 3 %  xD + 1D with last shared
+                    up = sum(reshape(up,obj.w),1);
                 otherwise
-                    % up = [a1 ... a2 b]
-                    % xr = [b 1] or [1 b]
-                    %
-                    % we need to sum up all the first dimensions
-                    % MAYBE RESHAPE
-                    %y = up;
-                    %for I=1:ndims(y)-1
-                    %    y = sum(y,I);
-                    %end
-                   % up = reshape(y,size(obj.right.xvalue));
-                    if obj.right.xshape(1) == 1
-                        up = sum(up,1);
-                    else
-                        up = sum(up,1)';
-                    end
-                    assert(all(size(up)==obj.right.xshape),'preserve size');
-                    
+                    error('not implemented');
             end                    
             obj.right.grad(up);
-        end
-
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
-            obj.right.gradshape(up);
         end
 
     end

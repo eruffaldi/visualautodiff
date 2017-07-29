@@ -57,20 +57,16 @@ classdef Conv2dOp < BinaryOp
             stride = obj.stride(1);
             h_out = floor((h_x - h_filter + 2 * padding) / stride + 1);
             w_out = floor((w_x - w_filter + 2 * padding) / stride + 1);
-            
+            assert(all([h_out,w_out] > 0),'all output should be positive');
             % assuming stride 1 
             obj.xshape = [xl(1) h_out w_out xr(end)];
             r = obj.xshape;
         end
         
         function grad(obj,up)
-            dzdx = zeros(1);
-            dzdW = zeros(1);
-            for iB=1:xs(1)
-                for iC=1:xs(4) 
-                    
-                end
-            end
+            dzdx = mzeros(obj.left.xshape);
+            dzdW = mzeros(obj.right.xshape);
+            
             
             obj.left.grad(dzdx);
             obj.right.grad(dzdW);

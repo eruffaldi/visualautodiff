@@ -2,10 +2,8 @@
 addpath ../logreg_mnist
 %%
 x = Placeholder('float',[-1, 784]);
-  W = Variable(zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
-  W.name = 'W';
-  b = Variable(0.1*mzeros([1,10])); %zeros([10,1]));
-  b.name = 'b';
+  W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
+  b = Variable('b',0.1*mzeros([1,10])); %zeros([10,1]));
   y = AddOp(MatmulOp(x,W),b);
   %y = AddOp(y,b); % for testing unique variable selection
   y_ = Placeholder('float',[-1,10]);

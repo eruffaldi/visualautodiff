@@ -7,9 +7,10 @@ classdef Placeholder < DeepOp
     end
     
     methods
-         function obj = Placeholder(t,shape)
+         function obj = Placeholder(n,shape)
             obj = obj@DeepOp();
-            obj.type = t;
+            obj.name = n;
+            obj.type = 'float';
             obj.xvalue = [];
             obj.xshape = shape;
          end

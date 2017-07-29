@@ -26,7 +26,7 @@ classdef MaxPoolOp < UnaryOp
         
         % [batch fw fh channels]
         function r = eval(obj)
-            obj.left.eval();
+            A = obj.left.eval();
             xs = obj.left.xshape;
             r = mzeros(obj.xshape);
             o = mzeros(obj.xshape); 
@@ -37,7 +37,7 @@ classdef MaxPoolOp < UnaryOp
                 for iC=1:xs(4) 
                     for iX=1:2:xs(2)-1
                         for iY=1:2:xs(3)-1
-                            [r(iB,iX,iY,iC),o(iB,iX,iY,iC)] = max(A(iB,iX:iX+1,iY:iY+1,iC),W,'same');
+                            %[r(iB,iX,iY,iC),o(iB,iX,iY,iC)] = max(A(iB,iX:iX+1,iY:iY+1,iC),W,'same');
                         end
                         % TODO last row for nan
                     end
@@ -56,7 +56,7 @@ classdef MaxPoolOp < UnaryOp
         end
         
         function grad(obj,up)
-            obj.left.grad(up);
+            obj.left.grad(mzeros(obj.left.xshape));
         end
     end
     
