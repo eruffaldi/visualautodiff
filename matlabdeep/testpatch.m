@@ -58,3 +58,5 @@ outpaddedm = reshape(outpadded,nB,[]); % keep on the left
 distro = reshape(outpaddedm*Sel,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
 squeeze(distro(1,:,:,1))
 
+
+
