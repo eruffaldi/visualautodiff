@@ -2,10 +2,9 @@
 function [outshape,k,i,j] = imagepad(C,shape,field_height,field_width,padding,stride)
 
 [p,n,e] =  fileparts(fullfile(mfilename('fullpath')));
-
 tp = [p,filesep,'im2col.py'];
 tmp = tempname;
-cmd = sprintf('python \"%s\" \"%s\" %d %d %d %d %d %d %d %d',tp,tmp,C,shape(1),shape(2),field_height,field_width,padding,stride(1),stride(2))
+cmd = sprintf('python \"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d %d',tp,tmp,C,shape(1),shape(2),field_height(1),field_width(1),padding(1),padding(2),padding(3),padding(4),stride(1),stride(2))
 system(cmd);
 %tmp
 %system(['ls -l ' tmp])

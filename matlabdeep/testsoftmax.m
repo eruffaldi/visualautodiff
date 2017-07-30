@@ -1,5 +1,6 @@
 %%
 addpath ../logreg_mnist
+useadam=1;
 %%
 x = Placeholder('float',[-1, 784]);
   W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
@@ -19,8 +20,11 @@ x = Placeholder('float',[-1, 784]);
       rs = ReduceSumOp(MatmulwiseOp(y_,LogOp(p_y_given_x)),2); 
       cross_entropy = ReduceMeanOp(NegateOp(rs),0);
   end
+  if useadam == 0
   train_step = GradientDescentOptimizer(0.05,cross_entropy);
-  %train_step = AdamOptimizer(0.01,cross_entropy);
+  else
+      train_step = AdamOptimizer(1e-4,cross_entropy);
+  end
 
   train_step.variables
    
@@ -45,7 +49,7 @@ speedtest = 1;
 tic 
 for I=1:1000
     [batch_xs,~,batch_ys] = mtr.next(100);
-    loss = train_step.evalwith({x,gpuArray(batch_xs),y_,gpuArray(batch_ys)});
+    loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
     losshistory(I) = loss;
     if speedtest == 0 && mod(I,20) == 0
         [whole_xs,~,whole_ys] = mtr.whole();
@@ -54,18 +58,30 @@ for I=1:1000
     end
     
 end
-training_time = toc
-figure(1)
+training_time = toc;
+if ~isempty(accuracyhistory)
+    figure(1)
+
 accuracyhistory
 plot(accuracyhistory)
+title('accuracy History');
+xlabel('Iteration');
+ylabel('accuracy');
+
+end
+
 figure(2);
 losshistory
 plot(losshistory)
+title('Loss History');
+xlabel('Iteration');
+ylabel('Loss');
+
 %%
 [test_images,~,test_labels] = mte.whole();
 test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels})
 prediction = ArgmaxOp(y, 2).evalwith({x,test_images});
-
+training_time
 %should give 1.0
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y_, 1), ArgmaxOp(y_, 1))); 
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})

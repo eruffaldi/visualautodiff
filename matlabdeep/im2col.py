@@ -1,17 +1,18 @@
-# Modified ER
+# Modified ER: separate paddings in get_... , separate stride, I/O
 # https://github.com/jerryjingli/cs231_assignment/blob/master/winter1516_assignment2/cs231n/im2col.py
 #
 import numpy as np
 import array,struct
 import sys
 
-def get_im2col_indices(x_shape, field_height, field_width, padding=1, stridex=1,stridey=1,verbose=False):
+# padding is top,left,bottom,right
+def get_im2col_indices(x_shape, field_height, field_width, padding=(1,1,1,1), stridex=1,stridey=1,verbose=False):
   # First figure out what the size of the output should be
   N, C, H, W = x_shape
-  assert (H + 2 * padding - field_height) % stridey == 0
-  assert (W + 2 * padding - field_height) % stridex == 0
-  out_height = (H + 2 * padding - field_height) / stridey + 1
-  out_width = (W + 2 * padding - field_width) / stridex+ 1
+  assert (H + padding[0]+padding[2] - field_height) % stridey == 0
+  assert (W + padding[1]+padding[3] - field_width) % stridex == 0
+  out_height = (H + padding[0]+padding[2] - field_height) / stridey + 1
+  out_width = (W + padding[1]+padding[3] - field_width) / stridex+ 1
   if verbose:
     print "get_im2col_indices",x_shape,field_height,field_width,padding,stridex,stridey,"out",out_height,out_width
 
@@ -72,20 +73,20 @@ def writenp(x,of):
   x.astype(np.int32).tofile(of)
 
 def main():
-  if len(sys.argv) != 1+1+8:
+  if len(sys.argv) != 1+1+8+3:
     print len(sys.argv)
-    print "outfile,C,rows,cols,field_height,field_width,padding,stridex,stridey"
+    print "outfile,C,rows,cols,field_height,field_width,paddingT,paddingL,paddingB,paddingR,stridex,stridey"
     print "outfile is binary of uint32 with: outheight,outwidth,k,i,j"
     print "where k,i,j are rows,cols,data as in numpy"
     return
   outfile = sys.argv[1]
-  C,rows,cols,field_height,field_width,padding,stridex,stridey = [int(y) for y in sys.argv[2:]]
+  C,rows,cols,field_height,field_width,padding1,padding2,padding3,padding4,stridex,stridey = [int(y) for y in sys.argv[2:]]
 
   if outfile == "!":
-    r = im2col_indices(np.ones((7,C,rows,cols)),field_height,field_width,padding,stridex,stridey,verbose=True)
+    r = im2col_indices(np.ones((7,C,rows,cols)),field_height,field_width,(padding1,padding2,padding3,padding4),stridex,stridey,verbose=True)
   else:
     try:
-      k,i,j,out_height,out_width = get_im2col_indices((1,C,rows,cols),field_height,field_width,padding,stridex,stridey)
+      k,i,j,out_height,out_width = get_im2col_indices((1,C,rows,cols),field_height,field_width,(padding1,padding2,padding3,padding4),stridex,stridey)
     except:
       print sys.exc_info()
       x = open(outfile,"w")

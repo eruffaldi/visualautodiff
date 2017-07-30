@@ -6,6 +6,10 @@ classdef Conv2dOp < BinaryOp
         stride
         matlabconv
         padding 
+        outshape
+        Sel
+        sXp
+        Xp
     end
     
     methods
@@ -22,25 +26,6 @@ classdef Conv2dOp < BinaryOp
             obj.padding = -1;
         end
         
-        function r = eval(obj)
-            A = obj.left.eval();
-            W = obj.right.eval();
-            xs = obj.left.xshape;
-            r = mzeros(obj.xshape);
-            
-%             if obj.matlabconv == 1
-%                 % for every input
-%                 % for every input channel
-%                 % for every output
-%                 for iB=1:xs(1)
-%                     for iC=1:xs(4) 
-%                         r(iB,:,:,iC) = conv2(squeeze(A(iB,:,:,iC)),W(:,:,,'same');
-%                     end
-%                 end
-%             end
-            obj.xvalue = r;
-        end
-        
         function r = evalshape(obj)
             xl = obj.left.evalshape();
             xr = obj.right.evalshape();
@@ -48,11 +33,9 @@ classdef Conv2dOp < BinaryOp
             assert(length(xr) == 4);
             assert(xl(4) == xr(3),'in_channel same');
             
-            % General case
-            h_x = xl(2);
-            w_x = xl(3);
-            h_filter = xr(2);
-            w_filter = xr(3);
+            % Fh Fw Fi Fo
+            h_filter = xr(1);
+            w_filter = xr(2);
             padding = obj.padding;
             stride = obj.stride(1);
             if obj.padding == -1
@@ -62,23 +45,50 @@ classdef Conv2dOp < BinaryOp
                 paddingh = padding;
                 paddingw = padding;
             end
-                
-            h_out = floor((h_x - h_filter + 2 * paddingh) / stride + 1);
-            w_out = floor((w_x - w_filter + 2 * paddingw) / stride + 1);
-            assert(all([h_out,w_out] > 0),'all output should be positive');
-            w_out = max(1,w_out);
-            h_out = max(1,h_out);
-            % assuming stride 1 
-            obj.xshape = [xl(1) h_out w_out xr(end)];
-            r = obj.xshape;
+            [obj.Sel,obj.sXp,obj.outshape] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw]); % N independent
+            r = [xl(1) obj.outshape(1) obj.outshape(2) xr(end)];
+            obj.xshape = r;
         end
+        
+        
+        function r = eval(obj)
+            A = obj.left.eval();
+            W = obj.right.eval();
+            xs = obj.left.xshape;
+            nB = size(A,1);
+            nFo = size(W,4);
+            
+            Xp = mpatcher(A,obj.Sel,obj.sXp); 
+            % [nB , Fh Fw nC patches] -> [nB patches Fh Fw C]
+            Y = reshape(reshape(Xp,nB*obj.sXp(2),[])*reshape(W,[],nFo),nB,obj.outshape(1),obj.outshape(2),nFo);
+            obj.Xp = Xp;
+            obj.xvalue = Y;
+            r = Y;
+        end
+        
         
         function grad(obj,up)
             dzdx = mzeros(obj.left.xshape);
             dzdW = mzeros(obj.right.xshape);
+            Y = obj.xvalue;
+            nC = size(Y,4);
+            filtersize =10; % 
+            nS = filtersize*filtersize*nC;
             
-            
+            dout = sum(up,4); % N Ph Pw Fo incoming => N Ph Pw
+            dxcol = mzeros([nB*prod(obj.outshape),filtersize^2*nC]); % [nB*nP, nS] aka size(w)
+            % max_idx is [nB Ph Pw Fo] with value 1..nS with nS=Fw Fh nC
+            max_idx = randi([1,nS],1,size(dxcol,1));
+
+            % dout flattened: nB nP having summed by Fo
+            % dxcol is: nBnP,nS indexed by max_idx
+            dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 
+            dzdx = munpatcher(dxcol,obj.Sel,obj.left.xshape);
             obj.left.grad(dzdx);
+
+            dzdWt = reshape(dout,size(dout,1),size(dout,2)*size(dout,3)) * obj.Xp';
+            dzdW = reshape(dzdWt,obj.right.xshape);
+          
             obj.right.grad(dzdW);
         end
         

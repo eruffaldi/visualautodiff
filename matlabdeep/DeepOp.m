@@ -26,10 +26,13 @@ classdef (Abstract) DeepOp < handle
 
         function r = evalshapewith(obj,placeholders)
             obj.reset();
+            sa = 0;
             for I=1:2:length(placeholders)
-                placeholders{I}.set(placeholders{I+1});
+               sa = sa | placeholders{I}.set(placeholders{I+1});
             end
-            obj.evalshape();
+            if sa ~= 0
+                obj.evalshape();
+            end
         end
 
         function reset(obj)

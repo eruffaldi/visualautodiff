@@ -93,6 +93,6 @@ if __name__ == '__main__':
   parser.add_argument('--singlecore',action="store_true")
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
-  parser.add_argument('--gradient_rate',default=0.05,type=float)
+  parser.add_argument('--gradient_rate',default=0.5,type=float)
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
