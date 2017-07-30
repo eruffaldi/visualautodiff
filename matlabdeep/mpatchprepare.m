@@ -16,9 +16,13 @@ assert(nCO == nC*filtersize*filtersize,'expected CO');
 assert(all(size(i) == size(j)));
 assert(size(k,1) == size(i,1));
 
-kk = reshape(repmat(k,1,nP),1,[]); % expand to all patches
-ii = reshape(i - padding,1,[]);
-jj = reshape(j - padding,1,[]);
+%originally we used k, but due to the fact that we changed layout to : P F
+%C we'll use this
+%kk = reshape(repmat(k,nP,1),1,[]); % expand to all patches
+kk = reshape(repmat(0:nC-1,filtersize*filtersize*nP,1),1,[]);
+% we need to swap i and j
+ii = reshape(j' - padding,1,[]);
+jj = reshape(i' - padding,1,[]);
 n = ii < 0 | jj < 0 | ii >= Ih | jj >= Iw;
 % use n to mark terminal extra column
 ii(n) = 0; 
@@ -30,5 +34,5 @@ kq(n) = nC*Ih*Iw+1;
 Sel = sparse(1:length(kq),kq,ones(length(kq),1));
 Sel = Sel(:,1:end-1); % remove spurious rightmost
 
-sXp = [0,filtersize,filtersize,nC,nP]; % we append the nP
+sXp = [0,nP,filtersize,filtersize,nC]; % we append the nP
 
