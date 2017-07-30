@@ -4,7 +4,6 @@ classdef GradientDescentOptimizer < Optimizer
     
     properties
         learning_rate
-        target
         variables
     end
     

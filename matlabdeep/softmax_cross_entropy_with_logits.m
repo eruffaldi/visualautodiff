@@ -8,7 +8,8 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
     end
     
     properties (Transient)
-        back
+        logitsoffsetted
+        sumx
     end
     
     methods
@@ -21,17 +22,17 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
         end
         
         function r = eval(obj)
-            xla = obj.labels.eval();
-            xlo = obj.logits.eval();
-            classes = size(xlo,2);
+            xlabels = obj.labels.eval();
+            xlogits = obj.logits.eval();
+            classes = size(xlogits,2);
             classdim = 2;
             
-            lm = max(xlo,[],classdim); % along class
-            xback = xlo - repmat(lm,1,classes); % broadcast class
-            scratch = sum(exp(xback),2); % exp and sum along class
-            loss = sum((xla .* (repmat(log(scratch),1,classes) - xback)),classdim); 
-            obj.back = (exp(xback) ./ repmat(scratch,1,classes))-xla;
+            logitsmax = max(xlogits,[],classdim); % along class
+            obj.logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
+            scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
+            loss = sum((xlabels .* (repmat(log(scratch),1,classes) - obj.logitsoffsetted)),classdim); 
             obj.xvalue = loss;
+            obj.sumx = scratch;
             r = loss;
         end
         
@@ -43,10 +44,15 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
              obj.xshape = obj.labels.xshape(2:end); % remove first batch size
              r = obj.xshape;
         end
+
         
         function grad(obj,up)
-            % being a loss it is terminal 
-            obj.logits.grad(obj.back);
+            % if up we reduce 
+            % backprop: prob - labels
+            %   prob = exp(logits - max_logits) / sum(exp(logits - max_logits))
+            classes = size(obj.logits.xvalue,2);
+            J = (exp(obj.logitsoffsetted) ./ repmat(obj.sumx,1,classes))-obj.labels.xvalue;
+            obj.logits.grad(up*J);
         end
         
     end

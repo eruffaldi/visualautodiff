@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
 import argparse
 import sys
 
@@ -57,7 +58,10 @@ def main(_):
   # outputs of 'y', and then average across the batch.
   cross_entropy = tf.reduce_mean(
       tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-  train_step = tf.train.AdamOptimizer(0.01).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
+  if FLAGS.adam:
+    train_step = tf.train.AdamOptimizer(FLAGS.adam_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
+  else:
+    train_step = tf.train.GradientDescentOptimizer(FLAGS.gradient_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
   kw = {}
   if FLAGS.no_gpu:
@@ -70,10 +74,11 @@ def main(_):
   sess = tf.InteractiveSession(config=config)
   tf.global_variables_initializer().run()
   # Train
+  t0 = time.time()
   for _ in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(100)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-
+  print ("training_time",time.time()-t0)
   # Test trained model
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -86,5 +91,8 @@ if __name__ == '__main__':
                       help='Directory for storing input data')
   parser.add_argument('--no-gpu',action="store_true")
   parser.add_argument('--singlecore',action="store_true")
+  parser.add_argument('--adam',action="store_true")
+  parser.add_argument('--adam_rate',default=1e-4,type=float)
+  parser.add_argument('--gradient_rate',default=0.05,type=float)
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
