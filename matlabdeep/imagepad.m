@@ -1,20 +1,33 @@
 % [k,i,j] = imagepad(1,[28,28],5,5,0,[2,2])
-function [outshape,k,i,j] = imagepad(C,shape,field_height,field_width,padding,stride)
 
-[p,n,e] =  fileparts(fullfile(mfilename('fullpath')));
-tp = [p,filesep,'im2col.py'];
-tmp = tempname;
-cmd = sprintf('python \"%s\" \"%s\" %d %d %d %d %d %d %d %d %d %d %d',tp,tmp,C,shape(1),shape(2),field_height(1),field_width(1),padding(1),padding(2),padding(3),padding(4),stride(1),stride(2))
-system(cmd);
-%tmp
-%system(['ls -l ' tmp])
+% padding is 4d: top left bottom right
+% stride is  2d
+% k is NOT neeed
+function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,stride)
 
-fid = fopen(tmp,'r');
-outshape = fread(fid,2,'uint32');
-n = fread(fid,2, 'uint32')';
-k = fread(fid,[n(2),n(1)],'uint32')';
-n = fread(fid, 2,'uint32')';
-i = fread(fid,[n(2),n(1)],'uint32')';
-n = fread(fid, 2,'uint32')';
-j = fread(fid,[n(2),n(1)],'uint32')';
-fclose(fid);
+  H = xshape(1);
+  W = xshape(2);
+  stridey = stride(1);
+  stridex = stride(2);
+
+  tile = @repmat;
+  
+  assert (mod(H + padding(1)+padding(3) - field_height,stridey) == 0,'alignment of pad and stride-size in H');
+  assert (mod(W + padding(2)+padding(4) - field_width,  stridex) == 0,'alignment of pad and stride-size in W');
+  out_height = (H + padding(1)+padding(3) - field_height) / stridey + 1;
+  out_width = (W + padding(2)+padding(4) - field_width) / stridex+ 1;
+
+  i0 = repmat(1:field_height, field_width,1); 
+  i0 = tile(i0, C);
+  i1 = stridey * repmat(1:out_height, out_width);
+  j0 = tile(1:field_width, field_height * C);
+  j1 = stridex * tile(1:out_width, out_height);
+  i = reshape(i0,[],1) + reshape(i1,1,[]);
+  j = reshape(j0,[],1) + reshape(j1,1,[]);
+  
+  k = reshape(repmat(1:C, field_height * field_width),[],1);
+    
+  i = i';
+  j = j';
+  k = k';
+  outshape = [out_height;out_width];
