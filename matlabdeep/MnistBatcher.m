@@ -20,18 +20,18 @@ classdef MnistBatcher < handle
              if strcmp(content,'train')
                  Trimages = loadMNISTImages('train-images-idx3-ubyte')';
                 Trlabels = loadMNISTLabels('train-labels-idx1-ubyte')';
-                Trlabelshot = full(ind2vec((Trlabels+1)));
+                Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
                 %Trimagesx = makefromworkspace(1:length(Trimages),Trimages);
                 %Trlabelshotsx = makefromworkspace(1:length(Trlabelshot),Trlabelshot')
                 obj.alllabels = Trlabels';                
-                obj.alllabelshot = Trlabelshot';
+                obj.alllabelshot = Trlabelshot;
                 obj.allimages = Trimages;
              else
                 Teimages = loadMNISTImages('t10k-images-idx3-ubyte')';
                 Telabels = loadMNISTLabels('t10k-labels-idx1-ubyte')';
-                Telabelshot = full(ind2vec((Telabels+1)));
+                Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';
                 obj.alllabels = Telabels';                
-                obj.alllabelshot = Telabelshot';
+                obj.alllabelshot = Telabelshot;
                 obj.allimages = Teimages;
              end
              obj.n = size(obj.alllabels,1);

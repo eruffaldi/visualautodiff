@@ -4,11 +4,24 @@ classdef Variable < DeepOp
     
     properties
         initvalue
+        xid
     end
+    
+     methods (Static)
+      function out = nextid()
+         persistent maxid;
+         if isempty(maxid)
+             maxid = 0;
+         end
+         maxid = maxid+1;
+         out = maxid;
+      end
+     end
     
     methods
          function obj = Variable(name,initvalue)
             obj = obj@DeepOp();
+            obj.xid = obj.nextid();
             obj.name = name;
             obj.initvalue = initvalue;
             if isa(initvalue,'function_handle')

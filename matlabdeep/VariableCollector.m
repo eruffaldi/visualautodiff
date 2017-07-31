@@ -4,41 +4,60 @@ classdef VariableCollector < handle
     
     properties
         collected
+        icollected
     end
     
     methods
          function obj = VariableCollector()
-             obj.collected = {};
+             v = Variable('dummy',0);
+             obj.collected = cell(100,1); % max
+             for i=1:length(obj.collected)
+                 obj.collected{i} = v;
+             end
+             obj.icollected = 0;
          end
          
          function r = collect(obj,op)
-             obj.collected = {};
              op.visit(@(x) obj.callback(x));
-             if isempty(obj.collected)
+             if obj.icollected == 0
                  r = {};
                  return;
              end
+             
+             % TODO: now that we have ids we can extract them and use
+             % unique
+             
              % compute unique set of variable: N^2 
-             equality = zeros(length(obj.collected));
-             for I=1:length(obj.collected)
-                 for J=I+1:length(obj.collected)
-                     equality(I,J) = obj.collected{I} == obj.collected{J};
+             equality = zeros(obj.icollected);
+             for I=1:obj.icollected
+                 for J=I+1:obj.icollected
+                     equality(I,J) = obj.collected{I}.xid == obj.collected{J}.xid;
                  end
              end
-             available = 1:length(obj.collected);
-             selected = [];             
+             %modified for codegeneration
+             available = 1:obj.icollected;
+             selected = zeros(obj.icollected,1);   % to avoid growth           
+             k = 0;
              while ~isempty(available)
                  cur = available(1);
-                 selected(end+1) = cur;
+                 k = k + 1;
+                 selected(k) = cur;
                  % remove all the ones equal to current
                  available = setdiff(available(2:end),find(equality(cur,:)));
              end
-             r = obj.collected(selected);
+             r = cell(k,1);
+             for I=1:k
+                r{I} = obj.collected{selected(I)};
+             end
+             
+             % pick only the ones in selected (up to k)
+             %r = obj.collected(selected(1:k));
          end
          
          function r = callback(obj,op)
              if isa(op,'Variable')
-                 obj.collected{end+1} = op;
+                 obj.icollected = obj.icollected+1;
+                 obj.collected{obj.icollected} = op;
                  r = 0;
              else
                  r = 1;

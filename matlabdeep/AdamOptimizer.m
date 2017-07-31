@@ -38,10 +38,17 @@ classdef AdamOptimizer < Optimizer
             obj.target = target;
             vc = VariableCollector();
             obj.variables = vc.collect(target);
-            disp(sprintf('Parameters %d',vc.paramcount()));
+            fprintf('Parameters %f\n',vc.paramcount());
             obj.m_t = cell(length(obj.variables),1);
             obj.s_t = cell(length(obj.variables),1);
-            obj.hardreset();
+            for I=1:length(obj.variables)
+                v = obj.variables{I}.xvalue;
+                p =  mzeros(size(v));
+                obj.m_t{I} = p;
+                obj.s_t{I} = p;
+            end
+            obj.t = 1;
+            %obj.hardreset(); % removed due to codegen
             target.reset();
             
         end
