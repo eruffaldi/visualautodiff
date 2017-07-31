@@ -1,0 +1,160 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration file="/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep/testsoftmax.prj" location="/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep" name="testsoftmax" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>testsoftmax</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark />
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.installpath.string>/testsoftmax/</param.installpath.string>
+    <param.installpath.combo>option.installpath.systemwideapp</param.installpath.combo>
+    <param.logo />
+    <param.install.notes>In the following directions, replace MCR_ROOT by the directory where the MATLAB Runtime is installed on the target machine.
+
+If the environment variable DYLD_LIBRARY_PATH is undefined, set it to the concatenation of the following strings:
+
+    MCR_ROOT/v92/runtime/maci64:
+    MCR_ROOT/v92/sys/os/maci64:
+    MCR_ROOT/v92/bin/maci64
+
+If it is defined, set it to the concatenation of these strings:
+
+    ${LD_LIBRARY_PATH}: 
+    MCR_ROOT/v92/runtime/maci64:
+    MCR_ROOT/v92/sys/os/maci64:
+    MCR_ROOT/v92/bin/maci64</param.install.notes>
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}/testsoftmax/for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}/testsoftmax/for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}/testsoftmax/for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}/testsoftmax</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}/testsoftmax.m</file>
+    </fileset.main>
+    <fileset.resources />
+    <fileset.package />
+    <fileset.depfun>
+      <file>/Users/eruffaldi/Dropbox/repos/simautodiff/logreg_mnist/loadMNISTImages.m</file>
+      <file>/Users/eruffaldi/Dropbox/repos/simautodiff/logreg_mnist/loadMNISTLabels.m</file>
+      <file>${PROJECT_ROOT}/AdamOptimizer.m</file>
+      <file>${PROJECT_ROOT}/AddOp.m</file>
+      <file>${PROJECT_ROOT}/ArgmaxOp.m</file>
+      <file>${PROJECT_ROOT}/BinaryOp.m</file>
+      <file>${PROJECT_ROOT}/DeepOp.m</file>
+      <file>${PROJECT_ROOT}/ElementWiseUnaryOp.m</file>
+      <file>${PROJECT_ROOT}/EqualOp.m</file>
+      <file>${PROJECT_ROOT}/GradientDescentOptimizer.m</file>
+      <file>${PROJECT_ROOT}/LogOp.m</file>
+      <file>${PROJECT_ROOT}/MatmulOp.m</file>
+      <file>${PROJECT_ROOT}/MatmulwiseOp.m</file>
+      <file>${PROJECT_ROOT}/MnistBatcher.m</file>
+      <file>${PROJECT_ROOT}/NegateOp.m</file>
+      <file>${PROJECT_ROOT}/Optimizer.m</file>
+      <file>${PROJECT_ROOT}/Placeholder.m</file>
+      <file>${PROJECT_ROOT}/ReduceMeanOp.m</file>
+      <file>${PROJECT_ROOT}/ReduceSumOp.m</file>
+      <file>${PROJECT_ROOT}/SoftmaxOp.m</file>
+      <file>${PROJECT_ROOT}/UnaryOp.m</file>
+      <file>${PROJECT_ROOT}/Variable.m</file>
+      <file>${PROJECT_ROOT}/VariableCollector.m</file>
+      <file>${PROJECT_ROOT}/mzeros.m</file>
+      <file>${PROJECT_ROOT}/softmax_cross_entropy_with_logits.m</file>
+    </fileset.depfun>
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}/testsoftmax/for_testing" name="run_testsoftmax.sh" optional="false">/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep/testsoftmax/for_testing/run_testsoftmax.sh</file>
+      <file location="${PROJECT_ROOT}/testsoftmax/for_testing" name="splash.png" optional="false">/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep/testsoftmax/for_testing/splash.png</file>
+      <file location="${PROJECT_ROOT}/testsoftmax/for_testing" name="testsoftmax.app" optional="false">/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep/testsoftmax/for_testing/testsoftmax.app</file>
+      <file location="${PROJECT_ROOT}/testsoftmax/for_testing" name="readme.txt" optional="true">/Users/eruffaldi/Dropbox/repos/simautodiff/matlabdeep/testsoftmax/for_testing/readme.txt</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>/Applications/MATLAB_R2017a.app</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="embeddedcoder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>true</unix>
+      <mac>true</mac>
+      <windows>false</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.10.5</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>maci64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
