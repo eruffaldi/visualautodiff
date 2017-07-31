@@ -29,6 +29,7 @@ classdef DropoutOp < ElementWiseUnaryOp
                 scale = single(1 / (1 - realrate));
                 obj.mask = scale * q; 
                 obj.xvalue = obj.mask .* x ;
+                x = obj.xvalue;
             else
                 obj.mask = [];
                 obj.xvalue = x;

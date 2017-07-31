@@ -27,21 +27,8 @@ classdef MaxPoolOp < UnaryOp
             obj.strides = strides;
             obj.padding = pad;
         end
-        
-        % [batch fw fh channels]
-        function r = eval(obj)
-            A = obj.left.eval();
-            xs = obj.left.xshape;
-            r = mzeros(obj.xshape);
-            o = mzeros(obj.xshape); 
-            ksize = obj.ksize;
-            strides = obj.strides; %
-                       
-            obj.maxindices = o;
-            obj.xvalue = r;
-        end
-        
-        function r = evalshape(obj)
+
+                function r = evalshape(obj)
             xl = obj.left.evalshape();
            
             % General case
@@ -57,9 +44,27 @@ classdef MaxPoolOp < UnaryOp
             r = [xl(1) obj.outshape(1) obj.outshape(2) xl(4)];
             obj.xshape = r;
 
+                end
+        
+        % [batch fw fh channels]
+        function r = eval(obj)
+            A = obj.left.eval();
+    
+            % make patches
+            % compute maximum index => preserve index
+            % emit
+            
+            obj.maxindices = o;
+            obj.xvalue = r;
+            assert(~isempty(r));
         end
         
+
+        
         function grad(obj,up)
+            
+            % propagate the up to each patch using the index preserved
+            % unpatch
             obj.left.grad(mzeros(obj.left.xshape));
         end
     end

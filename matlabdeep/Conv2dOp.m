@@ -64,24 +64,24 @@ classdef Conv2dOp < BinaryOp
             obj.Xp = Xp;
             obj.xvalue = Y;
             r = Y;
+            assert(~isempty(r));
         end
         
         
         function grad(obj,up)
             dzdx = mzeros(obj.left.xshape);
             dzdW = mzeros(obj.right.xshape);
+            filtersize = obj.right.xshape(2:3);
             Y = obj.xvalue;
             nC = size(Y,4);
-            filtersize =10; % 
-            nS = filtersize*filtersize*nC;
-            
+            nS = prod(filtersize)*nC;
+            nB = obj.left.xshape(1);
             dout = sum(up,4); % N Ph Pw Fo incoming => N Ph Pw
-            dxcol = mzeros([nB*prod(obj.outshape),filtersize^2*nC]); % [nB*nP, nS] aka size(w)
+            dxcol = mzeros([nB*prod(obj.outshape),nS]); % [nB Ph Pw,Fh Fw C]
+            
             % max_idx is [nB Ph Pw Fo] with value 1..nS with nS=Fw Fh nC
-            max_idx = randi([1,nS],1,size(dxcol,1));
+            %max_idx = randi([1,nS],1,size(dxcol,1)); % 
 
-            % dout flattened: nB nP having summed by Fo
-            % dxcol is: nBnP,nS indexed by max_idx
             dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 
             dzdx = munpatcher(dxcol,obj.Sel,obj.left.xshape);
             obj.left.grad(dzdx);

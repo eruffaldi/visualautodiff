@@ -43,13 +43,15 @@ train_step = AdamOptimizer(1e-4,cross_entropy);
 
 train_step.evalshapewith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
 
-%strain_step.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
+cross_entropy.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
+cross_entropy.grad(1)
 
 %%
 correct_prediction = EqualOp(ArgmaxOp(y_conv, 2), ArgmaxOp(y_, 2));
 accuracy = ReduceMeanOp(correct_prediction,0); 
 
 train_accuracy = accuracy.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 1.0});
+cross_entropy.grad(1)
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});
 

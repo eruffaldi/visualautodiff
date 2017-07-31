@@ -34,6 +34,7 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
             obj.xvalue = loss;
             obj.sumx = scratch;
             r = loss;
+            assert(~isempty(r));
         end
         
         function r = evalshape(obj)
@@ -47,6 +48,8 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
 
         
         function grad(obj,up)
+            assert(~isempty(obj.left.xvalue));
+            assert(~isempty(obj.right.xvalue));
             % if up we reduce 
             % backprop: prob - labels
             %   prob = exp(logits - max_logits) / sum(exp(logits - max_logits))
