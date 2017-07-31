@@ -32,7 +32,9 @@ classdef AdamOptimizer < Optimizer
             obj = obj@Optimizer();
             obj.beta1 = 0.9;
             obj.beta2 = 0.999;
+            obj.integermode = 0;
             obj.epsilon = 1e-8;
+            obj.step = 1;
             obj.locking = 0;
             obj.precision = learningrate;
             obj.target = target;
@@ -51,6 +53,13 @@ classdef AdamOptimizer < Optimizer
             %obj.hardreset(); % removed due to codegen
             target.reset();
             
+        end
+        
+        % increments at step 1 for every epoch and preserves the value of t
+        % inside every epoch
+        function setbatches(obj,batches)
+            obj.integermode = 1;
+            obj.step = 1/batches;
         end
         
         function hardreset(obj)
@@ -73,8 +82,13 @@ classdef AdamOptimizer < Optimizer
 
             beta1 = obj.beta1;
             beta2 = obj.beta2;
+            if obj.integermode
+                it = floor(obj.t);
+            else
+                it = obj.t;
+            end
             % bias correction is here
-            lr_t = -obj.precision * sqrt(1 - beta2^obj.t) / (1 - beta1^obj.t);
+            lr_t = -obj.precision * sqrt(1 - beta2^it) / (1 - beta1^it);
             for I=1:length(obj.variables)
                 g = obj.variables{I}.xgrad;
                 obj.m_t{I} = beta1*obj.m_t{I}+ (1-beta1)*g;
@@ -82,7 +96,7 @@ classdef AdamOptimizer < Optimizer
                 obj.variables{I}.increment(lr_t * obj.m_t{I} ./ (sqrt(obj.s_t{I}) + obj.epsilon));
             end
             
-            obj.t = obj.t + 1;
+            obj.t = obj.t + obj.step;
         end
     end
    

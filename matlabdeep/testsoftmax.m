@@ -2,7 +2,7 @@
 addpath ../logreg_mnist
 useadam=1;
 %%
-x = Placeholder('float',[-1, 784]);
+  x = Placeholder('float',[-1, 784]);
   W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
   b = Variable('b',0.1*mzeros([1,10])); %zeros([10,1]));
   y = AddOp(MatmulOp(x,W),b);
