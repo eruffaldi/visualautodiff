@@ -79,8 +79,10 @@ ylabel('Loss');
 
 %%
 [test_images,~,test_labels] = mte.whole();
-b.set(squeeze(bout.Data(end,:)));
-W.set(squeeze(Wout.Data(:,:,end)));
+if(exist('bout'))
+    b.set(squeeze(bout.Data(end,:)));
+    W.set(squeeze(Wout.Data(:,:,end)));
+end
 accuracy.evalshapewith({x,test_images,y_,test_labels})
 test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels})
 prediction = ArgmaxOp(y, 2).evalwith({x,test_images});
