@@ -64,7 +64,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
              obj.epoch = 1;
              obj.iteration = 1;
              if obj.trainset == 1
-                s = coder.load('mnist_train','Trimages','Trlabels');
+                s = load('mnist_train','Trimages','Trlabels');
                  Trimages = s.Trimages;
                  Trlabels = s.Trlabels;
                 Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
@@ -74,7 +74,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
                 obj.alllabelshot = Trlabelshot;
                 obj.allimages = Trimages;
              else
-                 s = coder.load('mnist_test','Teimages','Telabels');
+                 s = load('mnist_test','Teimages','Telabels');
                 
                  Teimages = s.Teimages;
                  Telabels = s.Telabels;
@@ -103,13 +103,13 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
                     left = min(needed,obj.n-obj.iteration);
                 end
                 if left > 0
-%                     Q = obj.indices(obj.iteration:obj.iteration+left-1);
-%                     x(k1:k1+left-1,:) = obj.allimages(Q,:);
-%                     labels(k1:k1+left-1,:) = obj.alllabels(Q,:);
-%                     labelshot(k1:k1+left-1,:) = obj.alllabelshot(Q,:);
-%                     obj.iteration = obj.iteration + left;
-%                     k1 = k1 + left;
-%                     needed = needed - left;
+                    Q = obj.indices(obj.iteration:obj.iteration+left-1);
+                    x(k1:k1+left-1,:) = obj.allimages(Q,:);
+                    labels(k1:k1+left-1,:) = obj.alllabels(Q,:);
+                    labelshot(k1:k1+left-1,:) = obj.alllabelshot(Q,:);
+                    obj.iteration = obj.iteration + left;
+                    k1 = k1 + left;
+                    needed = needed - left;
                 end
            end
         end
