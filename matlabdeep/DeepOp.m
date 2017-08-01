@@ -41,6 +41,19 @@ classdef (Abstract) DeepOp < handle
         function visit(obj,fx)
             fx(obj);
         end
+
+        function r = plus(a,b)
+            assert(isa(a,DeepOp));
+            assert(isa(b,DeepOp));
+            r = AddOp(a,b);
+        end
+
+        function r = mtimes(a,b)
+            assert(isa(a,DeepOp));
+            assert(isa(b,DeepOp));
+            r = MatmulOp(a,b);            
+        end
+
     end
     
 end
