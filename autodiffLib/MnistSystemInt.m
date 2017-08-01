@@ -1,4 +1,4 @@
-classdef MnistSystem < matlab.System  & matlab.system.mixin.Propagates
+classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
     % MnistSystem
     %
     % This template includes the minimum set of functions required
@@ -62,6 +62,26 @@ classdef MnistSystem < matlab.System  & matlab.system.mixin.Propagates
            % Perform one-time calculations, such as computing constants
              obj.epoch = 1;
              obj.iteration = 1;
+             if obj.trainset == 1
+                 s = load('mnist_train');
+                 Trimages = s.Trimages;
+                 Trlabels = s.Trlabels;
+                Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
+                %Trimagesx = makefromworkspace(1:length(Trimages),Trimages);
+                %Trlabelshotsx = makefromworkspace(1:length(Trlabelshot),Trlabelshot')
+                obj.alllabels = Trlabels';                
+                obj.alllabelshot = Trlabelshot;
+                obj.allimages = Trimages;
+             else
+                 s = load('mnist_test');
+                 Teimages = s.Teimages;
+                 Telabels = s.Telabels;
+                Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';
+                obj.alllabels = Telabels';                
+                obj.alllabelshot = Telabelshot;
+                obj.allimages = Teimages;
+             end
+             obj.n = size(obj.alllabels,1);
              obj.indices = randperm(obj.n);
          end
       
