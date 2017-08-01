@@ -16,7 +16,8 @@ classdef AdamOptimizer < Optimizer
         epsilon
         locking
         precision 
-        
+        integermode
+        step
                
     end
     

@@ -27,15 +27,15 @@ useadam=1;
   end
 
   train_step.variables
-   
+   correct_prediction = EqualOp(ArgmaxOp(y, 2), ArgmaxOp(y_, 2));
+accuracy = ReduceMeanOp(correct_prediction,0); 
+
 %%
 disp('Initial Values')
 for I=1:length(train_step.variables)
     train_step.variables{I}.xvalue;
 end
 
-correct_prediction = EqualOp(ArgmaxOp(y, 2), ArgmaxOp(y_, 2));
-accuracy = ReduceMeanOp(correct_prediction,0); 
 
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y, 2), ArgmaxOp(y_, 2))); 
 
@@ -79,6 +79,9 @@ ylabel('Loss');
 
 %%
 [test_images,~,test_labels] = mte.whole();
+b.set(squeeze(bout.Data(end,:)));
+W.set(squeeze(Wout.Data(:,:,end)));
+accuracy.evalshapewith({x,test_images,y_,test_labels})
 test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels})
 prediction = ArgmaxOp(y, 2).evalwith({x,test_images});
 training_time
