@@ -63,7 +63,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
              obj.epoch = 1;
              obj.iteration = 1;
              if obj.trainset == 1
-                 s = load('mnist_train');
+                s = coder.load('mnist_train','Trimages','Trlabels');
                  Trimages = s.Trimages;
                  Trlabels = s.Trlabels;
                 Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
@@ -73,7 +73,8 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
                 obj.alllabelshot = Trlabelshot;
                 obj.allimages = Trimages;
              else
-                 s = load('mnist_test');
+                 s = coder.load('mnist_test','Teimages','Telabels');
+                
                  Teimages = s.Teimages;
                  Telabels = s.Telabels;
                 Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';

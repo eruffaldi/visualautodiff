@@ -33,6 +33,7 @@ classdef ArgmaxSystem < matlab.System  & matlab.system.mixin.Propagates
             
         function [sz_1] = getOutputSizeImpl(obj) 
             s = propagatedInputSize(obj,1); 
+            assert(prod(s) > 0);
             if obj.dim == 1
                 sz_1 = [1,s(2)];
             else
