@@ -1,7 +1,4 @@
-classdef ArgmaxSystem < matlab.System  & matlab.system.mixin.Propagates
-    properties
-        dim = 1;
-    end
+classdef ArgmaxSystemD1 < matlab.System  & matlab.system.mixin.Propagates
 
     properties(DiscreteState)
 
@@ -34,11 +31,7 @@ classdef ArgmaxSystem < matlab.System  & matlab.system.mixin.Propagates
         function [sz_1] = getOutputSizeImpl(obj) 
             s = propagatedInputSize(obj,1); 
             assert(prod(s) > 0);
-            if obj.dim == 1
-                sz_1 = [1,s(2)];
-            else
-                sz_1 = [s(2),1];
-            end
+                sz_1 = [s(1),1];
         end
         
          function resetImpl(obj)
@@ -46,7 +39,7 @@ classdef ArgmaxSystem < matlab.System  & matlab.system.mixin.Propagates
       
         
         function [y] = stepImpl(obj,x)
-           [~,y] = max(x,[],);
+           [~,y] = max(x,[],1);
         end
        
     end

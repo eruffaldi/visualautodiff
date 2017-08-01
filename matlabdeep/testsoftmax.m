@@ -41,7 +41,6 @@ end
 
 
 mtr = MnistBatcher("train");
-mte = MnistBatcher("test");
 train_step.reset();
 accuracyhistory = [];
 losshistory = [];
@@ -78,9 +77,11 @@ xlabel('Iteration');
 ylabel('Loss');
 
 %%
+mte = MnistBatcher("test");
+
 [test_images,~,test_labels] = mte.whole();
 if(exist('bout'))
-    b.set(squeeze(bout.Data(end,:)));
+    b.set(squeeze(bout.Data(:,end))');
     W.set(squeeze(Wout.Data(:,:,end)));
 end
 accuracy.evalshapewith({x,test_images,y_,test_labels})
