@@ -23,7 +23,7 @@ classdef LogOp < ElementWiseUnaryOp
         end
 
         function grad(obj,up)
-            obj.left.grad(up .* 1./obj.left.xvalue);
+            obj.left.grad(up ./max(obj.left.xvalue,1e-8));
         end
 
     end

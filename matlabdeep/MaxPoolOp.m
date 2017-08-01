@@ -5,15 +5,19 @@ classdef MaxPoolOp < UnaryOp
     properties
         ksize
         strides
-        pad
+        padding
     end
     
     properties (Transient)
         maxindices
+        Sel
+        sXp
+        outshape
     end
     
     methods
-        % Tensorflow supports NHWC or NCHW
+        % Tensorflow supports NHWC or NCHW => we NHWC
+        % padding see https://www.tensorflow.org/api_docs/python/tf/nn/convolution
         function obj = MaxPoolOp(x,ksize,strides,pad)
             assert(all(ksize == [1,2,2,1]),'only size [1,2,2,1]');
             assert(all(strides == [1,2,2,1]),'only size [1,2,2,1]');
@@ -21,42 +25,47 @@ classdef MaxPoolOp < UnaryOp
             obj = obj@UnaryOp(x);
             obj.ksize = ksize;
             obj.strides = strides;
-            obj.pad = pad;
+            obj.padding = pad;
         end
+
+                function r = evalshape(obj)
+            xl = obj.left.evalshape();
+           
+            % General case
+            h_filter = obj.ksize(2);
+            w_filter = obj.ksize(3);
+            paddingmode = obj.padding;
+            if strcmp(paddingmode,'SAME')
+                padding = [0,0, 0,0]; % special h_filter-1,w_filter-1];
+            else
+                padding = paddingmode;
+            end
+            [obj.Sel,obj.sXp,obj.outshape] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],padding); % N independent
+            r = [xl(1) obj.outshape(1) obj.outshape(2) xl(4)];
+            obj.xshape = r;
+
+                end
         
         % [batch fw fh channels]
         function r = eval(obj)
-            obj.left.eval();
-            xs = obj.left.xshape;
-            r = mzeros(obj.xshape);
-            o = mzeros(obj.xshape); 
-            ksize = obj.ksize;
-            strides = obj.strides; %
+            A = obj.left.eval();
+    
+            % make patches
+            % compute maximum index => preserve index
+            % emit
             
-            for iB=1:xs(1)
-                for iC=1:xs(4) 
-                    for iX=1:2:xs(2)-1
-                        for iY=1:2:xs(3)-1
-                            [r(iB,iX,iY,iC),o(iB,iX,iY,iC)] = max(A(iB,iX:iX+1,iY:iY+1,iC),W,'same');
-                        end
-                        % TODO last row for nan
-                    end
-                    % TODO last column for nan
-                end 
-            end
             obj.maxindices = o;
             obj.xvalue = r;
+            assert(~isempty(r));
         end
         
-        function r = evalshape(obj)
-            xl = obj.left.evalshape();
-            % special case
-            obj.xshape = xl./obj.strides; %./obj.ksize;
-            r = obj.xshape;
-        end
+
         
         function grad(obj,up)
-            obj.left.grad(up);
+            
+            % propagate the up to each patch using the index preserved
+            % unpatch
+            obj.left.grad(mzeros(obj.left.xshape));
         end
     end
     

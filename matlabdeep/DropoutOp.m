@@ -1,6 +1,4 @@
-classdef DropoutOp < UnaryOp
-    %UNTITLED Summary of this class goes here
-    %   Detailed explanation goes here
+classdef DropoutOp < ElementWiseUnaryOp
     
     properties
         prob
@@ -12,7 +10,7 @@ classdef DropoutOp < UnaryOp
 
     methods
         function obj = DropoutOp(left,prob)
-            obj = obj@UnaryOp(left);
+            obj = obj@ElementWiseUnaryOp(left);
             obj.prob = prob;
         end
         
@@ -20,21 +18,25 @@ classdef DropoutOp < UnaryOp
             x = obj.left.eval();
             rate = obj.prob.xvalue;
             if rate < 1.0                
-                scale = single(1 / (1 - rate));
-                obj.mask = scale * (rand(size(x), 'single') >= rate); 
-                x = obj.mask .* x ;
-                %[outputs{1}, obj.mask] = vl_nndropout(inputs{1}, 'rate', obj.rate) ;                
+                % see vl_nndropout
+                %
+                % scale is not 1 because we compensate for the reduction of
+                % items in the weights
+                %
+                % in practice we should count the number of items
+                q = (rand(size(x), 'single') >= rate);
+                realrate = sum(q(:) == false)/numel(q);
+                scale = single(1 / (1 - realrate));
+                obj.mask = scale * q; 
+                obj.xvalue = obj.mask .* x ;
+                x = obj.xvalue;
             else
                 obj.mask = [];
+                obj.xvalue = x;
             end
-            obj.xvalue = x;
         end
         
-        function r = evalshape(obj)
-            obj.xshape = obj.left.evalshape();
-            r = obj.xshape;
-        end
-        
+       
         function grad(obj,up)
             if isempty(obj.mask)
                 obj.left.grad(up);
@@ -42,10 +44,7 @@ classdef DropoutOp < UnaryOp
                 obj.left.grad(up.*obj.mask);
             end
         end
-        
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
-        end
+       
     end
     
 end

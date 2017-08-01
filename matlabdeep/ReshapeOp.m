@@ -30,10 +30,11 @@ classdef ReshapeOp < UnaryOp
             xl = obj.left.eval();
             obj.xvalue = reshape(xl,obj.xshape);
             r = obj.xvalue;
+            assert(~isempty(r));
         end
         
         function grad(obj,up)
-            obj.left.grad(reshape(up,size(obj.left.xshape)));
+            obj.left.grad(reshape(up,obj.left.xshape));
         end
         
     end

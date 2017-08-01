@@ -1,3 +1,7 @@
 slprj/
 *_grt_rtw/
 *.webloc
+*.m~
+*.pyc
+*.autosave
+*.original

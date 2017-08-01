@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
 import argparse
 import sys
 
@@ -34,6 +35,7 @@ FLAGS = None
 
 def main(_):
   # Import data
+  print ("updated")
   mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
   # Create the model
@@ -56,33 +58,27 @@ def main(_):
   # outputs of 'y', and then average across the batch.
   cross_entropy = tf.reduce_mean(
       tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-  train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+  if FLAGS.adam:
+    train_step = tf.train.AdamOptimizer(FLAGS.adam_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
+  else:
+    train_step = tf.train.GradientDescentOptimizer(FLAGS.gradient_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-  total_parameters = 0
-  for variable in tf.trainable_variables():
-      # shape is an array of tf.Dimension
-      shape = variable.get_shape()
-      print(shape)
-      print(len(shape))
-      variable_parametes = 1
-      for dim in shape:
-          print(dim)
-          variable_parametes *= dim.value
-      print(variable_parametes)
-      total_parameters += variable_parametes
-  print(total_parameters)
+  kw = {}
+  if FLAGS.no_gpu:
+    kw["device_count"] = {'GPU': 0  }
+  if FLAGS.singlecore:
+    kw["intra_op_parallelism_threads"]=1
+    kw["inter_op_parallelism_threads"]=1
 
-
-  sess = tf.InteractiveSession()
+  config = tf.ConfigProto(**kw)
+  sess = tf.InteractiveSession(config=config)
   tf.global_variables_initializer().run()
   # Train
-  for i in range(1000):
+  t0 = time.time()
+  for _ in range(1000):
     batch_xs, batch_ys = mnist.train.next_batch(100)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-    if i % 100 == 0:
-        train_accuracy = accuracy.eval(feed_dict={x: batch_xs[0], y_: batch_ys[1]})
-        print('step %d, training accuracy %g' % (i, train_accuracy))
-
+  print ("training_time",time.time()-t0)
   # Test trained model
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -93,5 +89,10 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',
                       help='Directory for storing input data')
+  parser.add_argument('--no-gpu',action="store_true")
+  parser.add_argument('--singlecore',action="store_true")
+  parser.add_argument('--adam',action="store_true")
+  parser.add_argument('--adam_rate',default=1e-4,type=float)
+  parser.add_argument('--gradient_rate',default=0.5,type=float)
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

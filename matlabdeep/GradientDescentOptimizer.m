@@ -4,7 +4,6 @@ classdef GradientDescentOptimizer < Optimizer
     
     properties
         learning_rate
-        target
         variables
     end
     
@@ -15,19 +14,18 @@ classdef GradientDescentOptimizer < Optimizer
             obj.target = target;
             vc = VariableCollector();
             obj.variables = vc.collect(target);
-            disp(sprintf('Parameters %d',vc.paramcount()));
+            fprintf('Parameters %f\n',vc.paramcount());
             target.reset();
         end
         
         % step using pairs of cell arrays
         function loss = eval(obj)
             obj.target.reset();
-            obj.target.evalshape();
             loss = obj.target.eval();
             obj.target.grad(1);
             for I=1:length(obj.variables)
                 v = obj.variables{I};
-                obj.variables{I}.increment(-obj.learning_rate * v.xgrad);
+                 obj.variables{I}.increment(-obj.learning_rate * v.xgrad);
             end
         
         end

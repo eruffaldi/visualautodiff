@@ -3,20 +3,21 @@ classdef SoftmaxOp < UnaryOp
     %   Detailed explanation goes here
     
     properties
-        
+        axis
     end
     
     methods
         function obj = SoftmaxOp(a)
             obj = obj@UnaryOp(a);
+            obj.axis = 2;
         end
         
         function r = eval(obj)
             X = obj.left.eval();
             
             % Copyright vl_nnsoftmax
-            E = exp(bsxfun(@minus, X, max(X,[],3))) ;
-            L = sum(E,3) ;
+            E = exp(bsxfun(@minus, X, max(X,[],obj.axis))) ;
+            L = sum(E,obj.axis) ;
             r = bsxfun(@rdivide, E, L) ;
             obj.xvalue = r;
         end
@@ -30,8 +31,8 @@ classdef SoftmaxOp < UnaryOp
             % Copyright vl_nnsoftmax
             dzdY = up;
             Y = obj.xvalue;
-            Y = Y .* bsxfun(@minus, dzdY, sum(dzdY .* Y, 3));
-            obj.left.grad(up);
+            dY = Y .* bsxfun(@minus, dzdY, sum(dzdY .* Y, obj.axis));
+            obj.left.grad(dY);
         end
 
     end

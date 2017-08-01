@@ -10,6 +10,15 @@ classdef ElementWiseUnaryOp < UnaryOp
             obj = obj@UnaryOp(left);
          end
 
+          function r = evalshape(obj)
+            obj.xshape = obj.left.evalshape();
+            r = obj.xshape;
+          end
+        
+         
+        function gradshape(obj,up)
+            obj.left.gradshape(up);
+        end
     end
     
 end
