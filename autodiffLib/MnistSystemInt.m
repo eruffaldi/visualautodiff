@@ -12,7 +12,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
 
 
     properties(DiscreteState)
-
+        inited
     end
 
     % Pre-computed constants!
@@ -28,9 +28,15 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
 
     methods(Access = protected)
         function setupImpl(obj)
- 
-
-            
+            if obj.trainset
+                obj.n = 60000;
+            else
+                obj.n = 10000;
+            end
+            obj.alllabels = zeros(obj.n,1);
+            obj.alllabelshot = zeros(obj.n,10);
+            obj.allimages = zeros(obj.n,784);    
+            obj.inited = 0;
         end
 
         function  [p1,p2,p3,out4] = isOutputFixedSizeImpl(obj)
@@ -39,6 +45,16 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
             p3 =true;
          
         end
+
+        function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,name)
+            % Return size, data type, and complexity of discrete-state
+            % specified in name
+            sz = [1 1];
+            dt = 'double';
+            cp = false;
+        end
+        
+        
         
             function [p1,p2,p3,out4] = getOutputDataTypeImpl(obj)
                 p1 = 'double';
@@ -63,32 +79,17 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
            % Perform one-time calculations, such as computing constants
              obj.epoch = 1;
              obj.iteration = 1;
-             if obj.trainset == 1
-                 Trimages = loadMNISTImagesTrainLE('train-images-idx3-ubyte-le')';
-                 Trlabels = loadMNISTLabelsLE('train-labels-idx1-ubyte-le')';
-                
-                Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
-                %Trimagesx = makefromworkspace(1:length(Trimages),Trimages);
-                %Trlabelshotsx = makefromworkspace(1:length(Trlabelshot),Trlabelshot')
-                obj.alllabels = Trlabels';                
-                obj.alllabelshot = Trlabelshot;
-                obj.allimages = Trimages;
-             else
-                Teimages = loadMNISTImagesTestLE('t10k-images-idx3-ubyte-le')';
-                Telabels = loadMNISTLabelsLE('t10k-labels-idx1-ubyte-le')';
-
-                
-                Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';
-                obj.alllabels = Telabels';                
-                obj.alllabelshot = Telabelshot;
-                obj.allimages = Teimages;
-             end
-             obj.n = size(obj.alllabels,1);
              obj.indices = randperm(obj.n);
          end
       
         
-        function [x,labels,labelshot] = stepImpl(obj)
+        function [x,labels,labelshot] = stepImpl(obj,inimages,inlabels,inlabelshot)
+            if obj.inited == 0
+                obj.inited = 1;
+                obj.alllabels = double(inlabels);
+                obj.alllabelshot = double(inlabelshot);
+                obj.allimages = (double(inimages)/255.0);
+            end
            needed = obj.items;
            x = zeros(obj.items,28*28); %size(obj.allimages,2));
            labels = zeros(obj.items,1);

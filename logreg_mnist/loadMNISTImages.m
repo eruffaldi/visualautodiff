@@ -13,15 +13,15 @@ numRows = fread(fp, 1, 'int32', 0, 'ieee-be');
 numCols = fread(fp, 1, 'int32', 0, 'ieee-be');
 
 images = fread(fp, inf, 'unsigned char');
-raw = images;
 info = [numImages,numRows,numCols];
 images = reshape(images, numCols, numRows, numImages);
-images = permute(images,[2 1 3]);
+images = permute(images,[3 2 1]);
+raw = images; % just a bit of reshaping for matlab niceness
 
 fclose(fp);
 
 % Reshape to #pixels x #examples
-images = reshape(images, size(images, 1) * size(images, 2), size(images, 3));
+images = reshape(images, size(images, 3),size(images, 1) * size(images, 2));
 % Convert to double and rescale to [0,1]
 images = double(images) / 255;
 
