@@ -1,7 +1,7 @@
 classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
 
     properties(DiscreteState)
-
+        t
     end
 
     % Pre-computed constants
@@ -19,9 +19,17 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
             p1 = true;
          
         end
+
+        function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,name)
+            % Return size, data type, and complexity of discrete-state
+            % specified in name
+            sz = propagatedInputSize(obj,1);
+            dt = 'double';
+            cp = false;
+        end
         
             function [p1] = getOutputDataTypeImpl(obj)
-                p1 = 'double';
+                p1 = 'single'; %propagatedInputDataType(obj,1);
             end
             
             function [p1] = isOutputComplexImpl(obj)
@@ -34,12 +42,14 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
                             sz_1 = [s(1),1];
         end
         
+        
          function resetImpl(obj)
          end
       
         
         function [y] = stepImpl(obj,x)
-           [~,y] = max(x,[],2);
+           [~,obj.t] = max(x,[],2);
+           y = single(obj.t);
         end
        
     end

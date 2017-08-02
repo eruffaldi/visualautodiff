@@ -16,6 +16,8 @@
  */
 #include "simstruc.h"
 
+#define O_TYPE float
+#define O_TYPE_SPEC SS_SINGLE
 
 
 /* Function: mdlInitializeSizes ===========================================
@@ -34,7 +36,7 @@ static void mdlInitializeSizes(SimStruct *S)
   /*
    * Set the number of output ports.
    */
-  if (!ssSetNumOutputPorts(S, 3)) return;
+  if (!ssSetNumOutputPorts(S, 4)) return;
   ssSetNumSFcnParams(S,1);
     if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) return;
   
@@ -60,7 +62,15 @@ static void mdlInitializeSizes(SimStruct *S)
   ssSetOutputPortComplexSignal(S, 2, COMPLEX_NO);
   ssSetOutputPortOptimOpts(S, 2, SS_NOT_REUSABLE_AND_GLOBAL);
   ssSetOutputPortOutputExprInRTW(S, 2, 0);
-  ssSetOutputPortDataType(S, 2, SS_UINT8);
+  ssSetOutputPortDataType(S, 2, O_TYPE_SPEC);
+  
+  
+  ssSetOutputPortWidth(S, 3, 1);
+  ssSetOutputPortMatrixDimensions(S,3 , nitems,784);
+  ssSetOutputPortComplexSignal(S, 3, COMPLEX_NO);
+  ssSetOutputPortOptimOpts(S, 3, SS_NOT_REUSABLE_AND_GLOBAL);
+  ssSetOutputPortOutputExprInRTW(S, 3, 0);
+  ssSetOutputPortDataType(S, 3, O_TYPE_SPEC);
   
   ssSetNumIWork(S,1);
   /*
@@ -106,7 +116,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
        ssSetIWorkValue(S,0,1);
        int8_t *yimage = (int8_t *) ssGetOutputPortSignal(S, 0);
   int8_t *ylabels = (int8_t *) ssGetOutputPortSignal(S, 1);
-  int8_t *yhot = (int8_t *) ssGetOutputPortSignal(S, 2);
+  O_TYPE *yhot = (O_TYPE *) ssGetOutputPortSignal(S, 2);
+       O_TYPE *dyimage = (O_TYPE *) ssGetOutputPortSignal(S, 3);
   int train = *(double*)mxGetData(ssGetSFcnParam(S,0)) != 0;
   int nitems = train ? 60000 : 10000;
   
@@ -122,7 +133,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       if(numLabels == nitems && magic == 2049)
       {
         fread(ylabels,nitems,1,fp);
-          memset(yhot,0,nitems*10*sizeof(int8_t));
+          memset(yhot,0,nitems*10*sizeof(O_TYPE));
           for (int i = 0; i < nitems; i++)
           {
               // 10,nitems: yhot[i*10+ylabels[i]] = 1;
@@ -149,7 +160,10 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       fread(&numCols,1,sizeof(numCols),fp);
       if(magic == 2015 && numImages == nitems && numRows == 28 && numCols == 28)
         {
-          fread(yimage,numImages*numRows*numCols,1,fp);
+          int q = numImages*numRows*numCols;
+          fread(yimage,q,1,fp);
+          for (int i = 0; i < q; i++)
+              dyimage[i] = (O_TYPE)(yimage[i])/255.0;
           }
       else
       {
