@@ -24,6 +24,7 @@ classdef Conv2dOp < BinaryOp
             obj.stride = stride;
             obj.matlabconv = 1;
             obj.padding = -1;
+            obj.xtype = obj.setgetDefaultType();
         end
         
         function r = evalshape(obj)
@@ -69,15 +70,16 @@ classdef Conv2dOp < BinaryOp
         
         
         function grad(obj,up)
-            dzdx = mzeros(obj.left.xshape);
-            dzdW = mzeros(obj.right.xshape);
+            ct = class(obj.xtype);
+            dzdx = mzeros(obj.left.xshape,ct);
+            dzdW = mzeros(obj.right.xshape,ct);
             filtersize = obj.right.xshape(2:3);
             Y = obj.xvalue;
             nC = size(Y,4);
             nS = prod(filtersize)*nC;
             nB = obj.left.xshape(1);
             dout = sum(up,4); % N Ph Pw Fo incoming => N Ph Pw
-            dxcol = mzeros([nB*prod(obj.outshape),nS]); % [nB Ph Pw,Fh Fw C]
+            dxcol = mzeros([nB*prod(obj.outshape),nS],ct); % [nB Ph Pw,Fh Fw C]
             
             % max_idx is [nB Ph Pw Fo] with value 1..nS with nS=Fw Fh nC
             %max_idx = randi([1,nS],1,size(dxcol,1)); % 

@@ -53,8 +53,24 @@ classdef (Abstract) DeepOp < handle
             assert(isa(b,DeepOp));
             r = MatmulOp(a,b);            
         end
+        
+        
 
     end
+    
+    methods (Static)
+      function out = setgetDefaultType(data)
+         persistent Var;
+         if nargin
+            Var = data;
+         else
+             if isempty(Var)
+                 Var = double(0);
+             end
+         end
+         out = Var;
+      end
+   end
     
 end
 

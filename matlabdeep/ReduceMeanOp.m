@@ -20,6 +20,7 @@ classdef ReduceMeanOp < UnaryOp
             else
                 r = squeeze(mean(x,obj.axis));
             end
+            obj.xvalue = r;
         end
         
         function r = evalshape(obj)

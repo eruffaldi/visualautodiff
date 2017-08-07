@@ -15,6 +15,7 @@ classdef ArgmaxOp < UnaryOp
         function r = eval(obj)
             x = obj.left.eval();
             [~,obj.xvalue] = max(x,[],obj.axis);
+            obj.xvalue = cast(obj.xvalue,'like',x);
             r = obj.xvalue;
         end
 

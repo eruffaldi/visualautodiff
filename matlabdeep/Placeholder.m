@@ -3,19 +3,20 @@ classdef Placeholder < DeepOp
     %   Detailed explanation goes here
     
     properties
-       type 
+       xtype
     end
     
     methods
          function obj = Placeholder(n,shape)
             obj = obj@DeepOp();
             obj.name = n;
-            obj.type = 'float';
+            obj.xtype = DeepOp.setgetDefaultType();
             obj.xvalue = [];
             obj.xshape = shape;
          end
          
          function shapechanged = set(obj,value)
+             value = cast(value,'like',obj.xtype);
              nowshape = size(value);
              obj.xvalue = value;
              shapechanged = length(nowshape) ~= length(obj.xshape);

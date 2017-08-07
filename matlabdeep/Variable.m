@@ -5,6 +5,7 @@ classdef Variable < DeepOp
     properties
         initvalue
         xid
+        xtype
     end
     
      methods (Static)
@@ -24,14 +25,16 @@ classdef Variable < DeepOp
             obj.xid = obj.nextid();
             obj.name = name;
             obj.initvalue = initvalue;
+            obj.xtype = DeepOp.setgetDefaultType();
             if isa(initvalue,'function_handle')
                 v = initvalue();
             else
+                 initvalue = cast(initvalue,'like',obj.xtype);
                 v = initvalue;
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-             obj.xgrad = mzeros(obj.xshape);
+             obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
          end
          
          function r = evalshape(obj)
@@ -39,23 +42,25 @@ classdef Variable < DeepOp
          end
 
          function resetgrad(obj)             
-             obj.xgrad = mzeros(obj.xshape);
+             obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
          end
          
          function set(obj,value)
-             obj.xvalue = value;
+             obj.xvalue = cast(value,'like',obj.xtype);
              obj.xshape = size(value);
          end
 
         function resetvalue(obj)             
-            if isa(initvalue,'function_handle')
-                v = initvalue();
+            if isa(obj.initvalue,'function_handle')
+                v = obj.initvalue();
+
+                 v = cast(v,'like',obj.xtype);
             else
-                v = initvalue;
+                v = obj.initvalue;
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-             obj.xgrad = mzeros(obj.xshape);
+            obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
          end
 
          function reset(obj)             
@@ -68,12 +73,12 @@ classdef Variable < DeepOp
 
          function increment(obj,v)
              assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'increment same size or scalar');
-             obj.xvalue = obj.xvalue + v;
+             obj.xvalue = obj.xvalue + cast(v,'like',obj.xtype);
          end
 
          function grad(obj,v)
              assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'gradient same size or scalar');
-             obj.xgrad = obj.xgrad + v;
+             obj.xgrad = obj.xgrad + cast(v,'like',obj.xtype);
          end
          
          function gradshape(obj,up)

@@ -1,6 +1,7 @@
 %%
 addpath ../logreg_mnist
 useadam=1;
+DeepOp.setgetDefaultType(single(0));
 %%
   x = Placeholder('float',[-1, 784]);
   W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));

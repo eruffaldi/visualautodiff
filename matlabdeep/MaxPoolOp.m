@@ -25,6 +25,7 @@ classdef MaxPoolOp < UnaryOp
             obj = obj@UnaryOp(x);
             obj.ksize = ksize;
             obj.strides = strides;
+            obj.xtype = DeepOp.setgetDefaultType();
             obj.padding = pad;
         end
 
@@ -65,7 +66,7 @@ classdef MaxPoolOp < UnaryOp
             
             % propagate the up to each patch using the index preserved
             % unpatch
-            obj.left.grad(mzeros(obj.left.xshape));
+            obj.left.grad(mzeros(obj.left.xshape,class(obj.xtype)));
         end
     end
     
