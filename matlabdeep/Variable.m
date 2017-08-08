@@ -34,7 +34,7 @@ classdef Variable < DeepOp
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-             obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
+             obj.xgrad = mzeros(obj.xshape,obj.xtype);
          end
          
          function r = evalshape(obj)
@@ -42,7 +42,7 @@ classdef Variable < DeepOp
          end
 
          function resetgrad(obj)             
-             obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
+             obj.xgrad = mzeros(obj.xshape,obj.xtype);
          end
          
          function set(obj,value)
@@ -54,13 +54,13 @@ classdef Variable < DeepOp
             if isa(obj.initvalue,'function_handle')
                 v = obj.initvalue();
 
-                 v = cast(v,'like',obj.xtype);
+                v = cast(v,'like',obj.xtype);
             else
                 v = obj.initvalue;
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-            obj.xgrad = mzeros(obj.xshape,class(obj.xtype));
+            obj.xgrad = mzeros(obj.xshape,obj.xtype);
          end
 
          function reset(obj)             

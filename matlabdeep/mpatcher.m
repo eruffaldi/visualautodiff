@@ -1,3 +1,10 @@
+% makes patches using sparse matrix
+%
+% X = input data unpatched
+% Sel = sparse matrix Q x P
+% sXp = output shape as provided by mpatchprepare
+% 
+% Output: Xp patches
 function Xp = mpatcher(X,Sel,sXp)
 
 nB = size(X,1);

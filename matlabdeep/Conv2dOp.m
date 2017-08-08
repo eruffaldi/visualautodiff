@@ -6,15 +6,29 @@ classdef Conv2dOp < BinaryOp
         stride
         matlabconv
         padding 
-        outshape
-        Sel
-        sXp
-        Xp
+        shapeP
+        Sel_PKC_IC
+        shape_BP_KC
+        xtype
+        
+        Xp_BP_KC
     end
     
     methods
         % [batch, in_height, in_width, in_channels]
         % [filter_height, filter_width, in_channels, out_channels]
+        % We define the following:
+        % B = batch
+        % I = input space = Fh Fw C
+        % K = kernel space = Kh Kw C (over which we do combination)
+        % P = patch space = Ph Pw C  (the output)
+        % C = input channels
+        % Q = output channels
+        %
+        % We do the transformations (independent of shape):
+        % - X input: B I
+        % - Xp patches: B P C K
+        % - Xo output: B P Q        
         function obj = Conv2dOp(x,W,stride,pad)
             assert(all(stride==1),'only stride 1');
             assert(strcmp(pad,'SAME'),'only pad SAME');
@@ -29,10 +43,11 @@ classdef Conv2dOp < BinaryOp
         
         function r = evalshape(obj)
             xl = obj.left.evalshape();
-            xr = obj.right.evalshape();
-            assert(length(xl) == 4);
-            assert(length(xr) == 4);
-            assert(xl(4) == xr(3),'in_channel same');
+            xr = obj.right.evalshape();            
+            assert(length(xl) == 4); % breaks if C=1
+            assert(length(xr) == 4); % breaks if Q=1
+            assert(xl(4) == xr(3),'in_channel same'); % W is: Fh Fw C Q
+            nQ = xr(4);
             
             % Fh Fw Fi Fo
             h_filter = xr(1);
@@ -40,57 +55,50 @@ classdef Conv2dOp < BinaryOp
             padding = obj.padding;
             stride = obj.stride(1);
             if obj.padding == -1
+                % automatic padding to satisfy requirement
                 paddingh = (h_filter-1)/2;
                 paddingw = (w_filter-1)/2;
             else
+                % can break
                 paddingh = padding;
                 paddingw = padding;
             end
-            [obj.Sel,obj.sXp,obj.outshape] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw]); % N independent
-            r = [xl(1) obj.outshape(1) obj.outshape(2) xr(end)];
-            obj.xshape = r;
+            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
+            
+            obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
+            obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];
         end
         
         
         function r = eval(obj)
-            A = obj.left.eval();
-            W = obj.right.eval();
-            xs = obj.left.xshape;
-            nB = size(A,1);
-            nFo = size(W,4);
+            A_B_I_C = obj.left.eval();
+            W_K_C_Q = obj.right.eval();
+            nQ = obj.xshape(4); 
             
-            Xp = mpatcher(A,obj.Sel,obj.sXp); 
-            % [nB , Fh Fw nC patches] -> [nB patches Fh Fw C]
-            Y = reshape(reshape(Xp,nB*obj.sXp(2),[])*reshape(W,[],nFo),nB,obj.outshape(1),obj.outshape(2),nFo);
-            obj.Xp = Xp;
-            obj.xvalue = Y;
-            r = Y;
-            assert(~isempty(r));
+            PA_BP_KC = mpatcher(A_B_I_C,obj.Sel_PKC_IC,obj.shape_BP_KC);             
+            
+            obj.Xp_BP_KC = PA_BP_KC; % for gradient
+            obj.xvalue = reshape(PA_BP_KC*reshape(W_K_C_Q,[],nQ),obj.xshape); % B_Ph_Pw_Q
+            r = obj.value;
         end
         
         
-        function grad(obj,up)
-            ct = class(obj.xtype);
-            dzdx = mzeros(obj.left.xshape,ct);
-            dzdW = mzeros(obj.right.xshape,ct);
-            filtersize = obj.right.xshape(2:3);
-            Y = obj.xvalue;
-            nC = size(Y,4);
-            nS = prod(filtersize)*nC;
+        function grad(obj,U_B_Ph_Pw_Q)
             nB = obj.left.xshape(1);
-            dout = sum(up,4); % N Ph Pw Fo incoming => N Ph Pw
-            dxcol = mzeros([nB*prod(obj.outshape),nS],ct); % [nB Ph Pw,Fh Fw C]
+            nP = obj.xshape(2)*obj.xshape(3);
+            nQ = size(U_B_Ph_Pw_Q,4);
+            U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); % B_Ph_Pw_Q => BP_Q
             
-            % max_idx is [nB Ph Pw Fo] with value 1..nS with nS=Fw Fh nC
-            %max_idx = randi([1,nS],1,size(dxcol,1)); % 
-
-            dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 
-            dzdx = munpatcher(dxcol,obj.Sel,obj.left.xshape);
+            % work using matrix product in flat space [B P, K C] [K C, Q]
+            %   d/dA A W = U W'   [B P, Q] [K C, Q]
+            %   d/dW A W = A' U
+            W_K_C_Q = obj.right.xvalue;
+            dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
+            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
+            dzdx = munpatcher(dzdx_B_PKC,obj.Sel_PKC_IC,obj.left.xshape);
             obj.left.grad(dzdx);
 
-            dzdWt = reshape(dout,size(dout,1),size(dout,2)*size(dout,3)) * obj.Xp';
-            dzdW = reshape(dzdWt,obj.right.xshape);
-          
+            dzdW = reshape(obj.Xp_BP_KC' * U_BP_Q,obj.right.xshape);          
             obj.right.grad(dzdW);
         end
         

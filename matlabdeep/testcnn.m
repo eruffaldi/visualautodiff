@@ -1,3 +1,4 @@
+deftype = DeepOp.setgetDefaultType(gpuArray(double(0)));
 
 filtersize1 = 5;
 filtersize2 = 5;
@@ -7,8 +8,8 @@ densesize = 128;
 classes = 10;
 batchsize = 128;
 
-weight_variable = @(name,shape) Variable(name,truncated_normal_gen(shape,0,0.1,'float'));
-bias_variable = @(name,shape) Variable(name,0.1*mones(shape));
+weight_variable = @(name,shape) Variable(name,truncated_normal_gen(shape,0,0.1,deftype));
+bias_variable = @(name,shape) Variable(name,0.1*mones(shape,deftype));
 max_pool_2x2 =@(x) MaxPoolOp(x,[1, 2, 2, 1],[1, 2, 2, 1],'SAME'); 
 conv2d = @(x,W) Conv2dOp(x,W,[1, 1, 1, 1],'SAME');
 
@@ -41,16 +42,16 @@ y_conv = h_fc1_drop * W_fc2 + b_fc2;
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv),0);
 train_step = AdamOptimizer(1e-4,cross_entropy);
 
-train_step.evalshapewith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
+train_step.evalshapewith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 
-cross_entropy.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 0.5});
+cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 cross_entropy.grad(1)
 
 %%
 correct_prediction = EqualOp(ArgmaxOp(y_conv, 2), ArgmaxOp(y_, 2));
 accuracy = ReduceMeanOp(correct_prediction,0); 
 
-train_accuracy = accuracy.evalwith({x,zeros(batchsize,784),y_,zeros(batchsize,classes),keep_prob, 1.0});
+train_accuracy = accuracy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 1.0});
 cross_entropy.grad(1)
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});

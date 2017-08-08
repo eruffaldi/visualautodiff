@@ -1,7 +1,8 @@
 %%
 addpath ../logreg_mnist
 useadam=1;
-DeepOp.setgetDefaultType(single(0));
+deftype = DeepOp.setgetDefaultType(gpuArray(double(0)));
+%DeepOp.setgetDefaultType(single(0));
 %%
   x = Placeholder('float',[-1, 784]);
   W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
@@ -43,18 +44,19 @@ end
 
 mtr = MnistBatcher("train");
 train_step.reset();
-accuracyhistory = [];
-losshistory = [];
+steps = 1000;
+losshistory = mzeros(steps,DeepOp.setgetDefaultType());
+accuracyhistory = losshistory;
 speedtest = 1;
 tic 
-for I=1:1000
+for I=1:steps
     [batch_xs,~,batch_ys] = mtr.next(100);
     loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
     losshistory(I) = loss;
     if speedtest == 0 && mod(I,20) == 0
         [whole_xs,~,whole_ys] = mtr.whole();
         test_accuracy = accuracy.evalwith({x,whole_xs,y_,whole_ys});
-        accuracyhistory(end+1) = test_accuracy;
+        accuracyhistory(I) = test_accuracy;
     end
     
 end

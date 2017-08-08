@@ -21,7 +21,7 @@ classdef Placeholder < DeepOp
              obj.xvalue = value;
              shapechanged = length(nowshape) ~= length(obj.xshape);
              if shapechanged == 0    
-                 shapechanged = any(size(nowshape) ~= obj.xshape);
+                 shapechanged = any(nowshape ~= obj.xshape);
              end
              obj.xshape = nowshape;
          end

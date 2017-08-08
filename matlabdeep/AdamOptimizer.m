@@ -48,7 +48,7 @@ classdef AdamOptimizer < Optimizer
             obj.s_t = cell(length(obj.variables),1);
             for I=1:length(obj.variables)
                 v = obj.variables{I}.xvalue;
-                p =  mzeros(size(v),class(obj.xtype));
+                p =  mzeros(size(v),obj.xtype);
                 obj.m_t{I} = p;
                 obj.s_t{I} = p;
             end
@@ -69,7 +69,7 @@ classdef AdamOptimizer < Optimizer
              obj.t = 1;
             for I=1:length(obj.variables)
                 v = obj.variables{I}.xvalue;
-                obj.m_t{I} = mzeros(size(v),class(obj.xtype));
+                obj.m_t{I} = mzeros(size(v),obj.xtype);
                 obj.s_t{I} = obj.m_t{I};
             end
         end

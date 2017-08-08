@@ -1,3 +1,13 @@
+% Reverses the input data from patches aggregating
+%
+% Xp = input patches = [N x P]
+% Sel = selector = [P x Q]
+%
+% Output
+%   X = [N x Q]
+%
+% Where
+%   Q = input space
 function X = munpatcher(Xp,Sel,NHWCshape)
 
 nB = NHWCshape(1);
