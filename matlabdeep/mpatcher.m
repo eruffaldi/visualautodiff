@@ -13,4 +13,4 @@ nB = size(X,1);
 % as:  [ N H W C ]
 % Xp:  [ N P F C ]
 as = reshape(X,nB,[]); % [nB , Ih Iw C]
-Xp = reshape(as*Sel',sXp); % [nB , P, F, C]
+Xp = reshape(double(as)*Sel',sXp); % [nB , P, F, C]

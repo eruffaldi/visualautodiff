@@ -16,4 +16,4 @@ Iw = NHWCshape(3);
 nC = NHWCshape(4);
 
 Xpm = reshape(Xp,nB,[]); % keep on the left
-X = reshape(Xpm*Sel,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
+X = reshape(double(Xpm)*Sel,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
