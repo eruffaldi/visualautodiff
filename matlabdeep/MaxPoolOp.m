@@ -81,7 +81,7 @@ classdef MaxPoolOp < UnaryOp
         function grad(obj,up_BPC)
             
             % [nB
-            Jp_BPC_K = mzeros(size(obj.shape_BPC_K),obj.xtype); % empty patches            
+            Jp_BPC_K = mzeros(obj.shape_BPC_K,obj.xtype); % empty patches            
             ind = obj.argmaxbase + (obj.maxindices_BPC(:)-1)*obj.argmaxbasescale; % winning indices from eval step
             
             %Alternative: dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 

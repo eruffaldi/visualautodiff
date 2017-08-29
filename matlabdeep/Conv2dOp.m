@@ -67,6 +67,7 @@ classdef Conv2dOp < BinaryOp
             
             obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
             obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];
+            r = obj.xshape;
         end
         
         
@@ -79,7 +80,7 @@ classdef Conv2dOp < BinaryOp
             
             obj.Xp_BP_KC = PA_BP_KC; % for gradient
             obj.xvalue = reshape(PA_BP_KC*reshape(W_K_C_Q,[],nQ),obj.xshape); % B_Ph_Pw_Q
-            r = obj.value;
+            r = obj.xvalue;
         end
         
         

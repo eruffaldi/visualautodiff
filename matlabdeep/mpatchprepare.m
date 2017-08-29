@@ -64,7 +64,9 @@ if 1==1
     kq = sub2ind([Ih,Iw,nC+1],ii+1,jj+1,kk+1);
     % kq(n) = nC*Ih*Iw+1; % do we need this? NO
     Sel = sparse(1:length(kq),kq,ones(length(kq),1));
-    Sel = Sel(:,1:end-1); % remove spurious rightmost
+    if sum(n) > 0
+        Sel = Sel(:,1:end-1); % remove spurious rightmost
+    end
 else
     % manually expressing (Ih,Iw,C+1)
     aiC = Ih*Iw;

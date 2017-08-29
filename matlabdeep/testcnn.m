@@ -1,4 +1,5 @@
-deftype = DeepOp.setgetDefaultType(gpuArray(double(0)));
+%deftype = DeepOp.setgetDefaultType(gpuArray(double(0)));
+deftype = DeepOp.setgetDefaultType((double(0)));
 
 filtersize1 = 5;
 filtersize2 = 5;
@@ -21,12 +22,12 @@ x_image = ReshapeOp(x, [-1, 28, 28, 1]);
 W_conv1 = weight_variable('W_conv1',[filtersize1, filtersize1, 1, features1]);
 b_conv1 = bias_variable('b_conv1',[features1]);
 h_conv1 = ReluOp(conv2d(x_image, W_conv1)+b_conv1);
-h_pool1 = max_pool_2x2(h_conv1);
+h_pool1 = max_pool_2x2(h_conv1); h_pool1.name = 'h_pool1';
 
 W_conv2 = weight_variable('W_conv2',[filtersize2, filtersize2, features1, features2]);
 b_conv2 = bias_variable('b_conv2',[features2]);
 h_conv2 = ReluOp(conv2d(h_pool1, W_conv2) + b_conv2);
-h_pool2 = max_pool_2x2(h_conv2);
+h_pool2 = max_pool_2x2(h_conv2); h_pool2.name = 'h_pool2';
 W_fc1 = weight_variable('W_fc1',[7 * 7 * features2, densesize]);
 b_fc1 = bias_variable('b_fc1',[densesize]);
 h_pool2_flat = ReshapeOp(h_pool2, [-1, 7*7*features2]);
