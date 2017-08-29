@@ -3,9 +3,17 @@ deftype = DeepOp.setgetDefaultType((single(0)));
 
 filtersize1 = 5;
 filtersize2 = 5;
-features1 = 16;
-features2 = 16;
-densesize = 64;
+cnnmode=2;
+if cnnmode==1
+    features1 = 16;
+    features2 = 16;
+    densesize = 128;
+else
+    features1 = 16;
+    features2 = 16;
+    densesize = 64;
+end
+
 classes = 10;
 batchsize = 64;
 useadam=1;
@@ -66,12 +74,12 @@ for I=1:steps
     [batch_xs,~,batch_ys] = mtr.next(batchsize);
     loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
     losshistory(I) = loss;
-    if speedtest == 0 && mod(I,2) == 0
+    if speedtest == 0 && mod(I,10) == 0
+        I
         %[whole_xs,~,whole_ys] = mtr.whole();
         %test_accuracy = accuracy.evalwith({x,whole_xs,y_,whole_ys});
         %accuracyhistory(I) = test_accuracy;
     end
-    I
     
 end
 
