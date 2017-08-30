@@ -79,7 +79,7 @@ classdef AdamOptimizer < Optimizer
         function loss = eval(obj)
                        
             obj.target.reset();
-            obj.target.evalshape();
+            %obj.target.evalshape();
             loss = obj.target.eval();
             obj.target.grad(1);
 

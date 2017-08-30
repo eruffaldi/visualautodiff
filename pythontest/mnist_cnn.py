@@ -120,6 +120,7 @@ def main(_):
   # Import data
   mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
 
+
   # Create the model
   x = tf.placeholder(tf.float32, [None, 784])
 
@@ -141,19 +142,34 @@ def main(_):
           variable_parametes *= dim.value
       print(variable_parametes)
       total_parameters += variable_parametes
-  print(total_parameters)
+  print("Total Parameters",total_parameters)
 
 
   cross_entropy = tf.reduce_mean(
       tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
-  train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+
+  if FLAGS.adam:
+    train_step = tf.train.AdamOptimizer(FLAGS.adam_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
+  else:
+    train_step = tf.train.GradientDescentOptimizer(FLAGS.gradient_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
+
+  kw = {}
+  if FLAGS.no_gpu:
+    kw["device_count"] = {'GPU': 0  }
+  if FLAGS.singlecore:
+    kw["intra_op_parallelism_threads"]=1
+    kw["inter_op_parallelism_threads"]=1
+
+  config = tf.ConfigProto(**kw)
+  sess = tf.InteractiveSession(config=config)
+  #train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
   correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-  with tf.Session() as sess:
+  if True: #with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for i in range(1000):
-      batch = mnist.train.next_batch(50)
+    for i in range(FLAGS.iter):
+      batch = mnist.train.next_batch(FLAGS.batch)
       if i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
             x: batch[0], y_: batch[1], keep_prob: 1.0})
@@ -176,20 +192,30 @@ if __name__ == '__main__':
   parser.add_argument('--original',help='picks original Tensorflow values (3.5M parameters)')
   parser.add_argument('--light',help='light values (400k parameters)')
   parser.add_argument('--lighter',help='lighter values (100k parameters)')
+  parser.add_argument('--no-gpu',action="store_true")
+  parser.add_argument('--singlecore',action="store_true")
+  parser.add_argument('--adam',action="store_true")
+  parser.add_argument('--adam_rate',default=1e-4,type=float)
+  parser.add_argument('--gradient_rate',default=0.5,type=float)
+  parser.add_argument('--iter',help="iterations",default=1000)
+  parser.add_argument('--batch',help="batch size",default=50)
   FLAGS, unparsed = parser.parse_known_args()
   if FLAGS.original:
+    # 1M
     FLAGS.filter1 = 5
     FLAGS.filter2 = 5
     FLAGS.dense = 1024
     FLAGS.features1 = 32
     FLAGS.features2 = 64
   elif FLAGS.light:
+    # 400k
     FLAGS.filter1 = 5
     FLAGS.filter2 = 5
     FLAGS.dense = 256
     FLAGS.features1 = 16
     FLAGS.features2 = 32
   elif FLAGS.lighter:
+    # 100k
     FLAGS.filter1 = 5
     FLAGS.filter2 = 5
     FLAGS.dense = 128

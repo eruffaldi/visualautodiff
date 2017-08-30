@@ -17,10 +17,13 @@ classdef (Abstract) DeepOp < handle
     methods
         function r = evalwith(obj,placeholders)
             obj.reset();
+            sa = 0;
             for I=1:2:length(placeholders)
-                placeholders{I}.set(placeholders{I+1});
+                sa = sa | placeholders{I}.set(placeholders{I+1});
             end
-            obj.evalshape();
+            if sa ~= 0
+                obj.evalshape();
+            end
             r = obj.eval();
         end
 
