@@ -37,13 +37,13 @@ classdef adam_updateSystem < matlab.System & matlab.system.mixin.Propagates
         end
         
          function resetImpl(obj)
-            obj.m_t = zeros(propagatedInputSize(obj,5));
+            obj.m_t = zeros(propagatedInputSize(obj,5),propagatedInputDataType(obj,5));
             obj.s_t = obj.m_t;
          end
-        
+         
          function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,name)
              sz = propagatedInputSize(obj,5);
-             dt = 'double';
+             dt = propagatedInputDataType(obj,5);
              cp = false;
          end
 

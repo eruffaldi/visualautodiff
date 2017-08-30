@@ -18,8 +18,8 @@
 // works iterating by row of input
 //
 // take the subs as indices to the 
-template <class T>
-void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outcols)
+template <class T, class Y = T>
+void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,Y * pout,int outcols)
 {
     // nsubs <= cols
     for(int input_col = 0; input_col < nsubs; input_col++)
