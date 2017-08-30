@@ -16,4 +16,20 @@ Iw = NHWCshape(3);
 nC = NHWCshape(4);
 
 Xpm = reshape(Xp,nB,[]); % keep on the left
-X = reshape(double(Xpm)*Sel,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
+
+%sparse Approach => no GPU, only double
+%w = double(Xpm)*Sel.A;
+
+%accumarray Approach: notpossibly because value is vector => loops
+%w = accumarray(Sel.kq,Xpm,[size(Xpm,1),size(Sel.A,2)]);
+if isa(Xpm,'gpuArray')
+    w = accummatrix(Sel.pickidx,gather(Xpm),size(Sel.A,2));
+else
+    w = accummatrix(Sel.pickidx,Xpm,size(Sel.A,2));
+end
+
+X = reshape(w,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
+
+if isa(Xpm,'gpuArray')
+    X =  cast(X,'like',Xpm);
+end

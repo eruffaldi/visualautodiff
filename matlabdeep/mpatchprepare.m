@@ -39,6 +39,7 @@ end
 % column
 ii = reshape(j' - padding(1),1,[]);
 jj = reshape(i' - padding(2),1,[]);
+
 % identify out of shape (due to padding) and remove them marking as special
 % extra item that will be removed from the sparse matrix
 n = ii < 0 | jj < 0 | ii >= Ih | jj >= Iw;
@@ -61,12 +62,23 @@ elseif strcmp(mode,'BPKC')
     nameddims.K = [3,4];
 end
 if 1==1
-    kq = sub2ind([Ih,Iw,nC+1],ii+1,jj+1,kk+1);
-    % kq(n) = nC*Ih*Iw+1; % do we need this? NO
-    Sel = sparse(1:length(kq),kq,ones(length(kq),1));
+    kq = sub2ind([Ih,Iw,nC+1],ii+1,jj+1,kk+1); 
+    %extrakq = Iw*Ih+1; % this marks the kq that is outside
+    Selx = sparse(1:length(kq),kq,true(length(kq),1));
     if sum(n) > 0
-        Sel = Sel(:,1:end-1); % remove spurious rightmost
+        Selx = Selx(:,1:end-1); % remove spurious rightmost
+        kq(n) = 0;  % mark as 0 for output
     end
+    % given kq construct the equivalent of the selector of sparse matrix
+    % that is:
+    %   slotsfor = full(sum(Selx,1))
+    %   indexes = cumsum(slotsfor)
+    %   find(kq == 1) ... each or find(Sel(:,I))
+    %   find(Sel(I,:)) has 0 or 1 element
+    %   find(Sel(:,I)) has 1 to patchsize elements such as slotsfor
+    Sel = [];
+    Sel.A = Selx;
+    Sel.pickidx = int32(kq);
 else
     % manually expressing (Ih,Iw,C+1)
     aiC = Ih*Iw;

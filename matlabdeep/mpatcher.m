@@ -13,4 +13,15 @@ nB = size(X,1);
 % as:  [ N H W C ]
 % Xp:  [ N P F C ]
 as = reshape(X,nB,[]); % [nB , Ih Iw C]
-Xp = reshape(double(as)*Sel',sXp); % [nB , P, F, C]
+
+%sparse Approach: only double and optimizable
+%w = double(as)*Sel.A';
+if isa(as,'gpuArray')
+    w = gathermatrix(Sel.pickidx,gather(as),length(Sel.pickidx));
+else
+    w = gathermatrix(Sel.pickidx,as,length(Sel.pickidx));
+end
+Xp = reshape(w,sXp); % [nB , P, F, C]
+if isa(as,'gpuArray')    
+    Xp =  cast(Xp,'like',as);
+end
