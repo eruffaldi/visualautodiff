@@ -1,11 +1,11 @@
 %deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 addpath ../logreg_mnist
+deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 deftype = DeepOp.setgetDefaultType((single(0)));
-%deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 
 filtersize1 = 5;
 filtersize2 = 5;
-cnnmode=1;
+cnnmode=2;
 if cnnmode==1
     features1 = 16;
     features2 = 16;
@@ -17,8 +17,9 @@ else
 end
 
 classes = 10;
-batchsize = 64;
+batchsize = 64; % was 64
 useadam=1;
+
 weight_variable = @(name,shape) Variable(name,truncated_normal_gen(shape,0,0.1,deftype));
 bias_variable = @(name,shape) Variable(name,0.1*mones(shape,deftype));
 max_pool_2x2 =@(x) MaxPoolOp(x,[1, 2, 2, 1],[1, 2, 2, 1],'SAME'); 
@@ -103,19 +104,33 @@ plot(losshistory)
 title('Loss History');
 xlabel('Iteration');
 ylabel('Loss');
+training_time
 
 %%
 mte = MnistBatcher("test");
 
-[test_images,~,test_labels] = mte.whole();
-if(exist('bout'))
-    b.set(squeeze(bout.Data(:,end))');
-    W.set(squeeze(Wout.Data(:,:,end)));
+% it was
+%    [test_images,~,test_labels] = mtr.whole();
+%    test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
+correctnessall = zeros(mte.n,1,'like',deftype);
+stepstest = ceil(mte.n/batchsize);
+for I=1:stepstest
+    [test_images,test_labels,test_labelshot] = mtr.next(batchsize);    
+    if(exist('bout','var'))
+        b.set(squeeze(bout.Data(:,end))');
+        W.set(squeeze(Wout.Data(:,:,end)));
+    end
+    r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
+    %prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
+    last = I*batchsize;
+    if last > mte.n
+        correctnessall((I-1)*batchsize+1:I*batchsize-(last-mte.n)) = r(1:batchsize-(last-mte.n));
+    else
+        correctnessall((I-1)*batchsize+1:I*batchsize) = r;
+    end
+
 end
-accuracy.evalshapewith({x,test_images,y_,test_labels})
-test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels})
-prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
-training_time
+accuracy = gather(mean(correctnessall))
 %should give 1.0
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y_, 1), ArgmaxOp(y_, 1))); 
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})
