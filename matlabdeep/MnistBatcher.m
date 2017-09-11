@@ -9,12 +9,17 @@ classdef MnistBatcher < handle
         alllabelshot
         n
         indices
+        shuffle
     end
     
 
     methods
-        function obj = MnistBatcher(content)
+        function obj = MnistBatcher(content,shuffle)
                 
+            if nargin < 2
+                shuffle = 0;
+            end
+            obj.shuffle = shuffle;
              obj.epoch = 1;
              obj.iteration = 1;
              if strcmp(content,'train')
@@ -54,8 +59,12 @@ classdef MnistBatcher < handle
             if left < items
                 % new epoch reshuffle and recurse
                 obj.iteration = 1;
-                obj.epoch = obj.epoch + 1;                
-                obj.indices = randperm(obj.n);
+                obj.epoch = obj.epoch + 1;   
+                if obj.shuffle
+                    obj.indices = randperm(obj.n);
+                else
+                    obj.indices = 1:obj.n;
+                end
                 [ti,tl,tlh] = obj.next(items-left);
                 i = [i;ti];
                 l = [l;tl];

@@ -115,12 +115,13 @@ mte = MnistBatcher("test");
 %    test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
 correctnessall = zeros(mte.n,1,'like',deftype);
 stepstest = ceil(mte.n/batchsize);
+if(exist('bout','var'))
+    b.set(squeeze(bout.Data(:,end))');
+    W.set(squeeze(Wout.Data(:,:,end)));
+end
+
 for I=1:stepstest
     [test_images,test_labels,test_labelshot] = mtr.next(batchsize);    
-    if(exist('bout','var'))
-        b.set(squeeze(bout.Data(:,end))');
-        W.set(squeeze(Wout.Data(:,:,end)));
-    end
     r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
     %prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
     last = I*batchsize;

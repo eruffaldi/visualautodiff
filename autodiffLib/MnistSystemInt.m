@@ -8,6 +8,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
     properties(Nontunable)
         trainset = 1;
         items = 100;
+        shuffle = 0;
     end
 
 
@@ -17,7 +18,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
     % Pre-computed constants!
     properties(Access = private)
         epoch
-        iteration
+        lastdone
         n
         indices
     end
@@ -54,28 +55,36 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
          function resetImpl(obj)
            % Perform one-time calculations, such as computing constants
              obj.epoch = 1;
-             obj.iteration = 1;
-             obj.indices = int32(randperm(obj.n));
+             obj.lastdone = 0;
+             if obj.shuffle
+                 obj.indices = int32(randperm(obj.n));
+             else
+                 obj.indices = int32(1:obj.n);
+             end
          end
       
         
         function [indices] = stepImpl(obj)
            needed = obj.items;
            indices= zeros(obj.items,1,'int32'); %size(obj.allimages,2));
-           k1 = 1;
+          writeindex = 1;
            while needed > 0
-                left = min(needed,obj.n-obj.iteration);
-                if left == 0
-                    obj.iteration = 1;
-                    obj.epoch = obj.epoch + 1;                
-                    obj.indices = int32(randperm(obj.n));
-                    left = min(needed,obj.n-obj.iteration);
+                thisstep = min(needed,obj.n-obj.lastdone);
+                if thisstep == 0
+                    obj.lastdone = 0;
+                    obj.epoch = obj.epoch + 1;
+                    if obj.shuffle
+                        obj.indices = int32(randperm(obj.n));
+                    else
+                        obj.indices = int32(1:obj.n);
+                    end
+                    thisstep = min(needed,obj.n-obj.lastdone);
                 end
-                if left > 0
-                    indices(k1:k1+left-1,:) = obj.indices(obj.iteration:obj.iteration+left-1);
-                    obj.iteration = obj.iteration + left;
-                    k1 = k1 + left;
-                    needed = needed - left;
+                if thisstep > 0
+                    indices(writeindex:writeindex+thisstep-1,:) = obj.indices(obj.lastdone+1:obj.lastdone+thisstep);
+                    obj.lastdone = obj.lastdone + thisstep;
+                    writeindex = writeindex + thisstep;
+                    needed = needed - thisstep;
                 end
            end
         end
