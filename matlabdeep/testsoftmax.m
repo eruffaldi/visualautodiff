@@ -24,7 +24,7 @@ deftype = DeepOp.setgetDefaultType(double(0));
       cross_entropy = ReduceMeanOp(NegateOp(rs),0);
   end
   if useadam == 0
-  train_step = GradientDescentOptimizer(0.05,cross_entropy);
+    train_step = GradientDescentOptimizer(0.05,cross_entropy);
   else
       train_step = AdamOptimizer(1e-4,cross_entropy);
   end

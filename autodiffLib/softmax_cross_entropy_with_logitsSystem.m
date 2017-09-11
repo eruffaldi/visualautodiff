@@ -35,13 +35,15 @@ classdef softmax_cross_entropy_with_logitsSystem < matlab.System & matlab.system
             % Perform one-time calculations, such as computing constants
         end
 
-        function [loss,logitsoffsetted,sumx] = stepImpl(obj,logits,labels)
-           classes = size(logits,2);
+        function [loss,logitsoffsetted,sumx] = stepImpl(obj,xlogits,xlabels)
+           classes = size(xlogits,2);
             classdim = 2;
-            logitsmax = max(logits,[],classdim); % batch x 1
-            logitsoffsetted = logits - repmat(logitsmax(:),1,classes); % batch x classes
-            sumx = sum(exp(logitsoffsetted),classdim); % exp and sum along class: batch x 1
-            loss = sum((labels .* (repmat(log(sumx),1,classes) - logitsoffsetted)),classdim); 
+            
+            
+            logitsmax = max(xlogits,[],classdim); % along class
+            logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
+            sumx = sum(exp(logitsoffsetted),classdim); % exp and sum along class
+            loss = sum((xlabels .* (repmat(log(sumx),1,classes) - logitsoffsetted)),classdim); 
             
         end
         function [p1,p2,p3]= isOutputFixedSizeImpl(obj)

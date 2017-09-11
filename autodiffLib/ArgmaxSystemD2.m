@@ -48,8 +48,10 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
       
         
         function [y] = stepImpl(obj,x)
-           [~,obj.t] = max(x,[],2);
-           y = single(obj.t);
+           %[~,obj.t] = max(x,[],2);
+           %y = single(obj.t);
+           [~,y] =  max(x,[],2);
+           y = single(y-1);
         end
        
     end

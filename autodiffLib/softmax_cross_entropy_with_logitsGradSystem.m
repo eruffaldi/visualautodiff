@@ -45,8 +45,7 @@ classdef softmax_cross_entropy_with_logitsGradSystem < matlab.System & matlab.sy
             % output = batch x 1
             % logits = batch x C
             classes = size(logits,2);
-            a = (exp(logitsoffsetted) ./ repmat(sumx,1,classes)); % batch x 1 WHY?
-            Jo = a-labels; % batch x C
+            Jo = (exp(logitsoffsetted) ./ repmat(sumx,1,classes))-labels; % batch x C
             J = repmat(Jin,1,classes).*Jo; 
 
         end
