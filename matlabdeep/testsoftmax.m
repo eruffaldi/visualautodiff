@@ -83,12 +83,14 @@ plot(losshistory)
 title('Loss History');
 xlabel('Iteration');
 ylabel('Loss');
+training_time
 %%
 
 mte = MnistBatcher("test");
 
 [test_images,test_label,test_labelshot] = mte.whole();
 if(exist('bout'))
+    disp('Using weights from Simulin')
     b.set(squeeze(bout.Data(:,end))');
     W.set(squeeze(Wout.Data(:,:,end)));
 end
@@ -96,7 +98,7 @@ end
 test_accuracy = accuracy.evalwith({x,test_images,y_,test_labelshot})
 %prediction = predict_opl.evalwith({x,test_images});
 prediction = predict_op.xvalue-1; % because we go from argmax to 0-9
-training_time
+
 %should give 1.0
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y_, 1), ArgmaxOp(y_, 1))); 
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})

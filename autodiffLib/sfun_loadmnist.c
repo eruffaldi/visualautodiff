@@ -114,7 +114,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
    {
        ssPrintf("loading MNIST data\n");
        ssSetIWorkValue(S,0,1);
-       int8_t *yimage = (int8_t *) ssGetOutputPortSignal(S, 0);
+       uint8_t *yimage = (uint8_t *) ssGetOutputPortSignal(S, 0);
   int8_t *ylabels = (int8_t *) ssGetOutputPortSignal(S, 1);
   O_TYPE *yhot = (O_TYPE *) ssGetOutputPortSignal(S, 2);
        O_TYPE *dyimage = (O_TYPE *) ssGetOutputPortSignal(S, 3);
@@ -163,7 +163,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
           int q = numImages*numRows*numCols;
           fread(yimage,q,1,fp);
           for (int i = 0; i < q; i++)
+          {
               dyimage[i] = (O_TYPE)(yimage[i])/255.0;
+          }
           }
       else
       {
