@@ -26,7 +26,11 @@ classdef conv2d_setup < matlab.System
             xr = propagatedInputSize(obj,1);
             xl = propagatedInputSize(obj,2);
             
-            nQ = xr(4);
+            if length(xr) == 3
+                nQ = 1;
+            else
+                nQ = xr(4);
+            end
             
             % Fh Fw Fi Fo
             h_filter = xr(1);
@@ -42,39 +46,35 @@ classdef conv2d_setup < matlab.System
                 paddingh = padding;
                 paddingw = padding;
             end
-            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
+            [obj.Sel_PKC_IC,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
             
             obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
-            obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];                      
+            obj.xshape = [xl(1) shapeP(1) shapeP(2) nQ];                      
         end
                 
-        function  [p1] = isOutputFixedSizeImpl(obj)
-            p1 = true;
-         
-        end
-        
-        function [p1] = getOutputDataTypeImpl(obj)
-            p1 = propagatedInputType(obj,1);
-        end
-
-        function [p1] = isOutputComplexImpl(obj)
-            p1 = false;
-        end
-
-        % outputs mask and y are same size
-        function [Sel_PKC_IC,xshape,shape_BP_KC] = getOutputSizeImpl(obj) 
-            Sel_PKC_IC = size(obj.Sel_PKC_IC);
-            xshape = [1,4];
-            shape_BP_KC = [1,2];
-        end
+%         function  [p1] = isOutputFixedSizeImpl(obj)
+%             p1 = true;         
+%         end
+%         
+%         function [p1] = getOutputDataTypeImpl(obj)
+%             p1 = propagatedInputType(obj,1);
+%         end
+% 
+%         function [p1] = isOutputComplexImpl(obj)
+%             p1 = false;
+%         end
+% 
+%         % outputs mask and y are same size
+%         function [Sel_PKC_IC,xshape,shape_BP_KC] = getOutputSizeImpl(obj) 
+%             Sel_PKC_IC = size(obj.Sel_PKC_IC);
+%             xshape = size(obj.xshape);
+%             shape_BP_KC = size(obj.shape_BP_KC);
+%         end
 
         function [Sel_PKC_IC,xshape,shape_BP_KC] = stepImpl(obj,X,W)
-            % Implement algorithm. Calculate y as a function of input u and
-            % discrete states.
             Sel_PKC_IC = obj.Sel_PKC_IC;
             xshape = obj.xshape;
-            shape_BP_KC = obj.shape_BP_KC;
-            
+            shape_BP_KC = obj.shape_BP_KC;            
         end
 
         function resetImpl(obj)
