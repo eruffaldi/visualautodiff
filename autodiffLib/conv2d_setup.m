@@ -6,21 +6,26 @@ classdef conv2d_setup < matlab.System
 
     % Public, tunable properties
     properties
-
+        padding = -1;
+        stride = [1,1,1,1]
     end
 
     properties(DiscreteState)
-
+    
     end
 
     % Pre-computed constants
     properties(Access = private)
-
+        xshape
+        shape_BP_KC
+        Sel_PKC_IC
     end
 
     methods(Access = protected)
         function setupImpl(obj)
-            % Perform one-time calculations, such as computing constants
+            xr = propagatedInputSize(obj,1);
+            xl = propagatedInputSize(obj,2);
+            
             nQ = xr(4);
             
             % Fh Fw Fi Fo
@@ -28,7 +33,7 @@ classdef conv2d_setup < matlab.System
             w_filter = xr(2);
             padding = obj.padding;
             stride = obj.stride(1);
-            if obj.padding == -1
+            if padding == -1
                 % automatic padding to satisfy requirement
                 paddingh = (h_filter-1)/2;
                 paddingw = (w_filter-1)/2;
@@ -37,17 +42,39 @@ classdef conv2d_setup < matlab.System
                 paddingh = padding;
                 paddingw = padding;
             end
-            [~,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
+            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
             
             obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
-            obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];
-                       
+            obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];                      
+        end
+                
+        function  [p1] = isOutputFixedSizeImpl(obj)
+            p1 = true;
+         
+        end
+        
+        function [p1] = getOutputDataTypeImpl(obj)
+            p1 = propagatedInputType(obj,1);
         end
 
-        function [kq,sz] = stepImpl(obj,X,W)
+        function [p1] = isOutputComplexImpl(obj)
+            p1 = false;
+        end
+
+        % outputs mask and y are same size
+        function [Sel_PKC_IC,xshape,shape_BP_KC] = getOutputSizeImpl(obj) 
+            Sel_PKC_IC = size(obj.Sel_PKC_IC);
+            xshape = [1,4];
+            shape_BP_KC = [1,2];
+        end
+
+        function [Sel_PKC_IC,xshape,shape_BP_KC] = stepImpl(obj,X,W)
             % Implement algorithm. Calculate y as a function of input u and
             % discrete states.
-            y = u;
+            Sel_PKC_IC = obj.Sel_PKC_IC;
+            xshape = obj.xshape;
+            shape_BP_KC = obj.shape_BP_KC;
+            
         end
 
         function resetImpl(obj)

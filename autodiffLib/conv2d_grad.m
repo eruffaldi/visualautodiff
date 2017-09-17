@@ -23,10 +23,21 @@ classdef conv2d_grad < matlab.System
             % Perform one-time calculations, such as computing constants
         end
 
-        function [JX,JW] = stepImpl(obj,U,Y,kq,sz)
-            % Implement algorithm. Calculate y as a function of input u and
-            % discrete states.
-            y = u;
+        function [dzdx,dzdW] = stepImpl(obj,U_B_Ph_Pw_Q,W_K_C_Q,Sel_PKC_IC,xshape,Xp_BP_KC)
+            nB = size(U_B_Ph_Pw_Q,1);
+            nP = xshape(2)*xshape(3);
+            nQ = size(U_B_Ph_Pw_Q,4);
+            U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); % B_Ph_Pw_Q => BP_Q
+            
+            % work using matrix product in flat space [B P, K C] [K C, Q]
+            %   d/dA A W = U W'   [B P, Q] [K C, Q]
+            %   d/dW A W = A' U
+            %W_K_C_Q = obj.right.xvalue;
+            dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
+            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
+            dzdx = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(U_B_Ph_Pw_Q));
+
+            dzdW = reshape(Xp_BP_KC' * U_BP_Q,size(W_K_C_Q));          
         end
 
         function resetImpl(obj)
