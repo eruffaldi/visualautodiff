@@ -69,39 +69,36 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             obj.Sel_PKC_IC = w.pickidx;
             obj.shape_BP_KC = int32([prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))]);
             obj.xshape = int32([xl(1) shapeP(1) shapeP(2) nQ]);
+            obj.Zero_Ph_Pw = zeros(shapeP,'int8'); % fake
         end
                 
-        function  [p1,p2,p3] = isOutputFixedSizeImpl(obj)
+        function  [p1,p2] = isOutputFixedSizeImpl(obj)
             p1 = true; 
             p2 = true;
-            p3 = true;
         end
         
-        function [p1,p2,p3] = getOutputDataTypeImpl(obj)
+        function [p1,p2] = getOutputDataTypeImpl(obj)
             p1 = class(obj.Sel_PKC_IC);
-            p2 = 'int32';
-            p3 = 'int32'; 
+            p2 = 'int8';
         end
 
-        function [p1] = isOutputComplexImpl(obj)
+        function [p1,p2] = isOutputComplexImpl(obj)
             p1 = false;
+p2 = false;
         end
 
         % outputs mask and y are same size
-        function [Sel_PKC_IC,xshape,shape_BP_KC] = getOutputSizeImpl(obj) 
+        function [Sel_PKC_IC,Zero_Ph_Pw] = getOutputSizeImpl(obj) 
             
 
             [w,shape_BPKC,shapeP] = obj.computeSomething();
-            obj.Sel_PKC_IC = w.pickidx;
-            Sel_PKC_IC = size(obj.Sel_PKC_IC); % decided only after SETUP
-            xshape = [1,4];
-            shape_BP_KC = [1,2];
+            Sel_PKC_IC = size(w.pickidx); % decided only after SETUP
+            Zero_Ph_Pw = shapeP;
         end
 
-        function [Sel_PKC_IC,xshape,shape_BP_KC] = stepImpl(obj,X,W)
+        function [Sel_PKC_IC,Zero_Ph_Pw] = stepImpl(obj,X,W)
             Sel_PKC_IC = obj.Sel_PKC_IC;
-            xshape = obj.xshape;
-            shape_BP_KC = obj.shape_BP_KC;            
+            Zero_Ph_Pw = obj.Zero_Ph_Pw;
         end
 
         function resetImpl(obj)

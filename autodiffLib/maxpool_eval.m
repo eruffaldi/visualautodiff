@@ -6,7 +6,8 @@ classdef maxpool_eval < matlab.System
 
     % Public, tunable properties
     properties
-
+    strides
+ksize
     end
 
     properties(DiscreteState)
@@ -15,39 +16,54 @@ classdef maxpool_eval < matlab.System
 
     % Pre-computed constants
     properties(Access = private)
-
+        shape_BPC_K
+        yshape
     end
 
     methods(Access = protected)
         function setupImpl(obj)
-            % Perform one-time calculations, such as computing constants
+            sizeA_B_I_C = propagatedInputSize(obj,1);
+            sizeZero_Ph_Pw = propagatedInputSize(obj,3);
+            nB = sizeA_B_I_C(1); 
+            if length(sizeA_B_I_C) == 3
+                nC = 1;
+            else
+                nC = sizeA_B_I_C(4);
+            end
+            nPh = sizeZero_Ph_Pw(1);
+            nPw = sizeZero_Ph_Pw(2);
+            nP = nPh*nPw;
+            
+            obj.shape_BPC_K = [nB*nP,nC];               
+            obj.yshape = [nB,nPh,nPw,nC];
         end
 
-%         function [y,Xp_BP_KC]= isOutputFixedSizeImpl(obj)
-%             y = true;
-%             Xp_BP_KC = true;
-%         end
-%         function [y,Xp_BP_KC] = getOutputDataTypeImpl(obj)
-%             y = propagatedInputDataType(obj,1);
-%             Xp_BP_KC = propagatedInputDataType(obj,1);
-%         end
-%         function [y,Xp_BP_KC] = getOutputSizeImpl(obj)
-%             % TODO            
-%         end
-%         function [y,Xp_BP_KC] = isOutputComplexImpl(obj)
-%             y = false;
-%             Xp_BP_KC = false;
-%         end
+        function [y,maxindices_BP_C]= isOutputFixedSizeImpl(obj)
+            y = true;
+            maxindices_BP_C = true;
+        end
+        function [y,maxindices_BP_C] = getOutputDataTypeImpl(obj)
+            y = propagatedInputDataType(obj,1);
+            maxindices_BP_C = propagatedInputDataType(obj,1);
+        end
+        function [y,maxindices_BP_C] = getOutputSizeImpl(obj)
+            y = obj.yshape;           
+            maxindices_BP_C = obj.Xpshape;        
+        end
+        function [y,maxindices_BP_C] = isOutputComplexImpl(obj)
+            y = false;
+            maxindices_BP_C = false;
+        end
         
         
-        function [y,maxindices_BPC] = stepImpl(obj,X_BIC,Sel_PCK_IC,shape_BPC_K,xshape)
+        function [y_B_P_C,maxindices_BPC] = stepImpl(obj,X_B_I_C,Sel_PCK_IC,Zero_Ph_Pw)
             
             % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-            Xp_BPC_K = mpatcher(X_BIC,Sel_PCK_IC,shape_BPC_K);
+            Xp_BPC_K = mpatcher(X_B_I_C,Sel_PCK_IC,obj.shape_BPC_K);
             % => [nB patches]
             [Y_BPC,Yind_BPC] = max(Xp_BPC_K,[],2);
                             
-            y = reshape(Y_BPC,xshape);
+            y_B_P_C = reshape(Y_BPC,obj.yshape);
             maxindices_BPC = Yind_BPC; % in [nB P, S]
         end
 

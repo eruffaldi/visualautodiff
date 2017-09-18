@@ -19,6 +19,7 @@ classdef maxpool_setup < matlab.System
         Sel_PCK_IC
         shapeP
         shape_BPC_K
+        Zero_Ph_Pw
         argmaxbase
         argmaxbasescale
     end
@@ -49,12 +50,12 @@ classdef maxpool_setup < matlab.System
             
             obj.shape_BPC_K = [prod(r) h_filter*w_filter]; % patches for max: BPC K
             [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
+            obj.Zero_Ph_Pw = zeros(obj.shapeP,'int8');
         end
 
-        function [Sel_PCK_IC,xshape,shape_BPC_K,argmaxbase,argmaxbasescale] = stepImpl(obj,X)
+        function [Sel_PCK_IC,argmaxbase,argmaxbasescale,Zero_Ph_Pw] = stepImpl(obj,X)
             Sel_PCK_IC = obj.Sel_PKC_IC;
-            xshape = obj.xshape;
-            shape_BPC_K = obj.shape_BPC_K;    
+            Zero_Ph_Pw = obj.Zero_Ph_Pw;
             argmaxbase = obj.argmaxbase;
             argmaxbasescale = obj.argmaxbasescale;
         end

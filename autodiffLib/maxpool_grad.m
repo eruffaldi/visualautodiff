@@ -6,7 +6,8 @@ classdef maxpool_grad < matlab.System
 
     % Public, tunable properties
     properties
-
+    ksize
+strides
     end
 
     properties(DiscreteState)
@@ -15,34 +16,38 @@ classdef maxpool_grad < matlab.System
 
     % Pre-computed constants
     properties(Access = private)
-
+        
     end
 
     methods(Access = protected)
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+% TODO: obj.shape_BPC_K
         end
 %         
 % 
 % 
-% %         function [dzdx,dzdW]= isOutputFixedSizeImpl(obj)
-%             dzdx = true;
-%             dzdW = true;
-%         end
-%         function [dzdx,dzdW] = getOutputDataTypeImpl(obj)
-%             dzdx = propagatedInputDataType(obj,1);
-%             dzdW = propagatedInputDataType(obj,1);
-%         end
-%         function [y,Xp_BP_KC] = getOutputSizeImpl(obj)
-%             % TODO            
-%         end
-%         function [dzdx,dzdW] = isOutputComplexImpl(obj)
-%             dzdx = false;
-%             dzdW = false;
-%         end        
+         function [dzdx]= isOutputFixedSizeImpl(obj)
+            dzdx = true;          
+        end
+        function [dzdx] = getOutputDataTypeImpl(obj)
+            dzdx = propagatedInputDataType(obj,1);
+          
+        end
+        function [y] = getOutputSizeImpl(obj)
+                    y = propagatedInputSize(obj,6); % == X_B_I_C
+        end
+        function [dzdx] = isOutputComplexImpl(obj)
+                dzdx = false;
+        end        
         
 
-        function J_BIC = stepImpl(obj,up_BPC,shape_BPC_K,argmaxbase,maxindices_BPC,argmaxbasescale)
+        function J_B_I_C = stepImpl(obj,up_B_P_C,argmaxbase,maxindices_BPC,argmaxbasescale,Zero_Ph_Pw,X_B_I_C)
+            nB = size(U_B_Ph_Pw_Q,1);
+            nP = size(U_B_Ph_Pw_Q,2)*size(U_B_Ph_Pw_Q,3);
+            nC = size(U_B_Ph_Pw_Q,4);
+
+            shape_BPC_K =[nB,nP,nC];
             Jp_BPC_K = mzeros(shape_BPC_K,propagatedInputDataType(obj,1)); % empty patches            
             ind = argmaxbase + (maxindices_BPC(:)-1)*argmaxbasescale; % winning indices from eval step
             
@@ -50,10 +55,10 @@ classdef maxpool_grad < matlab.System
             
             % ?? => [nB patches]  TODO
             % => [nB patches, Fh Fw Fin] via assignment
-            Jp_BPC_K(ind) = up_BPC;  % propagate up to them
+            Jp_BPC_K(ind) = up_B_P_C;  % propagate up to them
             
             % => [nB Ph Pw Fin] via unpatching
-            J_BIC = munpatcher(Jp_BPC_K,Sel_PCK_IC,size(up_BPC)); % aggregate contributions
+            J_B_I_C = munpatcher(Jp_BPC_K,Sel_PCK_IC,size(X_B_I_C)); % aggregate contributions
         end
 
         function resetImpl(obj)

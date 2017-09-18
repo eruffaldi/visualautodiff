@@ -23,11 +23,7 @@ classdef adam_updateSystem < matlab.System & matlab.system.mixin.Propagates
     end
 
     methods
-        % Constructor
-        function obj = softmax_cross_entropy_with_logitsSystem(varargin)
-            % Support name-value pair arguments when constructing object
-            setProperties(obj,nargin,varargin{:})
-        end
+       
     end
 
     methods(Access = protected)
@@ -42,12 +38,12 @@ classdef adam_updateSystem < matlab.System & matlab.system.mixin.Propagates
          end
          
          function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,name)
-             sz = propagatedInputSize(obj,5);
-             dt = propagatedInputDataType(obj,5);
+             sz = propagatedInputSize(obj,6);
+             dt = propagatedInputDataType(obj,6);
              cp = false;
          end
 
-        function [y] = stepImpl(obj,lrt,epsilon,beta1,beta2,g)
+        function [y] = stepImpl(obj,lrt,epsilon,beta1,beta2,g,initial)
                 obj.m_t = beta1*obj.m_t+ (1-beta1)*g;
                 obj.s_t = beta2*obj.s_t+ (1-beta2)*g.*g;            
               y =lrt * obj.m_t ./ (sqrt(obj.s_t) + epsilon);
@@ -56,12 +52,11 @@ classdef adam_updateSystem < matlab.System & matlab.system.mixin.Propagates
             p1 = true;
         end
         function [p1] = getOutputDataTypeImpl(obj)
-            p1 = propagatedInputDataType(obj,1);
+            p1 = propagatedInputDataType(obj,6);
         end
         function [p1] = getOutputSizeImpl(obj)
             % Example: inherit size from first input port
-            ins = propagatedInputSize(obj,5); % B C
-            p1 = ins;
+            p1 = propagatedInputSize(obj,6);
         end
         function [p1] = isOutputComplexImpl(obj)
             p1 = false;

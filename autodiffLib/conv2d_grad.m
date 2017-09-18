@@ -15,7 +15,7 @@ classdef conv2d_grad < matlab.System
 
     % Pre-computed constants
     properties(Access = private)
-
+        
     end
 
     methods(Access = protected)
@@ -24,25 +24,26 @@ classdef conv2d_grad < matlab.System
         end
         
 
-%         function [dzdx,dzdW]= isOutputFixedSizeImpl(obj)
-%             dzdx = true;
-%             dzdW = true;
-%         end
-%         function [dzdx,dzdW] = getOutputDataTypeImpl(obj)
-%             dzdx = propagatedInputDataType(obj,1);
-%             dzdW = propagatedInputDataType(obj,1);
-%         end
-%         function [y,Xp_BP_KC] = getOutputSizeImpl(obj)
-%             % TODO            
-%         end
-%         function [dzdx,dzdW] = isOutputComplexImpl(obj)
-%             dzdx = false;
-%             dzdW = false;
-%         end        
+        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q]= isOutputFixedSizeImpl(obj)
+            dzdx_B_Ph_Pw_Q = true;
+            dzdW_K_C_Q = true;
+        end
+        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = getOutputDataTypeImpl(obj)
+            dzdx_B_Ph_Pw_Q = propagatedInputDataType(obj,1);
+            dzdW_K_C_Q = propagatedInputDataType(obj,1);
+        end
+        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = getOutputSizeImpl(obj)
+            dzdx_B_Ph_Pw_Q = propagatedInputSize(obj,2);
+            dzdW_K_C_Q = propagatedInputSize(obj,3);
+        end
+        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = isOutputComplexImpl(obj)
+            dzdx_B_Ph_Pw_Q = false;
+            dzdW_K_C_Q = false;
+        end        
 
-        function [dzdx,dzdW] = stepImpl(obj,U_B_Ph_Pw_Q,W_K_C_Q,Sel_PKC_IC,xshape,Xp_BP_KC)
+        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = stepImpl(obj,U_B_Ph_Pw_Q,A_B_I_C,W_K_C_Q,Sel_PKC_IC,Xp_BP_KC)
             nB = size(U_B_Ph_Pw_Q,1);
-            nP = xshape(2)*xshape(3);
+            nP = size(U_B_Ph_Pw_Q,2)*size(U_B_Ph_Pw_Q,3);
             nQ = size(U_B_Ph_Pw_Q,4);
             U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); % B_Ph_Pw_Q => BP_Q
             
@@ -52,10 +53,9 @@ classdef conv2d_grad < matlab.System
             %W_K_C_Q = obj.right.xvalue;
             dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
             dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
-            dzdx = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(U_B_Ph_Pw_Q));
 
-            
-            dzdW = reshape(Xp_BP_KC' * U_BP_Q,size(W_K_C_Q));          
+            dzdx_B_Ph_Pw_Q = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(A_B_I_C));            
+            dzdW_K_C_Q = reshape(Xp_BP_KC' * U_BP_Q,size(W_K_C_Q));          
         end
 
         function resetImpl(obj)

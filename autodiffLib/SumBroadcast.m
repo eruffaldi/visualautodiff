@@ -48,7 +48,6 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
             p1 = propagatedInputDataType(obj,1);
         end
         function out = getOutputSizeImpl(obj)
-            % Example: inherit size from first input port
             out = propagatedInputSize(obj,1);
         end
         function [p1] = isOutputComplexImpl(obj)
