@@ -20,11 +20,12 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
   out_height = (H + padding(1)+padding(3) - field_height) / stridey + 1;
   out_width = (W + padding(2)+padding(4) - field_width) / stridex+ 1;
 
-  i0 = blockrepeat0(field_height,field_width);
+  i0x = blockrepeat0(field_height,field_width);
   if strcmp(mode,'BPKC')
-      i0 = repmat(i0, 1, C); % was np.tile(i0,C) along X
+      i0 = repmat(i0x, 1, C); % was np.tile(i0,C) along X
   elseif strcmp(mode,'BPCK')
       % no action needed
+      i0 = i0x;
   end
   i1 = stridey * blockrepeat0(out_height, out_width);
   if strcmp(mode,'BPKC')
@@ -33,22 +34,23 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
       j0 = interrepeat0(field_width,field_height);
   end
   j1 = stridex * interrepeat0(out_width, out_height);
-  i = reshape(i0,[],1) + reshape(i1,1,[]);
-  j = reshape(j0,[],1) + reshape(j1,1,[]);
+  ia = repmat(reshape(i0,[],1),1,numel(i1)) + repmat(reshape(i1,1,[]),numel(i0),1); % EXPANSION 
+  ja = repmat(reshape(j0,[],1),1,numel(j1)) + repmat(reshape(j1,1,[]),numel(i0),1); % EXPANSION 
     
   nP = out_height*out_width;
   outshape = [out_height;out_width];
   if strcmp(mode,'BPKC')
       % i and j are ready correctly replicated
       k = repmat(0:C-1,field_height*field_width*nP,1);
-      
+      i = ia;
+      j = ja;
   elseif strcmp(mode,'BPCK')
       % replicate K 
       % [field_height*field_width*nC,nP]
       k = repmat((0:C-1)',1,field_height*field_width*nP);
       nCO = C*field_width*field_height;
-      i = reshape(repmat(i(:)',C,1),nCO,nP);
-      j = reshape(repmat(j(:)',C,1),nCO,nP);
+      i = reshape(repmat(ia(:)',C,1),nCO,nP);
+      j = reshape(repmat(ja(:)',C,1),nCO,nP);
       %k = blockrepeat0(C,nP)'; 
       % k 
   end

@@ -19,7 +19,12 @@ as = reshape(X,nB,[]); % [nB , Ih Iw C]
 if isa(as,'gpuArray')
     w = gathermatrix(Sel.pickidx,gather(as),length(Sel.pickidx));
 else
-    w = gathermatrix(Sel.pickidx,as,length(Sel.pickidx));
+    if isstruct(Sel)
+        w = gathermatrix(Sel.pickidx,as,length(Sel.pickidx));
+    else
+        % SIMULINK use manual gathermatrix
+        w = gathermatrixmat(Sel,as,length(Sel));
+    end
 end
 Xp = reshape(w,sXp); % [nB , P, F, C]
 if isa(as,'gpuArray')    

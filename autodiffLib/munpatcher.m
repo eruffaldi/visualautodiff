@@ -25,7 +25,12 @@ Xpm = reshape(Xp,nB,[]); % keep on the left
 if isa(Xpm,'gpuArray')
     w = accummatrix(Sel.pickidx,gather(Xpm),size(Sel.A,2));
 else
-    w = accummatrix(Sel.pickidx,Xpm,size(Sel.A,2));
+    if isstruct(Sel)
+        w = accummatrix(Sel.pickidx,Xpm,size(Sel.A,2));
+    else
+        w = accummatrixmat(Sel.pickidx,Xpm,size(Sel.A,2));
+    end
+        
 end
 
 X = reshape(w,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)

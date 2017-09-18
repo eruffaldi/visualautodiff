@@ -48,7 +48,7 @@ n = ii < 0 | jj < 0 | ii >= Ih | jj >= Iw;
 ii(n) = 0; 
 jj(n) = 0;
 kk(n) = nC; % extra
-nameddims = [];
+%nameddims = [];
 
 nameddims.B = 1;
 nameddims.P = 2;
@@ -63,13 +63,22 @@ elseif strcmp(mode,'BPKC')
     nameddims.Fw = 4;
     nameddims.K = [3,4];
 end
+%withsparse = coder.extrinsic('exist')';
+
 if 1==1
     kq = sub2ind([Ih,Iw,nC+1],ii+1,jj+1,kk+1); 
     %extrakq = Iw*Ih+1; % this marks the kq that is outside
-    Selx = sparse(1:length(kq),kq,true(length(kq),1));
-    if sum(n) > 0
-        Selx = Selx(:,1:end-1); % remove spurious rightmost
-        kq(n) = 0;  % mark as 0 for output
+    if 0==1
+        Selx = sparse(1:length(kq),kq,true(length(kq),1));
+        if sum(n) > 0
+            Selx = Selx(:,1:end-1); % remove spurious rightmost
+            kq(n) = 0;  % mark as 0 for output
+        end
+    else
+        if sum(n) > 0
+            kq(n) = 0;  % mark as 0 for output
+        end
+        Selx = [];
     end
     % given kq construct the equivalent of the selector of sparse matrix
     % that is:
@@ -78,7 +87,6 @@ if 1==1
     %   find(kq == 1) ... each or find(Sel(:,I))
     %   find(Sel(I,:)) has 0 or 1 element
     %   find(Sel(:,I)) has 1 to patchsize elements such as slotsfor
-    Sel = [];
     Sel.A = Selx;
     Sel.pickidx = int32(kq);
     Sel.sXp = sXp;
@@ -91,8 +99,12 @@ else
     % (ii,jj,kk) selects 0-based into IC
     kq = kk*aiC + ii*aih + jj*aiw + 1; % column inde
     kq(n) = nC*Ih*Iw+1; % do we need this? NO
-    Sel = sparse(1:length(kq),kq,ones(length(kq),1)); 
-    Sel = Sel(:,1:end-1); % remove spurious rightmost
+    if 0==1 %exist('sparse','builtin')
+        Sel = sparse(1:length(kq),kq,ones(length(kq),1)); 
+        Sel = Sel(:,1:end-1); % remove spurious rightmost
+    else
+        Sel = [];
+    end
 end
 
 

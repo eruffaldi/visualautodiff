@@ -33,8 +33,8 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
       j0 = interrepeat0(field_width,field_height);
   end
   j1 = stridex * interrepeat0(out_width, out_height);
-  i = reshape(i0,[],1) + reshape(i1,1,[]);
-  j = reshape(j0,[],1) + reshape(j1,1,[]);
+  i = repmat(reshape(i0,[],1),1,numel(i1)) + repmat(reshape(i1,1,[]),numel(i0),1); % EXPANSION 
+  j = repmat(reshape(j0,[],1),1,numel(j1)) + repmat(reshape(j1,1,[]),numel(i0),1); % EXPANSION 
     
   nP = out_height*out_width;
   outshape = [out_height;out_width];
