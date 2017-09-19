@@ -25,7 +25,9 @@ stride
 
         function [a,b,shape_BP_KC] = computeSizes(obj)
             sizeA_B_I_C = propagatedInputSize(obj,1);
-            sizeW_K_C_Q = propagatedInputSize(obj,2);
+            sizeW_K_C_Qa = propagatedInputSize(obj,2);
+            sizeW_K_C_Q = ones(1,4);
+            sizeW_K_C_Q(1:numel(sizeW_K_C_Qa)) = sizeW_K_C_Qa;
             sizeZero_Ph_Pw = propagatedInputSize(obj,4);
             nPh = sizeZero_Ph_Pw(1);
             nPw = sizeZero_Ph_Pw(2);
@@ -41,6 +43,7 @@ stride
             h_filter = nKh; %obj.ksize(2);
             w_filter = nKw; %obj.ksize(3);
             nK = nKh*nKw;
+            
             nC = sizeW_K_C_Q(3);
             nQ = sizeW_K_C_Q(4);
             assert(nC == sizeA_B_I_C4(end));

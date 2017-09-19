@@ -13,7 +13,11 @@ function X = munpatcher(Xp,Sel,NHWCshape,SelA)
 nB = NHWCshape(1);
 Ih = NHWCshape(2);
 Iw = NHWCshape(3);
-nC = NHWCshape(4);
+if length(NHWCshape) == 3
+    nC = 1;
+else
+    nC = NHWCshape(4);
+end
 
 Xpm = reshape(Xp,nB,[]); % keep on the left
 

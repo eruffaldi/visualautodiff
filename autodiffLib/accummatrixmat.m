@@ -1,15 +1,18 @@
-function Y = accummatrix(idx,X_B_IC,outcols)
 
-rows = size(X_B_IC,1);
-cols = size(X_B_IC,2);
+function Y_rows_Cout = accummatrix(idx,X_rows_Cin,Cout)
+% Gather Matrix
+
+rows = size(X_rows_Cin,1);
+Cin = size(X_rows_Cin,2);
 nsubs = length(idx);
-assert(nsubs <= cols);
-Y = zeros([rows,outcols],'like',X);
+assert(ismatrix(X_rows_Cin));
+assert(nsubs <= Cin);
+Y_rows_Cout = zeros([rows,Cout],'like',X_rows_Cin);
 
-for input_cols=1:length(idx)
-    itarget_col = idx(input_cols);
-    if itarget_col >= 1 & itarget_col <= outcols
-        Y(:,itarget_col) = Y(:,itarget_col) + X(:,input_cols);
+for input_col=1:length(idx)
+    itarget_col = idx(input_col);
+    if itarget_col >= 1 & itarget_col <= Cout
+        Y_rows_Cout(:,itarget_col) = Y_rows_Cout(:,itarget_col) + X_rows_Cin(:,input_col);
     end
 end
 
