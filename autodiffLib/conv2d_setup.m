@@ -19,6 +19,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
         xshape
         shape_BP_KC
         Sel_PKC_IC
+        Zero_Ph_Pw
     end
 
     methods(Access = protected)
@@ -69,7 +70,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             obj.Sel_PKC_IC = w.pickidx;
             obj.shape_BP_KC = int32([prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))]);
             obj.xshape = int32([xl(1) shapeP(1) shapeP(2) nQ]);
-            obj.Zero_Ph_Pw = zeros(shapeP,'int8'); % fake
+            obj.Zero_Ph_Pw = zeros(shapeP','logical'); % fake
         end
                 
         function  [p1,p2] = isOutputFixedSizeImpl(obj)
@@ -78,8 +79,8 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
         end
         
         function [p1,p2] = getOutputDataTypeImpl(obj)
-            p1 = class(obj.Sel_PKC_IC);
-            p2 = 'int8';
+            p1 = 'int32';
+            p2 = 'logical';
         end
 
         function [p1,p2] = isOutputComplexImpl(obj)

@@ -8,7 +8,7 @@
 %
 % Where
 %   Q = input space
-function X = munpatcher(Xp,Sel,NHWCshape)
+function X = munpatcher(Xp,Sel,NHWCshape,SelA)
 
 nB = NHWCshape(1);
 Ih = NHWCshape(2);
@@ -28,7 +28,7 @@ else
     if isstruct(Sel)
         w = accummatrix(Sel.pickidx,Xpm,size(Sel.A,2));
     else
-        w = accummatrixmat(Sel.pickidx,Xpm,size(Sel.A,2));
+        w = accummatrixmat(Sel,Xpm,SelA);
     end
         
 end

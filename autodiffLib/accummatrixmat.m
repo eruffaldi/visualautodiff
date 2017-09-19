@@ -1,8 +1,8 @@
-function Y = accummatrix(idx,X,outcols)
+function Y = accummatrix(idx,X_B_IC,outcols)
 
-rows = size(X,1);
-cols = size(X,2);
-nsubs = length(S);
+rows = size(X_B_IC,1);
+cols = size(X_B_IC,2);
+nsubs = length(idx);
 assert(nsubs <= cols);
 Y = zeros([rows,outcols],'like',X);
 

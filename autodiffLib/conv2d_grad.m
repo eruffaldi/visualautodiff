@@ -1,4 +1,4 @@
-classdef conv2d_grad < matlab.System
+classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
     % untitled2 Add summary here
     %
     % This template includes the minimum set of functions required
@@ -52,9 +52,10 @@ classdef conv2d_grad < matlab.System
             %   d/dW A W = A' U
             %W_K_C_Q = obj.right.xvalue;
             dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
-            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
+            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB,[]);
 
-            dzdx_B_Ph_Pw_Q = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(A_B_I_C));            
+            ss = size(Xp_BP_KC);
+            dzdx_B_Ph_Pw_Q = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(A_B_I_C),prod(ss(2:end)));            
             dzdW_K_C_Q = reshape(Xp_BP_KC' * U_BP_Q,size(W_K_C_Q));          
         end
 
