@@ -70,7 +70,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             obj.Sel_PKC_IC = w.pickidx;
             obj.shape_BP_KC = int32([prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))]);
             obj.xshape = int32([xl(1) shapeP(1) shapeP(2) nQ]);
-            obj.Zero_Ph_Pw = zeros(shapeP','logical'); % fake
+            obj.Zero_Ph_Pw = zeros(shapeP,'logical'); % fake
         end
                 
         function  [p1,p2] = isOutputFixedSizeImpl(obj)

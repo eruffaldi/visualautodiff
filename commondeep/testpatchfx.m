@@ -2,13 +2,14 @@
 %
 % Convolution uses BPKC because works on KC
 % Max uses BPCK because works only on K
+if 0==1
 nB = 6;
 nC = 3;
 Ih = 10;
 Iw = 10;
-nFo = 2;
+%nFo = 2;
 a = mallindex([nB,Ih,Iw,nC]);
-filtersize = 5; 
+filtersize = 1; 
 padding = 0; % (filtersize-1)/2;
 stride = [1,1];
 
@@ -47,7 +48,7 @@ end
 aX = munpatcher(ones(size(Xp)),Sel_PX_IC,size(a));
 aX_B1_C1 = squeeze(aX(1,:,:,1)) % should be 25 in center, 9 in corner
 
-
+end
 
 % %% The Max Pool requires a different treatment
 % %
@@ -71,18 +72,23 @@ Ih = 8;
 Iw = 10;
 nFo = 2;
 a = mallindex([nB,Ih,Iw,nC]);
-filtersize = 2; 
+filtersize = 1; 
 padding = 0; % (filtersize-1)/2;
 stride = [1,1];
 
-mode = 'BPCK';
 mode = 'BPKC'; %OK
+mode = 'BPCK';
 [Sel_PX_IC,sXp,outshape,nameddims] = mpatchprepare(size(a),filtersize,[1 1],2,mode); % N independent
 % Sel: PKC_IC or PCK_IC
-Sel_PX_IC.gather
+Sel_PX_IC.gather = @gathermatrixmat;
+Sel_PX_IC.accum = @accummatrixmat;
 Xp = mpatcher(a,Sel_PX_IC,sXp); % extracted patch
 V =zeros(size(Xp));
 V(1,:,1,1) = Xp(1,:,1,1);
 aX = (munpatcher(V,Sel_PX_IC,size(a)));
 aX1= squeeze(aX(1,:,:,:));
 a1 = squeeze(a(1,:,:,:));
+Xp1 = reshape(Xp(1,:,:,1,1),outshape); % top left of cluster
+nameddims
+a1-aX1
+Xp1

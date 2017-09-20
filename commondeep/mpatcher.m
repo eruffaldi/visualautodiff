@@ -20,7 +20,8 @@ if isa(as,'gpuArray')
     w = gathermatrix(Sel.pickidx,gather(as),length(Sel.pickidx));
 else
     if isstruct(Sel)
-        w = gathermatrix(Sel.pickidx,as,length(Sel.pickidx));
+        f = Sel.gather;
+        w = f(Sel.pickidx,as,length(Sel.pickidx));
     else
         % SIMULINK use manual gathermatrix
         w = gathermatrixmat(Sel,as,length(Sel));

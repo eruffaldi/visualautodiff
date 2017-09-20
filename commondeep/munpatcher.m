@@ -30,7 +30,8 @@ if isa(Xpm,'gpuArray')
     w = accummatrix(Sel.pickidx,gather(Xpm),size(Sel.A,2));
 else
     if isstruct(Sel)
-        w = accummatrix(Sel.pickidx,Xpm,size(Sel.A,2));
+        f = Sel.accum;
+        w = f(Sel.pickidx,Xpm,size(Sel.A,2));
     else
         w = accummatrixmat(Sel,Xpm,SelA);
     end

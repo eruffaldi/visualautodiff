@@ -1,4 +1,4 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshape,filtersizes,stride,padding,mode)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizes,stride,padding,mode)
 
 if length(padding) == 1
     padding = repmat(padding,4,1);
@@ -8,7 +8,9 @@ end
 if length(filtersizes == 1)
     filtersizes = [filtersizes,filtersizes];
 end
-    
+% ensure length 4
+NHWCshape = ones(1,4);
+NHWCshape(1:numel(NHWCshapex)) = NHWCshapex;
 nB = NHWCshape(1);
 Ih = NHWCshape(2);
 Iw = NHWCshape(3);
@@ -24,7 +26,6 @@ assert(nCO == nC*filtersizes(1)*filtersizes(2),'expected CO');
 assert(all(size(i) == size(j)));
 assert(numel(k) == numel(i))
 
-kk = reshape(k,1,[]);
 
 if strcmp(mode,'BPKC')
     % iterate the nC (0-based) by all 
@@ -37,15 +38,16 @@ end
 
 % shift selector by topleft padding and mark all not valid indices as extra
 % column
-ii = reshape(j' - padding(1),1,[]);
-jj = reshape(i' - padding(2),1,[]);
+id0 = reshape(j' - padding(1),1,[]);
+id1 = reshape(i' - padding(2),1,[]);
+id2 = reshape(k,1,[]);
 
 % identify out of shape (due to padding) and remove them marking as special
 % extra item that will be removed from the sparse matrix
-n = ii < 0 | jj < 0 | ii >= Ih | jj >= Iw;
-ii(n) = 0; 
-jj(n) = 0;
-kk(n) = nC; % extra
+n = id0 < 0 | id1 < 0 | id0 >= Ih | id1 >= Iw;
+id0(n) = 0; 
+id1(n) = 0;
+id2(n) = nC; % extra
 nameddims = [];
 
 nameddims.B = 1;
@@ -62,7 +64,7 @@ elseif strcmp(mode,'BPKC')
     nameddims.K = [3,4];
 end
 if 1==1
-    kq = sub2ind([Ih,Iw,nC+1],ii+1,jj+1,kk+1); 
+    kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
     %extrakq = Iw*Ih+1; % this marks the kq that is outside
     Selx = sparse(1:length(kq),kq,true(length(kq),1));
     if sum(n) > 0
@@ -81,6 +83,8 @@ if 1==1
     Sel.pickidx = int32(kq);
     Sel.sXp = sXp;
     Sel.outshape = outshape;
+    Sel.gather = @accummatrix;
+    Sel.accum = @gathermatrix;
 else
     % manually expressing (Ih,Iw,C+1)
     aiC = Ih*Iw;
