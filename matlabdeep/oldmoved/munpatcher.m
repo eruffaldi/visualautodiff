@@ -8,8 +8,10 @@
 %
 % Where
 %   Q = input space
-function X = munpatcher(Xp,Sel,NHWCshape)
+function X = munpatcher(Xp,Sel,NHWCshapex)
 
+NHWCshape = ones(1,4);
+NHWCshape(1:numel(NHWCshapex))=NHWCshapex;
 nB = NHWCshape(1);
 Ih = NHWCshape(2);
 Iw = NHWCshape(3);

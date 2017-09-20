@@ -63,3 +63,26 @@ aX_B1_C1 = squeeze(aX(1,:,:,1)) % should be 25 in center, 9 in corner
 % dx = munpatcher(dxcol,Sel,size(a));
 % 
 % squeeze(dx(1,:,:,1))
+
+%%
+nB = 1;
+nC = 1;
+Ih = 8;
+Iw = 10;
+nFo = 2;
+a = mallindex([nB,Ih,Iw,nC]);
+filtersize = 2; 
+padding = 0; % (filtersize-1)/2;
+stride = [1,1];
+
+mode = 'BPCK';
+mode = 'BPKC'; %OK
+[Sel_PX_IC,sXp,outshape,nameddims] = mpatchprepare(size(a),filtersize,[1 1],2,mode); % N independent
+% Sel: PKC_IC or PCK_IC
+Sel_PX_IC.gather
+Xp = mpatcher(a,Sel_PX_IC,sXp); % extracted patch
+V =zeros(size(Xp));
+V(1,:,1,1) = Xp(1,:,1,1);
+aX = (munpatcher(V,Sel_PX_IC,size(a)));
+aX1= squeeze(aX(1,:,:,:));
+a1 = squeeze(a(1,:,:,:));

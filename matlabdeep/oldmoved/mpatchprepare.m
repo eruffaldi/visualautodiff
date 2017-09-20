@@ -1,4 +1,4 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshape,filtersizes,stride,padding,mode)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizes,stride,padding,mode)
 
 if length(padding) == 1
     padding = repmat(padding,4,1);
@@ -8,7 +8,8 @@ end
 if length(filtersizes == 1)
     filtersizes = [filtersizes,filtersizes];
 end
-    
+NHWCshape = ones(1,4);
+NHWCshape(1:numel(NHWCshapex))=NHWCshapex;
 nB = NHWCshape(1);
 Ih = NHWCshape(2);
 Iw = NHWCshape(3);
