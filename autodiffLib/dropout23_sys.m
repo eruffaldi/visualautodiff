@@ -1,5 +1,5 @@
-classdef dropout_sys < matlab.System
-    % dropout_sys Add summary here
+classdef dropout23_sys < matlab.System
+    % dropout23_sys Add summary here
     %
     % This template includes the minimum set of functions required
     % to define a System object with discrete state.
@@ -24,10 +24,12 @@ classdef dropout_sys < matlab.System
         end
 
         function [y,mask] = stepImpl(obj,x,rate)
-            q = (rand(size(x), 'single') >= rate);
-            realrate = sum(q(:) == false)/numel(q);
+            pa = [size(x,1),size(x,2),size(x,3)]; % not on last
+            q = (rand(pa, 'single') >= rate);
+            realrate = sum(q(:) == false)/prod(pa);
             scale = (1 / (1 - realrate));
-            mask = scale * q;
+            mask0 = scale * q;
+            mask = repmat(mask0,1,1,1,size(x,4));
             y = mask .* x;
         end
         

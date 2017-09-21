@@ -29,13 +29,10 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
   Kbycolx = blockrepeat0(field_height,field_width);
   if strcmp(mode,'BPKC')
       Kbycol = repmat(Kbycolx, 1, C); % was np.tile(i0,C) along X
+      Kbyrow = interrepeat0(field_width,field_height*C);
   elseif strcmp(mode,'BPCK')
       % no action needed
       Kbycol = Kbycolx;
-  end
-  if strcmp(mode,'BPKC')
-      Kbyrow = interrepeat0(field_width,field_height*C);
-  elseif strcmp(mode,'BPCK')
       Kbyrow = interrepeat0(field_width,field_height);
   end  
 
@@ -65,9 +62,11 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
           i = ia;
           j = ja;
       elseif strcmp(mode,'BPCK')
-          % replicate K 
+          % Input: B Ih Iw C
+          % we set ijk to scan IhIwC building the manual indexing
+          % (sub2ind). 
           % [field_height*field_width*nC,nP]
-          k = repmat((0:C-1)',1,field_height*field_width*nP);
+          k = repmat((0:C-1),field_height*field_width*nP,1);
           nCO = C*field_width*field_height;
           i = reshape(repmat(ia(:)',C,1),nCO,nP);
           j = reshape(repmat(ja(:)',C,1),nCO,nP);

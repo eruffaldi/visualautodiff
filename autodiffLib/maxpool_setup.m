@@ -52,6 +52,11 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             else
                 %padding = paddingmode;
             end
+            % Input:  B Ih Iw C
+            % Output: B Ph Pw C
+            % Patch Representation: B Ph Pw C Kh Kw
+            %   the max reduction is over the last two dimensions
+            %   obtaining: B Ph Pw C
             [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],padding,'BPCK'); % N independent
             r = [xl(1) shapeP(1) shapeP(2) nC]; % output BPC
             %obj.xshape = r;            

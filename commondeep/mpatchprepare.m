@@ -64,6 +64,7 @@ elseif strcmp(mode,'BPKC')
     nameddims.K = [3,4];
 end
 if 1==1
+    % build indexing inside the input that is: B Ih Iw C
     kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
     %extrakq = Iw*Ih+1; % this marks the kq that is outside
     Selx = sparse(1:length(kq),kq,true(length(kq),1));
