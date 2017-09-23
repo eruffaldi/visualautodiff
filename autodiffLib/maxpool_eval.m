@@ -49,14 +49,13 @@ ksize
             maxindices_BP_C = 'int32';
         end
         function [y,maxindices_BP_C] = getOutputSizeImpl(obj)
-            sizeA_B_I_C = propagatedInputSize(obj,1);
+            sizeA_B_I_Cx = propagatedInputSize(obj,1);
+            sizeA_B_I_C = ones(1,4);
+            sizeA_B_I_C(1:length(sizeA_B_I_Cx)) = sizeA_B_I_Cx;
+            
             sizeZero_Ph_Pw = propagatedInputSize(obj,3);
             nB = sizeA_B_I_C(1); 
-            if length(sizeA_B_I_C) == 3
-                nC = 1;
-            else
-                nC = sizeA_B_I_C(4);
-            end
+            nC = sizeA_B_I_C(4);
             nPh = sizeZero_Ph_Pw(1);
             nPw = sizeZero_Ph_Pw(2);
             nP = nPh*nPw;

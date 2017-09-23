@@ -23,55 +23,52 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
     end
 
     methods(Access = protected)
-        function [w,shape_BPKC,shapeP] = computeSomething(obj)
+        function [w,shape_BPKC,shapeP] = computeSomething(obj,state)
             xra = propagatedInputSize(obj,2); % X
             xla = propagatedInputSize(obj,1); % W
-            
-            if length(xra) == 3
-                xr = [xra(:)' , 1];
-            else
-                xr = xra;
+
+            if isempty(xla)
+                disp(sprintf('conv2d_setup(%d): %s no input',state,gcb));
+                w = [];
+                shape_BPKC = [];
+                shapeP = [];
+                return;
             end
-            
-            if length(xla) == 3
-                xl = [xla(:)' , 1];
-            else
-                xl = xla;
-            end
+            xl = ones(1,4);
+            xl(1:numel(xla)) = xla;
+            xr = ones(1,4);
+            xr(1:numel(xra)) = xra;
 
             % Fh Fw Fi Fo
-            h_filter = xr(1);
+            h_filter = xr(1); 
             w_filter = xr(2);
-            padding = obj.padding;
             stride = obj.stride(1);
-            if padding == -1
-                % automatic padding to satisfy requirement
-                paddingh = ceil((h_filter-1)/2);
-                paddingw = ceil((w_filter-1)/2);
-            else
-                % can break
-                paddingh = padding;
-                paddingw = padding;
-            end
+            [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],obj.stride(2:3),obj.padding);
+
+
             % Input:  B Ih Iw C
             % Output: B Ph Pw C
             % Patch Representation: B Ph Pw Kh Kw C
             %   the product is against: W as  [Kh Kw C Q]
             %   and we work in 2D: (B Ph Pw) (Kh Kw C) by (Kh Kw C) (Q)
-            [w,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
+            [w,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],padding, 'BPKC'); % N independent
+
+            disp(sprintf('conv2d_setup(%d): %s input shapeP',state,gcb));
+            disp(xla)
+            disp(shapeP)
+
         end
 
         function setupImpl(obj)
-            xr = propagatedInputSize(obj,1);
-            xl = propagatedInputSize(obj,2);
-            
-            if length(xr) == 3
-                nQ = 1;
-            else
-                nQ = xr(4);
-            end
+            xra = propagatedInputSize(obj,1);
+            xla = propagatedInputSize(obj,2);
+            xr = ones(1,4);
+            xr(1:numel(xra)) = xra;
 
-            [w,shape_BPKC,shapeP] = obj.computeSomething();
+            xl = ones(1,4);
+            xl(1:numel(xla)) = xla;
+
+            [w,shape_BPKC,shapeP] = obj.computeSomething(1);
             obj.Sel_PKC_IC = w.pickidx;
             obj.shape_BP_KC = int32([prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))]);
             obj.xshape = int32([xl(1) shapeP(1) shapeP(2) nQ]);
@@ -97,7 +94,7 @@ p2 = false;
         function [Sel_PKC_IC,Zero_Ph_Pw] = getOutputSizeImpl(obj) 
             
 
-            [w,shape_BPKC,shapeP] = obj.computeSomething();
+            [w,shape_BPKC,shapeP] = obj.computeSomething(2);
             Sel_PKC_IC = size(w.pickidx); % decided only after SETUP
             Zero_Ph_Pw = shapeP;
         end

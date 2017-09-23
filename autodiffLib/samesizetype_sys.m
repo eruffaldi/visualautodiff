@@ -1,5 +1,5 @@
-classdef dropout23_sys < matlab.System %& matlab.system.mixin.Propagates
-    % dropout23_sys Add summary here
+classdef samesizetype_sys < matlab.System & matlab.system.mixin.Propagates
+    % untitled2 Add summary here
     %
     % This template includes the minimum set of functions required
     % to define a System object with discrete state.
@@ -23,14 +23,14 @@ classdef dropout23_sys < matlab.System %& matlab.system.mixin.Propagates
             % Perform one-time calculations, such as computing constants
         end
 
-        function [y,mask] = stepImpl(obj,x,rate)
-            pa = [size(x,1),size(x,2),size(x,3)]; % not on last
-            q = (rand(pa, 'single') >= rate);
-            realrate = sum(q(:) == false)/prod(pa);
-            scale = (1 / (1 - realrate));
-            mask0 = scale * q;
-            mask = repmat(mask0,1,1,1,size(x,4));
-            y = mask .* x;
+        function y = stepImpl(obj,uref,u)
+            % Implement algorithm. Calculate y as a function of input u and
+            % discrete states.
+            y = cast(u,'like',uref);
+        end
+
+        function resetImpl(obj)
+            % Initialize / reset discrete-state properties
         end
         
         function  [p1] = isOutputFixedSizeImpl(obj)
@@ -47,14 +47,9 @@ classdef dropout23_sys < matlab.System %& matlab.system.mixin.Propagates
         end
 
         % outputs mask and y are same size
-        function [sz_y,sz_mask] = getOutputSizeImpl(obj) 
+        function [sz_y] = getOutputSizeImpl(obj) 
             sz_y =  propagatedInputSize(obj,1); 
-            sz_mask = sz_y;
         end
-        
-
-        function resetImpl(obj)
-            % Initialize / reset discrete-state properties
-        end
+                
     end
 end

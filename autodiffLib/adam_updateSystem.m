@@ -43,10 +43,10 @@ classdef adam_updateSystem < matlab.System & matlab.system.mixin.Propagates
              cp = false;
          end
 
-        function [y] = stepImpl(obj,lrt,epsilon,beta1,beta2,g,initial)
-                obj.m_t = beta1*obj.m_t+ (1-beta1)*g;
-                obj.s_t = beta2*obj.s_t+ (1-beta2)*g.*g;            
-              y =lrt * obj.m_t ./ (sqrt(obj.s_t) + epsilon);
+        function [effective_gradient] = stepImpl(obj,learning_rate,epsilon,beta1,beta2,gradient,initial_for_size)
+                obj.m_t = beta1*obj.m_t+ (1-beta1)*gradient;
+                obj.s_t = beta2*obj.s_t+ (1-beta2)*gradient.*gradient;            
+                effective_gradient  =learning_rate * obj.m_t ./ (sqrt(obj.s_t) + epsilon);
         end
         function [p1]= isOutputFixedSizeImpl(obj)
             p1 = true;

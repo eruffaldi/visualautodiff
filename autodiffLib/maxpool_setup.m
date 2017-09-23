@@ -8,6 +8,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
     properties
         ksize = [1,2,2,1];
         strides = [1,2,2,1];
+        padding = -1;
     end
 
     properties(DiscreteState)
@@ -26,32 +27,30 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
     end
 
     methods(Access = protected)
-        function [Sel_PCK_IC,shape_BPC_K,shapeP,Sel_PCK_IC_A] = computeSomething(obj)
+        
+        function [Sel_PCK_IC,shape_BPC_K,shapeP,Sel_PCK_IC_A] = computeSomething(obj,state)
+            assert(numel(obj.ksize) == 4);
+            assert(obj.ksize(1) == 1 & obj.ksize(4) == 1);
+            assert(obj.strides(1) == 1 & obj.strides(4) == 1);
+            
             xla = propagatedInputSize(obj,1);
             if isempty(xla)
+                disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
                 w = [];
                 shape_BPC_K = [];
                 shapeP = [];
                 return;
             end
             
-            if length(xla) == 3
-                xl = [xla,1];
-            else
-                xl = xla;
-            end
+            xl = ones(1,4);
+            xl(1:length(xla)) = xla;
             nC = xl(4);
 
             % General case
             h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
             
-            %paddingmode = obj.padding;
-            if 1==1 % strcmp(paddingmode,'SAME')
-                padding = [0,0, 0,0]; % special h_filter-1,w_filter-1];
-            else
-                %padding = paddingmode;
-            end
+            [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],obj.strides(2:3),obj.padding);
             % Input:  B Ih Iw C
             % Output: B Ph Pw C
             % Patch Representation: B Ph Pw C Kh Kw
@@ -59,6 +58,12 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             %   obtaining: B Ph Pw C
             [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],padding,'BPCK'); % N independent
             r = [xl(1) shapeP(1) shapeP(2) nC]; % output BPC
+            
+            disp(sprintf('maxpool_setup(%d): %s input shapeP and padding:',state,gcb));
+            disp(xl);
+            disp(shapeP)
+            disp(padding);
+            
             %obj.xshape = r;            
             Sel_PCK_IC_A = int32(1);
             Sel_PCK_IC = w.pickidx;
@@ -67,7 +72,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
         end
         
         function setupImpl(obj)
-            [obj.Sel_PCK_IC,obj.shape_BPC_K,obj.shapeP,obj.Sel_PCK_IC_A] = obj.computeSomething();
+            [obj.Sel_PCK_IC,obj.shape_BPC_K,obj.shapeP,obj.Sel_PCK_IC_A] = obj.computeSomething(1);
             [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
             obj.argmaxbase = cast(obj.argmaxbase,'int32');
             obj.argmaxbasescale = cast(obj.argmaxbasescale,'int32');
@@ -102,7 +107,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
         % outputs mask and y are same size
         function [Sel_PCK_IC,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_PCK_IC_A] = getOutputSizeImpl(obj) 
 
-            [w,shape_BPC_K,shapeP,wa] = obj.computeSomething();
+            [w,shape_BPC_K,shapeP,wa] = obj.computeSomething(2);
             if isempty(w)
                 Sel_PCK_IC= [];
                 Sel_PCK_IC_A = [];
