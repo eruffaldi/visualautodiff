@@ -10,13 +10,14 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
 
     % Pre-computed constants
     properties(Access = private)
+        oshape
     end
 
     methods(Access = protected)
         function setupImpl(obj)
  
 
-            
+            obj.oshape = obj.getOutputSizeImpl();
         end
 
         function  [p1] = isOutputFixedSizeImpl(obj)
@@ -54,7 +55,9 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
       
         
         function [y] = stepImpl(obj,x)
-           y = reshape(y,obj.shape);
+            y = reshape(x,obj.oshape);
+            %y = zeros(obj.oshape,'like',x);
+            %y(:) = x(:);
         end
        
     end
