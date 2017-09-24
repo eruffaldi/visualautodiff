@@ -23,7 +23,7 @@ classdef ReshapeGradSystem < matlab.System  & matlab.system.mixin.Propagates
         end
         
             function [p1] = getOutputDataTypeImpl(obj)
-                p1 = propagateInputType(obj,1);
+                p1 = propagatedInputDataType(obj,1);
             end
             
             function [p1] = isOutputComplexImpl(obj)

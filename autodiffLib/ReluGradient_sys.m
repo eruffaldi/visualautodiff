@@ -1,5 +1,5 @@
-classdef dropout_sys < matlab.System
-    % dropout_sys Add summary here
+classdef ReluGradient_sys < matlab.System & matlab.system.mixin.Propagates
+    % untitled2 Add summary here
     %
     % This template includes the minimum set of functions required
     % to define a System object with discrete state.
@@ -23,33 +23,26 @@ classdef dropout_sys < matlab.System
             % Perform one-time calculations, such as computing constants
         end
 
-        function [y,mask] = stepImpl(obj,x,rate)
-            q = (rand(size(x), 'single') >= rate);
-            realrate = sum(q(:) == false)/numel(q);
-            scale = cast(1 / (1 - realrate),'like',x);
-            mask = scale * q;
-            y = mask .* x;
-        end
-        
         function  [p1] = isOutputFixedSizeImpl(obj)
-            p1 = true;
-         
+            p1 = true;         
         end
         
         function [p1] = getOutputDataTypeImpl(obj)
-            p1 = propagatedInputType(obj,1);
+            p1 = propagatedInputDataType(obj,1);
         end
 
         function [p1] = isOutputComplexImpl(obj)
             p1 = false;
         end
-
-        % outputs mask and y are same size
-        function [sz_y,sz_mask] = getOutputSizeImpl(obj) 
-            sz_y =  propagatedInputSize(obj,1); 
-            sz_mask = sz_y;
+            
+        function [sz_1] = getOutputSizeImpl(obj) 
+            sz_1 = propagatedInputSize(obj,1); % J 
         end
         
+
+        function JX = stepImpl(obj,X,JY)
+            JX = JY .* (X > 0);
+        end
 
         function resetImpl(obj)
             % Initialize / reset discrete-state properties

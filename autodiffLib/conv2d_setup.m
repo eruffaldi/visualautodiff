@@ -60,18 +60,18 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
         end
 
         function setupImpl(obj)
-            xra = propagatedInputSize(obj,1);
-            xla = propagatedInputSize(obj,2);
-            xr = ones(1,4);
-            xr(1:numel(xra)) = xra;
+            sXa = propagatedInputSize(obj,1);
+            sWa = propagatedInputSize(obj,2);
+            sX = ones(1,4);
+            sX(1:numel(sXa)) = sXa;
 
-            xl = ones(1,4);
-            xl(1:numel(xla)) = xla;
+            sW = ones(1,4);
+            sW(1:numel(sWa)) = sWa;
 
             [w,shape_BPKC,shapeP] = obj.computeSomething(1);
             obj.Sel_PKC_IC = w.pickidx;
             obj.shape_BP_KC = int32([prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))]);
-            obj.xshape = int32([xl(1) shapeP(1) shapeP(2) nQ]);
+            obj.xshape = int32([sX(1) shapeP(1) shapeP(2) sW(4)]);
             obj.Zero_Ph_Pw = zeros(shapeP,'logical'); % fake
         end
                 
