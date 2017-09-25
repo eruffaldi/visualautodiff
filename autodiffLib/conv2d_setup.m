@@ -28,7 +28,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             xla = propagatedInputSize(obj,1); % W
 
             if isempty(xla)
-                disp(sprintf('conv2d_setup(%d): %s no input',state,gcb));
+                %disp(sprintf('conv2d_setup(%d): %s no input',state,gcb));
                 w = [];
                 shape_BPKC = [];
                 shapeP = [];
@@ -53,9 +53,9 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             %   and we work in 2D: (B Ph Pw) (Kh Kw C) by (Kh Kw C) (Q)
             [w,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],padding, 'BPKC'); % N independent
 
-            disp(sprintf('conv2d_setup(%d): %s input shapeP',state,gcb));
-            disp(xla)
-            disp(shapeP)
+            %disp(sprintf('conv2d_setup(%d): %s input shapeP',state,gcb));
+            %disp(xla)
+            %disp(shapeP)
 
         end
 
@@ -92,8 +92,6 @@ p2 = false;
 
         % outputs mask and y are same size
         function [Sel_PKC_IC,Zero_Ph_Pw] = getOutputSizeImpl(obj) 
-            
-
             [w,shape_BPKC,shapeP] = obj.computeSomething(2);
             Sel_PKC_IC = size(w.pickidx); % decided only after SETUP
             Zero_Ph_Pw = shapeP;

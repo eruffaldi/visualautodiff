@@ -18,12 +18,14 @@ stride
     properties(Access = private)
         yshape
         Xpshape
-        shape_BP_KC
+        shape_BP_KC 
+        wshape % for convertin W
+        xshape % for converting X 
     end
 
     methods(Access = protected)
 
-        function [a,b,shape_BP_KC] = computeSizes(obj)
+        function [a,b,shape_BP_KC,wshape,xshape] = computeSizes(obj)
             sizeA_B_I_C = propagatedInputSize(obj,1);
             sizeW_K_C_Qa = propagatedInputSize(obj,2);
             sizeW_K_C_Q = ones(1,4);
@@ -52,11 +54,15 @@ stride
             b = [nB*nP,nK*nC];   
             r = [nB nPh nPw nC]; % output BPC
             shape_BP_KC = [nB*nPh*nPw h_filter*w_filter*nC]; % patches for max: BPC K
+            % KC, Q
+            wshape = [nK*nC,nQ];
+            % [nB , Ih Iw C]            
+            xshape = [nB, sizeA_B_I_C4(2:end)];
         end
         function setupImpl(obj)
             % TODO: compute yshape Xpshape using padding stride and input
             % size
-            [obj.yshape,obj.Xpshape,obj.shape_BP_KC] = computeSizes(obj);
+            [obj.yshape,obj.Xpshape,obj.shape_BP_KC,obj.wshape,obj.xshape] = computeSizes(obj);
            
 
         end
@@ -70,7 +76,7 @@ stride
             Xp_BP_KC = propagatedInputDataType(obj,1);
         end
         function [y_B_Ph_Pw_Q,Xp_BP_KC] = getOutputSizeImpl(obj)
-            [y_B_Ph_Pw_Q,Xp_BP_KC] = computeSizes(obj);
+            [y_B_Ph_Pw_Q,Xp_BP_KC,~] = computeSizes(obj);
         end
         function [y_B_Ph_Pw_Q,Xp_BP_KC] = isOutputComplexImpl(obj)
             y_B_Ph_Pw_Q = false;
@@ -79,8 +85,12 @@ stride
         
         function [y_B_Ph_Pw_Q,Xp_BP_KC] = stepImpl(obj,A_B_I_C,W_K_C_Q,Sel_PKC_IC,Zero_Ph_PW)           
             
-            Xp_BP_KC = mpatcher(A_B_I_C,Sel_PKC_IC,obj.shape_BP_KC); % for gradient                        
-            y_B_Ph_Pw_Q = reshape(Xp_BP_KC*reshape(W_K_C_Q,[],obj.yshape(4)),obj.yshape); % B_Ph_Pw_Q
+            %Xp_BP_KC = mpatcher(A_B_I_C,Sel_PKC_IC,obj.shape_BP_KC); % for gradient                        
+            w = gathermatrixmat(Sel_PKC_IC,reshape(A_B_I_C,obj.xshape),length(Sel_PKC_IC));
+            Xp_BP_KC = reshape(w,obj.shape_BP_KC); % [nB , P, F, C]
+
+
+            y_B_Ph_Pw_Q = reshape(Xp_BP_KC*reshape(W_K_C_Q,obj.wshape),obj.yshape); % B_Ph_Pw_Q
                        
         end
 

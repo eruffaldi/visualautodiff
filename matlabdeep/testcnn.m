@@ -39,13 +39,16 @@ W_conv2 = weight_variable('W_conv2',[filtersize2, filtersize2, features1, featur
 b_conv2 = bias_variable('b_conv2',[features2]);
 h_conv2 = ReluOp(conv2d(h_pool1, W_conv2) + b_conv2);
 h_pool2 = max_pool_2x2(h_conv2); h_pool2.name = 'h_pool2';
+
+h_pool2_flat = ReshapeOp(h_pool2, [-1, 7*7*features2]);
+
 W_fc1 = weight_variable('W_fc1',[7 * 7 * features2, densesize]);
 b_fc1 = bias_variable('b_fc1',[densesize]);
-h_pool2_flat = ReshapeOp(h_pool2, [-1, 7*7*features2]);
 h_fc1 = ReluOp(h_pool2_flat * W_fc1 + b_fc1);
 
 keep_prob = Placeholder('keep_prob',1);
 h_fc1_drop = DropoutOp(h_fc1, keep_prob);
+
 W_fc2 = weight_variable('W_fc2',[densesize, classes]);
 b_fc2 = bias_variable('b_fc2',[classes]);
 y_conv = h_fc1_drop * W_fc2 + b_fc2;

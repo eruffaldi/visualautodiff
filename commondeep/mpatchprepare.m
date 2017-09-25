@@ -1,12 +1,17 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizes,stride,padding,mode)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,stride,paddinga,mode)
 
-if length(padding) == 1
-    padding = repmat(padding,4,1);
-elseif length(padding) == 2
-    padding = repmat(padding,2,1);
+if length(paddinga) == 1
+    padding = repmat(paddinga,4,1);
+elseif length(paddinga) == 2
+    padding = repmat(paddinga,2,1);
+else
+    padding = paddinga;
 end
-if length(filtersizes == 1)
-    filtersizes = [filtersizes,filtersizes];
+if length(filtersizesa == 1)
+    filtersizes = [filtersizesa,filtersizesa];
+else
+    filtersizes = filtersizesa;
+    
 end
 % ensure length 4
 NHWCshape = ones(1,4);
@@ -48,7 +53,7 @@ n = id0 < 0 | id1 < 0 | id0 >= Ih | id1 >= Iw;
 id0(n) = 0; 
 id1(n) = 0;
 id2(n) = nC; % extra
-nameddims = [];
+nameddims = struct();
 
 nameddims.B = 1;
 nameddims.P = 2;
@@ -67,10 +72,17 @@ if 1==1
     % build indexing inside the input that is: B Ih Iw C
     kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
     %extrakq = Iw*Ih+1; % this marks the kq that is outside
+    if 0==1
     Selx = sparse(1:length(kq),kq,true(length(kq),1));
-    if sum(n) > 0
-        Selx = Selx(:,1:end-1); % remove spurious rightmost
-        kq(n) = 0;  % mark as 0 for output
+        if sum(n) > 0
+            Selx = Selx(:,1:end-1); % remove spurious rightmost
+            kq(n) = 0;  % mark as 0 for output
+        end
+    else
+        if sum(n) > 0
+            kq(n) = 0;  % mark as 0 for output
+        end
+        Selx = [];
     end
     % given kq construct the equivalent of the selector of sparse matrix
     % that is:
@@ -79,7 +91,7 @@ if 1==1
     %   find(kq == 1) ... each or find(Sel(:,I))
     %   find(Sel(I,:)) has 0 or 1 element
     %   find(Sel(:,I)) has 1 to patchsize elements such as slotsfor
-    Sel = [];
+    Sel = struct();
     Sel.A = Selx;
     Sel.pickidx = int32(kq);
     Sel.sXp = sXp;
