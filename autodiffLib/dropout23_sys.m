@@ -24,13 +24,18 @@ classdef dropout23_sys < matlab.System %& matlab.system.mixin.Propagates
         end
 
         function [y,mask] = stepImpl(obj,x,rate)
-            pa = [size(x,1),size(x,2),size(x,3)]; % not on last
-            q = (rand(pa, 'single') >= rate);
-            realrate = sum(q(:) == false)/prod(pa);
-            scale = (1 / (1 - realrate));
-            mask0 = scale * q;
-            mask = repmat(mask0,1,1,1,size(x,4));
-            y = mask .* x;
+            if rate == 1.0
+                y = x;
+                mask = ones(size(x),'like',x);
+            else
+                pa = [size(x,1),size(x,2),size(x,3)]; % not on last
+                q = (rand(pa, 'single') >= rate);
+                realrate = sum(q(:) == false)/prod(pa);
+                scale = (1 / (1 - realrate));
+                mask0 = scale * q;
+                mask = repmat(mask0,1,1,1,size(x,4));
+                y = mask .* x;
+            end
         end
         
         function  [p1] = isOutputFixedSizeImpl(obj)
