@@ -146,12 +146,14 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       else
           {
           ssPrintf("Bad magic or labels %d %d\n",magic,numLabels);
+          ssSetErrorStatus(S,"abort bad file");
       }
       fclose(fp);
   }
   else
       {
           ssPrintf("Cannot open file %s\n",imagefile);
+          ssSetErrorStatus(S,"abort missing file");
   }
   fp = fopen(imagefile,"rb");
   if(fp)
@@ -174,6 +176,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       else
       {
           ssPrintf("Bad magic %d or images %d or size %d %d\n",magic,numImages,numRows,numCols);
+          ssSetErrorStatus(S,"abort bad file content");
       }
       fclose(fp);      
   }        
