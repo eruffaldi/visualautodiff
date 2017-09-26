@@ -1,8 +1,9 @@
 %%
 addpath ../logreg_mnist
+addpath ../commondeep
 useadam=1;
 deftype = DeepOp.setgetDefaultType(double(0));
-%deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
+deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 %deftype = DeepOp.setgetDefaultType(single(0));
 %%
 training_time=0;
