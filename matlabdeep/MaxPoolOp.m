@@ -39,7 +39,7 @@ classdef MaxPoolOp < UnaryOp
             obj.ksize = ksize;
             obj.strides = strides;
             obj.xtype = DeepOp.setgetDefaultType();
-            obj.padding = pad;
+            obj.padding = -1; %strcmp(pad,'SAME') ;
         end
 
         function r = evalshape(obj)
@@ -50,19 +50,14 @@ classdef MaxPoolOp < UnaryOp
             h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
 
-            padding = obj.padding;
             if obj.padding == -1
-                % automatic padding to satisfy requirement
-                paddingh = (h_filter-1)/2;
-                paddingw = (w_filter-1)/2;
+                [paddingout, sizeout, offsetout] = paddingsetup(xl(2:3),[h_filter,w_filter],obj.strides(2:3),-1);
             else
-                % can break
-                paddingh = padding;
-                paddingw = padding;
+                paddingout = obj.padding;
             end
 
             
-            [obj.Sel_PCK_IC,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],[paddingh,paddingw],'BPCK'); % N independent
+            [obj.Sel_PCK_IC,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],paddingout,'BPCK'); % N independent
             r = [xl(1) obj.shapeP(1) obj.shapeP(2) xl(4)]; % output BPC
             obj.xshape = r;            
             

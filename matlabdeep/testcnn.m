@@ -1,6 +1,6 @@
 %deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 addpath ../logreg_mnist
-deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
+%deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 deftype = DeepOp.setgetDefaultType((single(0)));
 
 filtersize1 = 5;
