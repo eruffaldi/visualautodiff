@@ -15,6 +15,8 @@
  * its associated macro definitions.
  */
 #include "simstruc.h"
+#include <stdint.h>
+#include <stdio.h>
 
 #define O_TYPE float
 #define O_TYPE_SPEC SS_SINGLE
@@ -134,7 +136,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       {
         fread(ylabels,nitems,1,fp);
           memset(yhot,0,nitems*10*sizeof(O_TYPE));
-          for (int i = 0; i < nitems; i++)
+          int i ;
+          for ( i = 0; i < nitems; i++)
           {
               // 10,nitems: yhot[i*10+ylabels[i]] = 1;
               yhot[ylabels[i]*nitems+i] = 1;
@@ -161,8 +164,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
       if(magic == 2015 && numImages == nitems && numRows == 28 && numCols == 28)
         {
           int q = numImages*numRows*numCols;
+          int i;
           fread(yimage,q,1,fp);
-          for (int i = 0; i < q; i++)
+          for ( i = 0; i < q; i++)
           {
               dyimage[i] = (O_TYPE)(yimage[i])/255.0;
           }

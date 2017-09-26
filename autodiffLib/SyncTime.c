@@ -37,6 +37,8 @@
 #define DWORD uint32_t
 #include <sys/time.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <time.h>
 #endif
 
 // compute
@@ -70,7 +72,7 @@ static double unixtimed_s()
 #else
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
-    return spec.tv_sec + spec.tv_nsec/1E9.0;
+    return spec.tv_sec + spec.tv_nsec/1E9;
 #endif
 #endif
 }
