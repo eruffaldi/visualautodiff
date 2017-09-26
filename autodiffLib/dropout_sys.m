@@ -24,11 +24,16 @@ classdef dropout_sys < matlab.System
         end
 
         function [y,mask] = stepImpl(obj,x,rate)
-            q = (rand(size(x), 'single') >= rate);
-            realrate = sum(q(:) == false)/numel(q);
-            scale = cast(1 / (1 - realrate),'like',x);
-            mask = scale * q;
-            y = mask .* x;
+            if rate == 1
+                y = x;
+                mask = ones(size(x),'like',x);
+            else
+                q = (rand(size(x), 'single') >= rate);
+                realrate = sum(q(:) == false)/numel(q);
+                scale = cast(1 / (1 - realrate),'like',x);
+                mask = scale * q;
+                y = mask .* x;
+            end
         end
         
         function  [p1] = isOutputFixedSizeImpl(obj)
