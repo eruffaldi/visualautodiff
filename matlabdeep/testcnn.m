@@ -61,7 +61,7 @@ if useadam == 0
   else
       train_step = AdamOptimizer(1e-4,cross_entropy);
 end
-  
+
 %train_step.evalshapewith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 
 %cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
@@ -114,7 +114,7 @@ training_time
 mte = MnistBatcher("test");
 
 % it was
-%    [test_images,~,test_labels] = mtr.whole();
+%    [test_images,~,test_labels] = mtr.whole();c cv 
 %    test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
 correctnessall = zeros(mte.n,1,'like',deftype);
 stepstest = ceil(mte.n/batchsize);
@@ -157,3 +157,5 @@ end
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});
 
+totalparams = sum(cellfun(@(x) numel(x.xvalue),{W_fc2,b_fc2,W_fc1,b_fc1,W_conv2,b_conv2,W_conv1,b_conv1}))
+  

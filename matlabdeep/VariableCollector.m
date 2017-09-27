@@ -49,7 +49,7 @@ classdef VariableCollector < handle
              for I=1:k
                 r{I} = obj.collected{selected(I)};
              end
-             
+             obj.collected = r;
              % pick only the ones in selected (up to k)
              %r = obj.collected(selected(1:k));
          end
@@ -65,9 +65,10 @@ classdef VariableCollector < handle
          end
          
          function r = paramcount(obj)
-             r = 0;
-             for I=1:length(obj.collected)
-                 r = r + prod(obj.collected{I}.xshape);
+             if isempty (obj.collected)
+                 r = 0;
+             else
+                 r = sum(cellfun(@(o) prod(o.xshape),obj.collected));
              end
          end
          
