@@ -55,7 +55,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             % Patch Representation: B Ph Pw Kh Kw C
             %   the product is against: W as  [Kh Kw C Q]
             %   and we work in 2D: (B Ph Pw) (Kh Kw C) by (Kh Kw C) (Q)
-            [w,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],padding, 'BPKC'); % N independent
+            [w,shape_BPKC,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[stride stride],padding, 'BPKC'); % N independent
 
             %disp(sprintf('conv2d_setup(%d): %s input shapeP',state,gcb));
             %disp(xla)

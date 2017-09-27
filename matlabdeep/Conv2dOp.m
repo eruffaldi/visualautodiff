@@ -65,7 +65,7 @@ classdef Conv2dOp < BinaryOp
 %                 paddingh = padding;
 %                 paddingw = padding;
 %             end
-            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],obj.stride,padding, 'BPKC'); % N independent
+            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'BPKC'); % N independent
             
             obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
             obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];

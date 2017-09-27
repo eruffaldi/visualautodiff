@@ -50,14 +50,10 @@ classdef MaxPoolOp < UnaryOp
             h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
 
-            if obj.padding == -1
-                [paddingout, sizeout, offsetout] = paddingsetup(xl(2:3),[h_filter,w_filter],obj.strides(2:3),-1);
-            else
-                paddingout = obj.padding;
-            end
+            [paddingout, sizeout, offsetout] = paddingsetup(xl(2:3),[h_filter,w_filter],obj.strides(2:3),obj.padding);
 
             
-            [obj.Sel_PCK_IC,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[obj.strides(2) obj.strides(3)],paddingout,'BPCK'); % N independent
+            [obj.Sel_PCK_IC,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'BPCK'); % N independent
             r = [xl(1) obj.shapeP(1) obj.shapeP(2) xl(4)]; % output BPC
             obj.xshape = r;            
             

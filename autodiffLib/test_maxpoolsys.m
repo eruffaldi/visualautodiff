@@ -4,7 +4,7 @@ addpath ../matlabdeep
 
 
 %% Declare Input and W
-X = rand([2,16,16,2]);
+X = rand([2,28,28,2]);
 U_B_Ph_Pw_Q = rand([size(X,1),size(X,2)/2,size(X,3)/2,size(X,4)]);
 
 %% Execute the DeepOp approach

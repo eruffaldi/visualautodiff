@@ -3,7 +3,7 @@
 % padding is 4d: top left bottom right
 % stride is  2d
 % k is NOT neeed
-function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,stride,mode)
+function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,padding,stride,mode)
 
   H = xshape(1);
   W = xshape(2);
@@ -11,14 +11,14 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,padding,s
   stridex = stride(2);
 
   % np.repeat(np.arange(A), B) =>  as 0000 1111 2222 ..
-  % np.tile(np.arange(A), B))  =>  as 012 012 012
+  % np.tile(np.arange(A), B))  =>  as 012 012 012e
   blockrepeat0= @(A,B) reshape(repmat((1:A)-1,B,1),1,[]);
   interrepeat0= @(A,B) reshape(repmat((1:A)-1,1,B),1,[]);
   
   assert (mod(H + padding(1)+padding(3) - field_height,stridey) == 0,'alignment of pad and stride-size in H');
   assert (mod(W + padding(2)+padding(4) - field_width,  stridex) == 0,'alignment of pad and stride-size in W');
-  out_height = (H + padding(1)+padding(3) - field_height) / stridey + 1;
-  out_width = (W + padding(2)+padding(4) - field_width) / stridex+ 1;
+  out_height = (H + padding(1)+padding(3)-field_height ) / stridey+1 ;
+  out_width = (W + padding(2)+padding(4)-field_width ) / stridex+1;
   outshape = [out_height out_width];
 
   if nargout < 2

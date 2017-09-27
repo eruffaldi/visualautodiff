@@ -1,4 +1,4 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,stride,paddinga,mode)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,sizeout,stride,paddinga,mode)
 
 if length(paddinga) == 1
     padding = repmat(paddinga,4,1);
@@ -24,7 +24,7 @@ nC = NHWCshape(4);
 
 
 
-[outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),padding,stride,mode);
+[outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode);
 nCO = size(i,1);
 nP = size(i,2);
 assert(nCO == nC*filtersizes(1)*filtersizes(2),'expected CO');

@@ -4,7 +4,7 @@ addpath ../matlabdeep
 
 
 %% Declare Input and W
-X = rand([2,16,16,2]);
+X = rand([2,28,28,2]);
 W = rand([5,5,size(X,4),3]); % Fh Fw Cin Cout
 U_B_Ph_Pw_Q = rand([size(X,1),size(X,2),size(X,3),size(W,4)]);
 
@@ -41,6 +41,6 @@ assert(all(size(JWs)==size(JWm)),'same JW');
 deltaY = Ys-Ym;
 deltaJW = JWs-JWm;
 deltaJX = JXs-JXm;
-norm(deltaY(:));
+norm(deltaY(:))
 norm(deltaJW(:))
 norm(deltaJX(:))
