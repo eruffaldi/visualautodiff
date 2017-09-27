@@ -55,7 +55,7 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
       
         
         function [y] = stepImpl(obj,x)
-            y = reshape(x,obj.oshape); 
+            y = reshape(x,obj.getOutputSize()); 
             %y = zeros(obj.oshape,'like',x);
             %y(:) = x(:);
         end

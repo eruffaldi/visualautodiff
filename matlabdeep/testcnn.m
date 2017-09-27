@@ -57,8 +57,8 @@ y_conv = h_fc1_drop * W_fc2 + b_fc2;
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv),0);
 
 if useadam == 0
-  train_step = GradientDescentOptimizer(0.05,cross_entropy);
-  else
+    train_step = GradientDescentOptimizer(0.05,cross_entropy);
+else
       train_step = AdamOptimizer(1e-4,cross_entropy);
 end
 
@@ -118,10 +118,10 @@ mte = MnistBatcher("test");
 %    test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
 correctnessall = zeros(mte.n,1,'like',deftype);
 stepstest = ceil(mte.n/batchsize);
-if(exist('bout','var'))
-    b.set(squeeze(bout.Data(:,end))');
-    W.set(squeeze(Wout.Data(:,:,end)));
-end
+% if(exist('bout','var'))
+%     b.set(squeeze(bout.Data(:,end))');
+%     W.set(squeeze(Wout.Data(:,:,end)));
+% end
 
 for I=1:stepstest
     [test_images,test_labels,test_labelshot] = mte.next(batchsize);    
