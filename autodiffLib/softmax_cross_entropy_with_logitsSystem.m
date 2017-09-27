@@ -43,7 +43,11 @@ classdef softmax_cross_entropy_with_logitsSystem < matlab.System & matlab.system
             logitsmax = max(xlogits,[],classdim); % along class
             logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
             sumx = sum(exp(logitsoffsetted),classdim); % exp and sum along class
-            loss = sum((xlabels .* (repmat(log(sumx),1,classes) - logitsoffsetted)),classdim); 
+            ww = log(sumx);
+            if sum(isnan(ww)) > 0
+                error('nan');
+            end
+            loss = sum((xlabels .* (repmat(ww,1,classes) - logitsoffsetted)),classdim); 
             
         end
         function [p1,p2,p3]= isOutputFixedSizeImpl(obj)

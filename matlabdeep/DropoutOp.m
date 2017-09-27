@@ -26,7 +26,7 @@ classdef DropoutOp < ElementWiseUnaryOp
                 % in practice we should count the number of items
                 q = (rand(size(x), 'single') >= rate);
                 realrate = sum(q(:) == false)/numel(q);
-                scale = single(1 / (1 - realrate));
+                scale = cast(1 / (1 - realrate),'like',x);
                 obj.mask = scale * q; 
                 obj.xvalue = obj.mask .* x ;
                 x = obj.xvalue;

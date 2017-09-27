@@ -51,7 +51,7 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
            %[~,obj.t] = max(x,[],2);
            %y = single(obj.t);
            [~,y] =  max(x,[],2);
-           y = single(y-1);
+           y = single(y);
         end
        
     end

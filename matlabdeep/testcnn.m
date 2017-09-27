@@ -124,7 +124,7 @@ if(exist('bout','var'))
 end
 
 for I=1:stepstest
-    [test_images,test_labels,test_labelshot] = mtr.next(batchsize);    
+    [test_images,test_labels,test_labelshot] = mte.next(batchsize);    
     r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
     %prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
     last = I*batchsize;
