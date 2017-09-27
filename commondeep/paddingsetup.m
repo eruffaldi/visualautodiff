@@ -7,7 +7,7 @@ offsetout= [0,0];
 % -2 means that we put each point in the center
 % -1 means that the output has the same size
 if padding == -1
-    if all(stride == 0)
+    if all(stride == 1)
         rems = filtersize-1;
         tops = floor(rems/2);
         bots = rems-tops;
