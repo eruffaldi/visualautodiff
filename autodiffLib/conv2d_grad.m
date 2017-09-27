@@ -50,14 +50,14 @@ classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
             assert(size(A_B_I_C,4) == nC,'same input C');
             assert(size(Xp_BP_KC,2) == nC*nK,'same input C and K for Xp_BP_KC');
             
-            U_BP_Q = reshape(U_B_Ph_Pw_Q,[],nQ); 
+            U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); 
             
             % work using matrix product in flat space [B P, K C] [K C, Q]
             %   d/dA A W = U W'   [B P, Q] [K C, Q]
             %   d/dW A W = A' U
             %W_K_C_Q = obj.right.xvalue;
-            dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
-            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB,[]);
+            dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,nK*nC,nQ)';
+            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB,nP*nK*nC);
 
             ss = size(A_B_I_C); % for thr intermediate result
             dzdx_B_Ph_Pw_Q = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(A_B_I_C),prod(ss(2:end)));            

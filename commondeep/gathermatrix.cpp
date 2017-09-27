@@ -11,6 +11,7 @@
 #else
 #include <iostream>
 #endif
+#include <stdint.h>
 #include <array>
 #include <memory>
 #include <algorithm>
@@ -80,6 +81,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             break;
         case mxSINGLE_CLASS:
             break;
+        case mxINT32_CLASS:
+            break;
+        case mxINT64_CLASS:
+            break;
         default:
             mexErrMsgTxt("A: Unsupported type");
             break;
@@ -106,6 +111,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             break;
         case mxSINGLE_CLASS:
             gathermatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
+            break;
+        case mxINT32_CLASS:
+            gathermatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
+            break;
+        case mxINT64_CLASS:
+            gathermatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
             break;
         default:
             mexErrMsgTxt("Unsupported type");

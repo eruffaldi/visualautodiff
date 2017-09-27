@@ -12,14 +12,15 @@
 #include <iostream>
 #endif
 #include <array>
+#include <stdint.h>
 #include <memory>
 #include <algorithm>
 
 // works iterating by row of input
 //
 // take the subs as indices to the 
-template <class T, class Y = T>
-void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,Y * pout,int outcols)
+template <class T, class DT = T>
+void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outcols)
 {
     // nsubs <= cols
     for(int input_col = 0; input_col < nsubs; input_col++)
@@ -64,7 +65,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     auto outcols = (int)mxGetScalar(prhs[2]);
     if(outcols <= 0)
     {
-        mexErrMsgTxt("n positive");
+        mexErrMsgTxt("number of output colums should be positive. API: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
         return;
     }
     switch(mxGetClassID(prhs[1]))
@@ -72,6 +73,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         case mxDOUBLE_CLASS:
             break;
         case mxSINGLE_CLASS:
+            break;
+        case mxINT32_CLASS:
+            break;
+        case mxINT64_CLASS:
             break;
         default:
             mexErrMsgTxt("A: Unsupported type");
@@ -83,7 +88,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int nsubs = mxGetNumberOfElements(prhs[0]);
     if(nsubs > cols)   
     {
-        mexErrMsgTxt("S: larger than input columns");
+        mexErrMsgTxt("S size larger than input columns of A\nSee accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
         return;
     }
     mwSize dimo[2] = { (mwSize)rows, (mwSize)outcols };
@@ -99,6 +104,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             break;
         case mxSINGLE_CLASS:
             accummatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
+            break;
+        case mxINT32_CLASS:
+            accummatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
+            break;
+        case mxINT64_CLASS:
+            accummatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
             break;
         default:
             mexErrMsgTxt("Unsupported type");

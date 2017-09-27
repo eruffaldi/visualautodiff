@@ -23,6 +23,10 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
     end
 
     methods(Access = protected)
+        %function obj = conv2d_setup(varargin)
+        %   setProperties(obj,nargin,varargin{:});
+        %end
+   
         function [w,shape_BPKC,shapeP] = computeSomething(obj,state)
             xra = propagatedInputSize(obj,2); % X
             xla = propagatedInputSize(obj,1); % W

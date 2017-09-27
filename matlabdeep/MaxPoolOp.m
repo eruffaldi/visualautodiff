@@ -92,7 +92,7 @@ classdef MaxPoolOp < UnaryOp
             Jp_BPC_K(ind) = up_BPC;  % propagate up to them
             
             % => [nB Ph Pw Fin] via unpatching
-            J_BIC = munpatcher(Jp_BPC_K,obj.Sel_PCK_IC,obj.left.xshape); % aggregate contributions
+            J_BIC = munpatcher(Jp_BPC_K,obj.Sel_PCK_IC,obj.left.xshape,prod(obj.left.xshape(2:end))); % aggregate contributions
             obj.left.grad(J_BIC);
         end
     end

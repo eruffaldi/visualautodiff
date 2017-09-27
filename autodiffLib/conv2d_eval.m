@@ -4,10 +4,10 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
     % This template includes the minimum set of functions required
     % to define a System object with discrete state.
 
-    % Public, tunable properties
+    % Public, tunable properties => UNUSED
     properties
+        stride
         padding
-stride
     end
 
     properties(DiscreteState)
@@ -24,7 +24,7 @@ stride
     end
 
     methods(Access = protected)
-
+        
         function [a,b,shape_BP_KC,wshape,xshape] = computeSizes(obj)
             sizeA_B_I_C = propagatedInputSize(obj,1);
             sizeW_K_C_Qa = propagatedInputSize(obj,2);
@@ -63,8 +63,7 @@ stride
             % TODO: compute yshape Xpshape using padding stride and input
             % size
             [obj.yshape,obj.Xpshape,obj.shape_BP_KC,obj.wshape,obj.xshape] = computeSizes(obj);
-           
-
+          
         end
 % 
         function [y_B_Ph_Pw_Q,Xp_BP_KC]= isOutputFixedSizeImpl(obj)
@@ -83,10 +82,10 @@ stride
             Xp_BP_KC = false;
         end
         
-        function [y_B_Ph_Pw_Q,Xp_BP_KC] = stepImpl(obj,A_B_I_C,W_K_C_Q,Sel_PKC_IC,Zero_Ph_PW)           
+        function [y_B_Ph_Pw_Q,Xp_BP_KC] = stepImpl(obj,X_B_I_C,W_K_C_Q,Sel_PKC_IC,Zero_Ph_PW)           
             
             %Xp_BP_KC = mpatcher(A_B_I_C,Sel_PKC_IC,obj.shape_BP_KC); % for gradient                        
-            w = gathermatrixmat(Sel_PKC_IC,reshape(A_B_I_C,obj.xshape),length(Sel_PKC_IC));
+            w = gathermatrixmat(Sel_PKC_IC,reshape(X_B_I_C,obj.xshape),length(Sel_PKC_IC));
             Xp_BP_KC = reshape(w,obj.shape_BP_KC); % [nB , P, F, C]
 
 

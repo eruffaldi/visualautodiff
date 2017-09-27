@@ -52,18 +52,20 @@ classdef Conv2dOp < BinaryOp
             % Fh Fw Fi Fo
             h_filter = xr(1);
             w_filter = xr(2);
-            padding = obj.padding;
-            stride = obj.stride(1);
-            if obj.padding == -1
-                % automatic padding to satisfy requirement
-                paddingh = (h_filter-1)/2;
-                paddingw = (w_filter-1)/2;
-            else
-                % can break
-                paddingh = padding;
-                paddingw = padding;
-            end
-            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],[stride stride],[paddingh,paddingw], 'BPKC'); % N independent
+            
+            [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],obj.stride(2:3),obj.padding);
+
+%             
+%             if obj.padding == -1
+%                 % automatic padding to satisfy requirement
+%                 paddingh = (h_filter-1)/2;
+%                 paddingw = (w_filter-1)/2;
+%             else
+%                 % can break
+%                 paddingh = padding;
+%                 paddingw = padding;
+%             end
+            [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],obj.stride,padding, 'BPKC'); % N independent
             
             obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
             obj.xshape = [xl(1) obj.shapeP(1) obj.shapeP(2) nQ];
@@ -86,7 +88,7 @@ classdef Conv2dOp < BinaryOp
         
         function grad(obj,U_B_Ph_Pw_Q)
             nB = obj.left.xshape(1);
-            nP = obj.xshape(2)*obj.xshape(3);
+            nP = size(U_B_Ph_Pw_Q,2)*size(U_B_Ph_Pw_Q,3);
             nQ = size(U_B_Ph_Pw_Q,4);
             U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); % B_Ph_Pw_Q => BP_Q
             
@@ -96,7 +98,7 @@ classdef Conv2dOp < BinaryOp
             W_K_C_Q = obj.right.xvalue;
             dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
             dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
-            dzdx = munpatcher(dzdx_B_PKC,obj.Sel_PKC_IC,obj.left.xshape);
+            dzdx = munpatcher(dzdx_B_PKC,obj.Sel_PKC_IC,obj.left.xshape,prod(obj.left.xshape(2:end)));
             obj.left.grad(dzdx);
 
             dzdW = reshape(obj.Xp_BP_KC' * U_BP_Q,obj.right.xshape);          

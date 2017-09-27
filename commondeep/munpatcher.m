@@ -27,11 +27,11 @@ Xpm = reshape(Xp,nB,[]); % keep on the left
 %accumarray Approach: notpossibly because value is vector => loops
 %w = accumarray(Sel.kq,Xpm,[size(Xpm,1),size(Sel.A,2)]);
 if isa(Xpm,'gpuArray')
-    w = accummatrix(Sel.pickidx,gather(Xpm),size(Sel.A,2));
+    w = accummatrix(Sel.pickidx,gather(Xpm),SelA); %size(Sel.A,2));
 else
     if isstruct(Sel)
         f = Sel.accum;
-        w = f(Sel.pickidx,Xpm,size(Sel.A,2));
+        w = f(Sel.pickidx,Xpm,SelA); %size(Sel.A,2));
     else
         w = accummatrixmat(Sel,Xpm,SelA);
     end

@@ -96,8 +96,8 @@ if 1==1
     Sel.pickidx = int32(kq);
     Sel.sXp = sXp;
     Sel.outshape = outshape;
-    Sel.gather = @accummatrix;
-    Sel.accum = @gathermatrix;
+    Sel.gather = @gathermatrix;
+    Sel.accum = @accummatrix;
 else
     % manually expressing (Ih,Iw,C+1)
     aiC = Ih*Iw;

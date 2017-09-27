@@ -8,6 +8,12 @@ w_filter = filtersize(2);
 offsetout= [0,0];
 sizeout = sizein;
 rems = [rem(sizein(1),h_filter),rem(sizein(2),w_filter)];
+if rems(1) > 0
+    rems(1) = h_filter-rems(1);
+end
+if rems(2) > 0
+    rems(2) = h_filter-rems(2);
+end
 
 if padding == -1
     tops = floor(rems/2);
