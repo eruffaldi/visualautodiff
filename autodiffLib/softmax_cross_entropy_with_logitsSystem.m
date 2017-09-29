@@ -17,7 +17,7 @@ classdef softmax_cross_entropy_with_logitsSystem < matlab.System & matlab.system
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
 
     end
 

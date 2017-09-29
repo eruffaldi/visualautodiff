@@ -5,7 +5,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
     % to define a System object with discrete state.
 
     % Public, tunable properties => UNUSED
-    properties
+    properties(Nontunable)
         stride
         padding
     end
@@ -15,7 +15,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         yshape
         Xpshape
         shape_BP_KC 

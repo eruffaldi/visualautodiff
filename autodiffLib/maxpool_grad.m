@@ -1,13 +1,10 @@
 classdef maxpool_grad < matlab.System & matlab.system.mixin.Propagates
-    % untitled6 Add summary here
-    %
-    % This template includes the minimum set of functions required
-    % to define a System object with discrete state.
+    % maxpool_grad Gradient of the Max Pool
 
     % Public, tunable properties
-    properties
-    ksize
-strides
+    properties(Nontunable)
+        ksize     % kernel size aka scaling e.g. 1,2,2,1
+        strides   % strides
     end
 
     properties(DiscreteState)
@@ -15,7 +12,7 @@ strides
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         shape_BPC_K
         yshape
     end

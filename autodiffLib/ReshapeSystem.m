@@ -1,6 +1,6 @@
 classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
    
-    properties
+    properties(Nontunable)
         shape;
     end
 
@@ -9,7 +9,7 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         oshape
     end
 

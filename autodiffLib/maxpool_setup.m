@@ -5,7 +5,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
     % to define a System object with discrete state.
 
     % Public, tunable properties
-    properties
+    properties (Nontunable)
         ksize = [1,2,2,1];
         strides = [1,2,2,1];
         padding = -1;
@@ -16,7 +16,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         Sel_PCK_IC
         Sel_PCK_IC_A
         shapeP
@@ -35,8 +35,9 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             
             xla = propagatedInputSize(obj,1);
             if isempty(xla)
-                disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
+                %disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
                 w = [];
+                Sel_PCK_IC = [];
                 shape_BPC_K = [];
                 shapeP = [];
                 return;
@@ -59,10 +60,10 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],padding,'BPCK'); % N independent
             r = [xl(1) shapeP(1) shapeP(2) nC]; % output BPC
             
-            disp(sprintf('maxpool_setup(%d): %s input shapeP and padding:',state,gcb));
-            disp(xl);
-            disp(shapeP)
-            disp(padding);
+            %disp(sprintf('maxpool_setup(%d): %s input shapeP and padding:',state,gcb));
+            %disp(xl);
+            %disp(shapeP)
+            %disp(padding);
             
             %obj.xshape = r;            
             Sel_PCK_IC_A = int32(1);
@@ -73,9 +74,9 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
         
         function setupImpl(obj)
             [obj.Sel_PCK_IC,obj.shape_BPC_K,obj.shapeP,obj.Sel_PCK_IC_A] = obj.computeSomething(1);
-            [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
-            obj.argmaxbase = cast(obj.argmaxbase,'int32');
-            obj.argmaxbasescale = cast(obj.argmaxbasescale,'int32');
+            [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
+            obj.argmaxbase = cast(objargmaxbase,'int32');
+            obj.argmaxbasescale = cast(objargmaxbasescale,'int32');
             obj.Zero_Ph_Pw = false(obj.shapeP(:)');
             
         end
@@ -107,16 +108,16 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
         % outputs mask and y are same size
         function [Sel_PCK_IC,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_PCK_IC_A] = getOutputSizeImpl(obj) 
 
+            xla = propagatedInputSize(obj,1);
+            if isempty(xla)
+                 Sel_PCK_IC= 0;
+                 Sel_PCK_IC_A = 0;
+                 argmaxbase = 0;
+                 argmaxbasescale = 0;
+                 Zero_Ph_Pw = 0;
+                 return;
+             end
             [w,shape_BPC_K,shapeP,wa] = obj.computeSomething(2);
-            if isempty(w)
-                Sel_PCK_IC= [];
-                Sel_PCK_IC_A = [];
-                argmaxbase = 0;
-                argmaxbasescale = 0;
-                Zero_Ph_Pw = 0;
-                return;
-                
-            end
             
             Sel_PCK_IC = size(w); % decided only after SETUP
             Sel_PCK_IC_A = 1; %size(wa);

@@ -5,7 +5,7 @@ classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
     % to define a System object with discrete state.
 
     % Public, tunable properties
-    properties
+    properties(Nontunable)
 
     end
 

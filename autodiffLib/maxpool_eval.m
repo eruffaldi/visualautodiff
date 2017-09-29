@@ -5,7 +5,7 @@ classdef maxpool_eval < matlab.System & matlab.system.mixin.Propagates
     % to define a System object with discrete state.
 
     % Public, tunable properties
-    properties
+    properties(Nontunable)
     strides
 ksize
     end
@@ -15,7 +15,7 @@ ksize
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         shape_BPC_K
         yshape
     end

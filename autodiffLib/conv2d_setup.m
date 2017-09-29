@@ -5,7 +5,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
     % to define a System object with discrete state.
 
     % Public, tunable properties
-    properties
+    properties(Nontunable)
         padding = -1;
         stride = [1,1,1,1]
     end
@@ -15,7 +15,7 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
+    properties(Nontunable,Access = private)
         xshape
         shape_BP_KC
         Sel_PKC_IC

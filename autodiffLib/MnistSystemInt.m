@@ -13,14 +13,14 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
 
 
     properties(DiscreteState)
+        epoch
+        lastdone
+        indices
     end
 
     % Pre-computed constants!
-    properties(Access = private)
-        epoch
-        lastdone
+    properties(Nontunable,Access = private)
         n
-        indices
     end
 
     methods(Access = protected)
@@ -32,6 +32,23 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
             end
         end
 
+         function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,propertyname)
+             if obj.trainset
+                n = 60000;
+            else
+                n = 10000;
+             end
+            
+             if strcmp(propertyname,'indices')
+            sz = n;
+            dt = 'int32';
+             else
+            sz = 1;
+            dt = 'double';
+             end
+            cp = false;
+         end
+        
         function  [p1] = isOutputFixedSizeImpl(obj)
             p1 = true;
          
