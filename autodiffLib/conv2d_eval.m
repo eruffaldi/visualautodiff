@@ -28,6 +28,12 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
         function [a,b,shape_BP_KC,wshape,xshape] = computeSizes(obj)
             sizeA_B_I_C = propagatedInputSize(obj,1);
             sizeW_K_C_Qa = propagatedInputSize(obj,2);
+            if length(sizeW_K_C_Qa) == 4
+                nQ = sizeW_K_C_Qa(4);
+            else
+                nQ = 1;
+            end
+                
             sizeW_K_C_Q = ones(1,4);
             sizeW_K_C_Q(1:numel(sizeW_K_C_Qa)) = sizeW_K_C_Qa;
             sizeZero_Ph_Pw = propagatedInputSize(obj,4);
@@ -40,14 +46,13 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
             else
                 sizeA_B_I_C4 = sizeA_B_I_C;
             end
-            nKh = sizeW_K_C_Q(1);
-            nKw = sizeW_K_C_Q(2);
+            nKh = sizeW_K_C_Qa(1);
+            nKw = sizeW_K_C_Qa(2);
             h_filter = nKh; %obj.ksize(2);
             w_filter = nKw; %obj.ksize(3);
             nK = nKh*nKw;
             
-            nC = sizeW_K_C_Q(3);
-            nQ = sizeW_K_C_Q(4);
+            nC = sizeW_K_C_Qa(3);
             assert(nC == sizeA_B_I_C4(end));
 
             a = [nB,nPh,nPw,nQ];

@@ -34,14 +34,14 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             assert(obj.strides(1) == 1 & obj.strides(4) == 1);
             
             xla = propagatedInputSize(obj,1);
-            if isempty(xla)
-                %disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
-                w = [];
-                Sel_PCK_IC = [];
-                shape_BPC_K = [];
-                shapeP = [];
-                return;
-            end
+%             if isempty(xla)
+%                 %disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
+%                 w = [];
+%                 Sel_PCK_IC = [];
+%                 shape_BPC_K = [];
+%                 shapeP = [];
+%                 return;
+%             end
             
             xl = ones(1,4);
             xl(1:length(xla)) = xla;
