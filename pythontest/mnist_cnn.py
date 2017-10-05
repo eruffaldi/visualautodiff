@@ -168,6 +168,7 @@ def main(_):
 
   if True: #with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
+    t0 = time.time()
     for i in range(FLAGS.iter):
       batch = mnist.train.next_batch(FLAGS.batch)
       if i % 100 == 0:
@@ -175,6 +176,9 @@ def main(_):
             x: batch[0], y_: batch[1], keep_prob: 1.0})
         print('step %d, training accuracy %g' % (i, train_accuracy))
       train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+    print ("training_time",time.time()-t0)
+    print ("iterations",FLAGS.iter)
+    print ("batchsize",FLAGS.batch)
 
     print('test accuracy %g' % accuracy.eval(feed_dict={
         x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))

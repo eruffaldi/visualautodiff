@@ -14,7 +14,7 @@ classdef GradientDescentOptimizer < Optimizer
             obj.target = target;
             vc = VariableCollector();
             obj.variables = vc.collect(target);
-            fprintf('Parameters %f\n',vc.paramcount());
+            %fprintf('Parameters %f\n',vc.paramcount());
             target.reset();
         end
         

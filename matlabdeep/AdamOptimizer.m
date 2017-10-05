@@ -43,7 +43,7 @@ classdef AdamOptimizer < Optimizer
             obj.target = target;
             vc = VariableCollector();
             obj.variables = vc.collect(target);
-            fprintf('Parameters %f\n',vc.paramcount());
+            %fprintf('Parameters %f\n',vc.paramcount());
             obj.m_t = cell(length(obj.variables),1);
             obj.s_t = cell(length(obj.variables),1);
             for I=1:length(obj.variables)

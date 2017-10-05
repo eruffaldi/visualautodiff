@@ -1,5 +1,11 @@
 %deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 addpath ../logreg_mnist
+
+if exist('testtestcnn','var') == 0
+    testtestcnn = 0;
+end
+
+if testtestcnn == 0
 %deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 deftype = DeepOp.setgetDefaultType((single(0)));
 
@@ -19,6 +25,8 @@ end
 classes = 10;
 batchsize = 64; % was 64
 useadam=1;
+epochs = 2;
+end
 
 weight_variable = @(name,shape) Variable(name,truncated_normal_gen(shape,0,0.1,deftype));
 bias_variable = @(name,shape) Variable(name,0.1*mones(shape,deftype));
@@ -71,8 +79,7 @@ accuracy = ReduceMeanOp(correct_prediction,0);
 
 mtr = MnistBatcher("train");
 train_step.reset();
-epoch = 2;
-steps = (60000/batchsize)*epoch;
+steps = (60000/batchsize)*epochs;
 losshistory = mzeros(steps,DeepOp.setgetDefaultType());
 accuracyhistory = losshistory;
 speedtest = 0;
@@ -89,26 +96,28 @@ for I=1:steps
     end
     
 end
-
 training_time = toc;
-if ~isempty(accuracyhistory)
-    figure(1)
 
-accuracyhistory
-plot(accuracyhistory)
-title('accuracy History');
-xlabel('Iteration');
-ylabel('accuracy');
+if testtestcnn == 0
+    if ~isempty(accuracyhistory)
+        figure(1)
 
+    accuracyhistory
+    plot(accuracyhistory)
+    title('accuracy History');
+    xlabel('Iteration');
+    ylabel('accuracy');
+
+    end
+
+    figure(2);
+    losshistory
+    plot(losshistory)
+    title('Loss History');
+    xlabel('Iteration');
+    ylabel('Loss');
+    training_time
 end
-
-figure(2);
-losshistory
-plot(losshistory)
-title('Loss History');
-xlabel('Iteration');
-ylabel('Loss');
-training_time
 
 %%
 mte = MnistBatcher("test");
@@ -135,18 +144,22 @@ for I=1:stepstest
     end
 
 end
-accuracy = gather(mean(correctnessall))
+accuracy = gather(mean(correctnessall));
+if testtestcnn
+    accuracy
+end
 %should give 1.0
 %accuracyfake = ReduceMeanOp(EqualOp(ArgmaxOp(y_, 1), ArgmaxOp(y_, 1))); 
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})
 %%
-disp('Final Values')
-for I=1:length(train_step.variables)
-    v = train_step.variables{I};
-    disp(sprintf('Variable %s',v.name))
-   	v.xvalue;
+if testtestcnn == 0
+    disp('Final Values')
+    for I=1:length(train_step.variables)
+        v = train_step.variables{I};
+        disp(sprintf('Variable %s',v.name))
+        v.xvalue;
+    end
 end
-
 
 %%
 %correct_prediction = EqualOp(ArgmaxOp(y_conv, 2), ArgmaxOp(y_, 2));
@@ -157,5 +170,5 @@ end
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});
 
-totalparams = sum(cellfun(@(x) numel(x.xvalue),{W_fc2,b_fc2,W_fc1,b_fc1,W_conv2,b_conv2,W_conv1,b_conv1}))
+totalparams = sum(cellfun(@(x) numel(x.xvalue),{W_fc2,b_fc2,W_fc1,b_fc1,W_conv2,b_conv2,W_conv1,b_conv1}));
   
