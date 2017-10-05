@@ -25,7 +25,7 @@ https://www.tensorflow.org/get_started/mnist/pros
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
+import time
 import argparse
 import sys
 
