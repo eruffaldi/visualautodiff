@@ -162,7 +162,9 @@ static void mdlInitializeSizes(SimStruct *S)
             SS_OPTION_WORKS_WITH_CODE_REUSE |
             SS_OPTION_EXCEPTION_FREE_CODE |
             SS_OPTION_ALLOW_PARTIAL_DIMENSIONS_CALL |
-            SS_OPTION_ALLOW_CONSTANT_PORT_SAMPLE_TIME );
+            SS_OPTION_ALLOW_CONSTANT_PORT_SAMPLE_TIME |
+            SS_OPTION_USE_TLC_WITH_ACCELERATOR
+            );
     
     mexPrintf("Ended mdlInitializeSizes\n");
 } /* end mdlInitializeSizes */

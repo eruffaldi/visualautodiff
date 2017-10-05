@@ -40,7 +40,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
              end
             
              if strcmp(propertyname,'indices')
-            sz = n;
+            sz = [1,n];
             dt = 'int32';
              else
             sz = 1;

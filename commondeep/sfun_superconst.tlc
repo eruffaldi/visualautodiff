@@ -1,0 +1,34 @@
+%% 
+%% 
+%% 
+%%
+%% Copyright 1990-2009 The MathWorks, Inc.
+%%
+%% Abstract:
+%%	Level-2 multiple port s-function using constant sample time
+%%      sfun_port_constant block target file
+%%      See simulink/src/sfun_port_constant.c
+
+
+
+%implements "sfun_superconst" "C"
+
+%% Function: mdlOutputs =====================================================
+%% Abstract:
+%%
+%%  Code is needed in the generated mdlOutputs function only if the sample time
+%%  is not constant. If the sample time is constant the output will be in the 
+%%  rtC vector and nothing needs to be done here. 
+%% 
+%function Outputs(block, system) Output
+  
+%% EMPTY  
+%endfunction
+
+%function OutputsForTID(block, system, tid) Output
+
+%% EMPTY
+
+%endfunction
+
+%% [EOF] sfun_port_constant.tlc
