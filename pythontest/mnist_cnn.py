@@ -192,6 +192,8 @@ if __name__ == '__main__':
   parser.add_argument('--original',help='picks original Tensorflow values (3.5M parameters)')
   parser.add_argument('--light',help='light values (400k parameters)')
   parser.add_argument('--lighter',help='lighter values (100k parameters)')
+  parser.add_argument('--p57',action="store_true",help='(57k parameters)')
+
   parser.add_argument('--no-gpu',action="store_true")
   parser.add_argument('--singlecore',action="store_true")
   parser.add_argument('--adam',action="store_true")
@@ -221,4 +223,10 @@ if __name__ == '__main__':
     FLAGS.dense = 128
     FLAGS.features1 = 16
     FLAGS.features2= 16
+  elif FLAGS.p57:
+    FLAGS.filter1 = 5
+    FLAGS.filter2 = 5
+    FLAGS.dense = 64
+    FLAGS.features1 = 16
+    FLAGS.features2= 16 
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
