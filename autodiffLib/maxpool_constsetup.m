@@ -31,6 +31,7 @@ switch(phase)
         [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(shape_BPC_K,2); 
         argmaxbase = cast(objargmaxbase,'int32');
         argmaxbasescale = cast(objargmaxbasescale,'int32');
+        Zero_Ph_Pw = false(shapeP);
         
 end
 

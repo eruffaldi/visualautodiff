@@ -11,17 +11,18 @@ switch(phase)
         [w,shape_BPKC,shapeP] = computeSomething(phase,inshape,padding,stride);
         Sel_PKC_IC = size(w.pickidx); % decided only after SETUP
         Zero_Ph_Pw = shapeP;
-        disp('conv2d_constsetup')
-        inshape{1}
-        inshape{2}
-        Sel_PKC_IC
-        Zero_Ph_Pw
+%         disp('conv2d_constsetup')
+%         inshape{1}
+%         inshape{2}
+%         Sel_PKC_IC
+%         Zero_Ph_Pw
     case 1 % type
         Sel_PKC_IC = int32(0);
         Zero_Ph_Pw = false(0);
     case 2 % value
         [w,shape_BPKC,shapeP] = computeSomething(phase,inshape,padding,stride);
         Sel_PKC_IC = w.pickidx;
+        Zero_Ph_Pw = false(shapeP);
         % no need to emit Zero_Ph_Pw
 end
 

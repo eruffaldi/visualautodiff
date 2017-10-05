@@ -162,8 +162,7 @@ static void mdlInitializeSizes(SimStruct *S)
             SS_OPTION_WORKS_WITH_CODE_REUSE |
             SS_OPTION_EXCEPTION_FREE_CODE |
             SS_OPTION_ALLOW_PARTIAL_DIMENSIONS_CALL |
-            SS_OPTION_ALLOW_CONSTANT_PORT_SAMPLE_TIME |
-            SS_OPTION_USE_TLC_WITH_ACCELERATOR);
+            SS_OPTION_ALLOW_CONSTANT_PORT_SAMPLE_TIME );
     
     mexPrintf("Ended mdlInitializeSizes\n");
 } /* end mdlInitializeSizes */
@@ -186,7 +185,8 @@ static void mdlSetInputPortSampleTime(SimStruct *S,
     //ssSetOutputPortSampleTime(S,i,mxGetInf());
     //ssSetOutputPortOffsetTime(S,i,0);
     //(}
-    ssSetInputPortSampleTime(S,portIdx,mxGetInf());
+    ssSetInputPortSampleTime(S,portIdx,sampleTime);
+    ssSetInputPortOffsetTime(S,portIdx,offsetTime);    
 } /* end mdlSetInputPortSampleTime */
 #endif /* MDL_SET_INPUT_PORT_SAMPLE_TIME */
 
