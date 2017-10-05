@@ -96,7 +96,7 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--iter',help="iterations",default=1000)
+  parser.add_argument('--iter',help="iterations",default=6000)
   parser.add_argument('--batch',help="batch size",default=100)
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

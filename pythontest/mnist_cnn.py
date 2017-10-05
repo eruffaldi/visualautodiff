@@ -171,7 +171,7 @@ def main(_):
     t0 = time.time()
     for i in range(FLAGS.iter):
       batch = mnist.train.next_batch(FLAGS.batch)
-      if i % 100 == 0:
+      if False and i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
             x: batch[0], y_: batch[1], keep_prob: 1.0})
         print('step %d, training accuracy %g' % (i, train_accuracy))
@@ -203,8 +203,8 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--iter',help="iterations",default=1000)
-  parser.add_argument('--batch',help="batch size",default=50)
+  parser.add_argument('--iter',help="iterations",default=1870)
+  parser.add_argument('--batch',help="batch size",default=64)
   FLAGS, unparsed = parser.parse_known_args()
   if FLAGS.original:
     # 1M
