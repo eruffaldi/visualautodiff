@@ -239,50 +239,62 @@ static void callandsolve(SimStruct * S, int phase)
     mexPrintf("Invoking %s with %d inputs, %d params\n",fxname,ninputs,nparams);
     mxArray ** plhs = (mxArray **)calloc((noutputs),sizeof(mxArray*));
     mxArray ** prhs = (mxArray **)calloc((3+nparams),sizeof(mxArray*)); // phase shapesin shapetype params..
+    if(!plhs || !prhs)
+    {
+        ssSetErrorStatus(S,"failed calloc of inputs/params");                
+        goto cleanup;
+    }
     prhs[0] = mxCreateDoubleScalar(phase);
     prhs[1] = mxCreateCellMatrix(1,ninputs);
     prhs[2] = mxCreateCellMatrix(1,ninputs);
     for(int j = 0; j < ninputs; j++)
     {
-        mxClassID cid = mxDOUBLE_CLASS;
-        DTypeId  did = ssGetInputPortDataType(S,j);
         int ndims = ssGetInputPortNumDimensions(S,j);
         if(ndims < 0)
-            continue;
-        mexPrintf("Setup Using Input %d with ndims %d\n",j,ndims);
-        int_T * idims = ssGetInputPortDimensions(S,j);
-        mxArray * q = mxCreateDoubleMatrix(1,ndims,mxREAL);
-        real_T * p = mxGetPr(q);
-        for(i = 0; i < ndims; i++)
-            p[i] = idims[i];
-        mxSetCell(prhs[1],j,q);
-        switch(did)
+            goto cleanup;
         {
-            case -1: cid = mxDOUBLE_CLASS;break;
-            case SS_DOUBLE: cid = mxDOUBLE_CLASS; break;
-            case SS_SINGLE: cid = mxSINGLE_CLASS; break;
-            case SS_INT32: cid = mxINT32_CLASS; break;
-            case SS_UINT32: cid = mxUINT32_CLASS; break;
-            case SS_INT16: cid = mxINT16_CLASS; break;
-            case SS_UINT16: cid = mxUINT16_CLASS; break;
-            case SS_INT8: cid = mxINT8_CLASS; break;
-            case SS_UINT8: cid = mxUINT8_CLASS; break;
-            case SS_BOOLEAN: cid = mxLOGICAL_CLASS; break;
-            //case SS_INT64: cid = mxINT64_CLASS; break;
-            default:
-                ssSetErrorStatus(S,"not implemented sim to mat typemap");                
+            mexPrintf("\tcall setup using input %d with ndims %d\n",j,ndims);
+            int_T * idims = ssGetInputPortDimensions(S,j);
+            mxArray * q = mxCreateDoubleMatrix(1,ndims,mxREAL);
+            if(!q)
+            {
+                ssSetErrorStatus(S,"failed mxCreateDoubleMatrix");                
+                goto cleanup;                
+            }
+            real_T * p = mxGetPr(q);
+            for(i = 0; i < ndims; i++)
+                p[i] = idims[i];
+            mxSetCell(prhs[1],j,q);
         }
-        mxSetCell(prhs[2],j,mxCreateNumericMatrix(1,1,cid,mxREAL));
+        {
+            mxClassID cid = mxDOUBLE_CLASS;
+            DTypeId  did = ssGetInputPortDataType(S,j);
+            switch(did)
+            {
+                case -1: cid = mxDOUBLE_CLASS;break;
+                case SS_DOUBLE: cid = mxDOUBLE_CLASS; break;
+                case SS_SINGLE: cid = mxSINGLE_CLASS; break;
+                case SS_INT32: cid = mxINT32_CLASS; break;
+                case SS_UINT32: cid = mxUINT32_CLASS; break;
+                case SS_INT16: cid = mxINT16_CLASS; break;
+                case SS_UINT16: cid = mxUINT16_CLASS; break;
+                case SS_INT8: cid = mxINT8_CLASS; break;
+                case SS_UINT8: cid = mxUINT8_CLASS; break;
+                case SS_BOOLEAN: cid = mxLOGICAL_CLASS; break;
+                //case SS_INT64: cid = mxINT64_CLASS; break;
+                default:
+                    ssSetErrorStatus(S,"not implemented sim to mat typemap");                
+                    goto cleanup;
+                    break;
+            }
+            mxSetCell(prhs[2],j,mxCreateNumericMatrix(1,1,cid,mxREAL));
+         }
     }
     
     // pass-through arguments
     for(i = 0; i < nparams; i++)
         prhs[i+3] = (mxArray*)ssGetSFcnParam(S,i); // pass
-    mexCallMATLAB(2,plhs,3+nparams,prhs,fxname);
-    mxDestroyArray(prhs[0]);
-    mxDestroyArray(prhs[1]);
-    mxDestroyArray(prhs[2]);
-    free(prhs);
+    mexCallMATLAB(noutputs,plhs,3+nparams,prhs,fxname);
     
     // phase 1 means DATA
     switch(phase)
@@ -312,19 +324,22 @@ static void callandsolve(SimStruct * S, int phase)
                     int32_T nDim;
                     int32_T *dims;
                     int32_T nDims = mxGetNumberOfElements(plhs[i]);
-                    real_T * p = mxGetPr(plhs[i]);
-                    DECL_AND_INIT_DIMSINFO(di); /* Initializes structure */
-                    di.width   = 1; // compute in-line
-                    di.numDims = (int32_T)nDims;
-                    dims = (int32_T*) malloc(di.numDims*sizeof(int32_T));
-                    for (nDim = 0; nDim < di.numDims; nDim++){
-                        dims[nDim] = (int32_T)(p[nDim]);
-                        di.width *= dims[nDim];
-                    }
-                    di.dims = &(dims[0]);
-                    mexPrintf("setting ssSetOutputPortDimensionInfo phase:%d idx:%d numel:%d dims:%d\n",phase,i,di.width,di.numDims);
-                    ssSetOutputPortDimensionInfo(S,i,&di);
-                    free(dims); // is allowed?
+                    if(nDims != 0)
+                    {
+                        real_T * p = mxGetPr(plhs[i]);
+                        DECL_AND_INIT_DIMSINFO(di); /* Initializes structure */
+                        di.width   = 1; // compute in-line
+                        di.numDims = (int32_T)nDims;
+                        dims = (int32_T*) malloc(di.numDims*sizeof(int32_T));
+                        for (nDim = 0; nDim < di.numDims; nDim++){
+                            dims[nDim] = (int32_T)(p[nDim]);
+                            di.width *= dims[nDim];
+                        }
+                        di.dims = &(dims[0]);
+                        mexPrintf("setting ssSetOutputPortDimensionInfo phase:%d idx:%d numel:%d dims:%d\n",phase,i,di.width,di.numDims);
+                        ssSetOutputPortDimensionInfo(S,i,&di);
+                        free(dims); // is allowed?
+                     }
                 }
             }
             break;         
@@ -343,9 +358,13 @@ static void callandsolve(SimStruct * S, int phase)
                         case mxDOUBLE_CLASS: did = SS_DOUBLE; break;
                         //case mxINT64_CLASS:  did = SS_INT64; break;
                         case mxINT32_CLASS:  did = SS_INT32; break;
+                        case mxUINT32_CLASS:  did = SS_UINT32; break;
+                        case mxLOGICAL_CLASS: did = SS_BOOLEAN; break;
                         case mxINT8_CLASS:  did = SS_INT8; break;
                         case mxUINT8_CLASS:  did = SS_UINT8; break;
                         case mxINT16_CLASS:  did = SS_INT16; break;
+                        case mxUINT16_CLASS:  did = SS_UINT16; break;
+                        
                         default:
                             ssSetErrorStatus(S,"not implemented mat to sim typemap");
                             break;
@@ -356,6 +375,13 @@ static void callandsolve(SimStruct * S, int phase)
             break;                     
         }
     }
+cleanup:
+    mxDestroyArray(prhs[0]);
+    mxDestroyArray(prhs[1]);
+    mxDestroyArray(prhs[2]);
+    free(prhs);
+    free(plhs);
+    
 }
 
 /* Function: mdlOutputs =======================================================
