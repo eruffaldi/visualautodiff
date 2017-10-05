@@ -72,7 +72,7 @@ static void mdlInitializeSizes(SimStruct *S)
 #if defined(MATLAB_MEX_FILE)
     ssSetNumSFcnParams(S,ssGetSFcnParamsCount(S));
 #endif
-    for(int i = 0; i < ssGetSFcnParamsCount(S); i++)
+    for(i = 0; i < ssGetSFcnParamsCount(S); i++)
         ssSetSFcnParamTunable(S,i,SS_PRM_NOT_TUNABLE);
     
     /* Register the number and type of states the S-Function uses */
@@ -127,7 +127,7 @@ static void mdlInitializeSizes(SimStruct *S)
     
     
     
-    for(int i = 0; i < nOutputPorts; i++)
+    for(i = 0; i < nOutputPorts; i++)
     {
         ssSetOutputPortDimensionInfo( S, i, DYNAMIC_DIMENSION);
         ssSetOutputPortDataType(S, i, DYNAMICALLY_TYPED);
@@ -182,7 +182,7 @@ static void mdlSetInputPortSampleTime(SimStruct *S,
         real_T    sampleTime,
         real_T    offsetTime)
 {
-//    for(int i = 0; i < ssGetNumInPorts(S); i++)
+//    for(i = 0; i < ssGetNumInPorts(S); i++)
     //   {
     //ssSetOutputPortSampleTime(S,i,mxGetInf());
     //ssSetOutputPortOffsetTime(S,i,0);
@@ -249,7 +249,7 @@ static void callandsolve(SimStruct * S, int phase)
     prhs[0] = mxCreateDoubleScalar(phase);
     prhs[1] = mxCreateCellMatrix(1,ninputs);
     prhs[2] = mxCreateCellMatrix(1,ninputs);
-    for(int j = 0; j < ninputs; j++)
+    for(j =  0; j < ninputs; j++)
     {
         int ndims = ssGetInputPortNumDimensions(S,j);
         if(ndims < 0)

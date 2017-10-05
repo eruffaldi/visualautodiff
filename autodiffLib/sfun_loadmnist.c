@@ -104,6 +104,20 @@ static void mdlStart(SimStruct *S)
 }
 #endif
 
+/* Function: mdlInitializeSampleTimes =========================================
+ * Abstract:
+ *      Port based sample times have already been configured, therefore this
+ *	method doesn't need to perform any action
+ */
+#define MDL_INITIALIZE_SAMPLE_TIMES
+static void mdlInitializeSampleTimes(SimStruct *S)
+{
+    mexPrintf("mdlInitializeSampleTimes\n");
+    ssSetSampleTime(S, 0, mxGetInf());
+    ssSetOffsetTime(S, 0, 0.0);
+    ssSetModelReferenceSampleTimeDefaultInheritance(S);
+} /* end mdlInitializeSampleTimes */
+
 /* Function: mdlOutputs ===================================================
  * Abstract:
  *    In this function, you compute the outputs of your S-function
@@ -153,8 +167,9 @@ static void mdlOutputs(SimStruct *S, int_T tid)
         }
         else
         {
-            ssPrintf("Cannot open file %s\n",imagefile);
-            ssSetErrorStatus(S,"abort missing file");
+            char buf[128];
+            sprintf(buf,"Cannot open file %s\n",imagefile);
+            ssSetErrorStatus(S,buf);
         }
         fp = fopen(imagefile,"rb");
         if(fp)

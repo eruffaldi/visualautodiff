@@ -1,7 +1,7 @@
-[Trimages,Trraw,Trinfo] = loadMNISTImages('train-images-idx3-ubyte');
-Trlabels = loadMNISTLabels('train-labels-idx1-ubyte')';
-[Teimages,Teraw,Teinfo] = loadMNISTImages('t10k-images-idx3-ubyte');
-Telabels = loadMNISTLabels('t10k-labels-idx1-ubyte')';
+[Trimages,Trraw,Trinfo] = loadMNISTImages('train-images.idx3-ubyte');
+Trlabels = loadMNISTLabels('train-labels.idx1-ubyte')';
+[Teimages,Teraw,Teinfo] = loadMNISTImages('t10k-images.idx3-ubyte');
+Telabels = loadMNISTLabels('t10k-labels.idx1-ubyte')';
 
 %%
 %save mnist_train Trimages Trlabels
