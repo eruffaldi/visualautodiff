@@ -21,7 +21,7 @@ r.accuracy = accuracy;
 r.type = 'gpusingle';
 r.test = 'cnn';
 r2=r;
-clear all
+
 testtestcnn=1;
 filtersize1 = 5;
 filtersize2 = 5;
