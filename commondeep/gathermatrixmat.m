@@ -6,11 +6,14 @@ nsubs = length(S);
 outcols = n;
 
 assert(nsubs <= outcols);
-out = zeros([rows,outcols],'like',A);
+out = coder.nullcopy(zeros([rows,outcols],'like',A));
 
 for itarget_col=1:nsubs
     input_col = S(itarget_col);
     if input_col > 0
         out(:,itarget_col) = A(:,input_col);
     end
+end
+if coder.target('MATLAB')
+	out(:,nsubs+1:end) = 0;
 end
