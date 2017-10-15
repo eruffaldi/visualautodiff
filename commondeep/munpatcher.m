@@ -32,7 +32,7 @@ else
     if isstruct(Sel)
         f = Sel.accum;
         w = f(Sel.pickidx,Xpm,SelA); %size(Sel.A,2));
-    else
+    else 
         w = accummatrixmat(Sel,Xpm,SelA);
     end
         
