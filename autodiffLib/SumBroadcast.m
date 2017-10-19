@@ -17,8 +17,8 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
-
+    properties(Nontunable,Access = private)
+        w
     end
 
     methods
@@ -33,13 +33,33 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
         %% Common functions
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+            sl = propagatedInputSize(obj,1);
+            obj.w = [prod(sl(1:end-1)) sl(end)]; % A1...An-1,An. 100x10
+
         end
 
         function y = stepImpl(obj,ul,ur)
             sl = size(ul); % A1,...,An e.g. 100x10
-            w = [prod(sl(1:end-1)) sl(end)]; % A1...An-1,An. 100x10
             % sr = An,1 or 1,An
-            y = reshape(reshape(ul,w) + repmat(ur(:)',w(1),1),sl);
+            if coder.target('MATLAB')
+                y = reshape(reshape(ul,obj.w) + repmat(ur(:)',obj.w(1),1),sl);
+            else
+                % make output not initialized
+                ty = coder.nullcopy(zeros(obj.w,'like',ul));
+                tul = reshape(ul,obj.w);
+                for I=1:obj.w(1) % row
+                    %for J=1:obj.w(2) % column, shared with right
+                    %    y(I+J*obj.w(1)) = ul(I+J*obj.w(1)) + ur(J);  % along all )
+                    %end
+                    ty(I,:) = tul(I,:) + ur(:)';
+                end
+                y = reshape(ty,sl);
+            end
+        end
+        function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,propertyname)
+            sz = [1,2];
+            dt = 'double';
+            cp = false;
         end
         function [p1]= isOutputFixedSizeImpl(obj)
             p1 = true;

@@ -11,12 +11,12 @@ assert(nsubs <= Cin);
 Y_rows_Cout = zeros([rows,Cout],'like',X_rows_Cin);
 
 if coder.target('MATLAB')
-for input_col=1:length(idx)
-    itarget_col = idx(input_col);
-    if itarget_col >= 1 & itarget_col <= Cout
-        Y_rows_Cout(:,itarget_col) = Y_rows_Cout(:,itarget_col) + X_rows_Cin(:,input_col);
+    for input_col=1:length(idx)
+        itarget_col = idx(input_col);
+        if itarget_col >= 1 & itarget_col <= Cout
+            Y_rows_Cout(:,itarget_col) = Y_rows_Cout(:,itarget_col) + X_rows_Cin(:,input_col);
+        end
     end
-end
 else
 	for input_col=1:length(idx)
 	    itarget_col = idx(input_col);
