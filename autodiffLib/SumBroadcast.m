@@ -41,20 +41,20 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
         function y = stepImpl(obj,ul,ur)
             sl = size(ul); % A1,...,An e.g. 100x10
             % sr = An,1 or 1,An
-            if coder.target('MATLAB')
+            %if coder.target('MATLAB')
                 y = reshape(reshape(ul,obj.w) + repmat(ur(:)',obj.w(1),1),sl);
-            else
+            %else
                 % make output not initialized
-                ty = coder.nullcopy(zeros(obj.w,'like',ul));
-                tul = reshape(ul,obj.w);
-                for I=1:obj.w(1) % row
-                    %for J=1:obj.w(2) % column, shared with right
-                    %    y(I+J*obj.w(1)) = ul(I+J*obj.w(1)) + ur(J);  % along all )
-                    %end
-                    ty(I,:) = tul(I,:) + ur(:)';
-                end
-                y = reshape(ty,sl);
-            end
+%                 ty = coder.nullcopy(zeros(obj.w,'like',ul));
+%                 tul = reshape(ul,obj.w);
+%                 for I=1:obj.w(1) % row
+%                     %for J=1:obj.w(2) % column, shared with right
+%                     %    y(I+J*obj.w(1)) = ul(I+J*obj.w(1)) + ur(J);  % along all )
+%                     %end
+%                     ty(I,:) = tul(I,:) + ur(:)';
+%                 end
+%                 y = reshape(ty,sl);
+            %end
         end
         function [sz,dt,cp] = getDiscreteStateSpecificationImpl(obj,propertyname)
             sz = [1,2];
