@@ -28,12 +28,41 @@ from __future__ import print_function
 import time
 import argparse
 import sys
-
+import json
+import numpy as np
+import uuid
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
 
 FLAGS = None
+
+def getAccuracy(matrix):
+  #sum(diag(mat))/(sum(mat))
+  sumd = np.sum(np.diagonal(matrix))
+  sumall = np.sum(matrix)
+  sumall = np.add(sumall,0.00000001)
+  return sumd/sumall
+
+def getPrecision(matrix):
+  #diag(mat) / rowSum(mat)
+  sumrow = np.sum(matrix,axis=1)
+  sumrow = np.add(sumrow,0.00000001)
+  precision = np.divide(np.diagonal(matrix),sumrow)
+  return np.sum(precision)/precision.shape[0]
+
+def getRecall(matrix):
+  #diag(mat) / colsum(mat)
+  sumcol = np.sum(matrix,axis=0)
+  sumcol = np.add(sumcol,0.00000001)
+  recall = np.divide(np.diagonal(matrix),sumcol)
+  return np.sum(recall)/recall.shape[0]
+
+def get2f(matrix):
+  #2*precision*recall/(precision+recall)
+  precision = getPrecision(matrix)
+  recall = getRecall(matrix)
+  return (2*precision*recall)/(precision+recall)
 
 
 def deepnn(x,filter1_size=5,features1=32,filter2_size=5,features2=64,densesize=1024,classes=10):
@@ -163,7 +192,8 @@ def main(_):
   config = tf.ConfigProto(**kw)
   sess = tf.InteractiveSession(config=config)
   #train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
-  correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+  predictions = tf.argmax(y_conv, 1)
+  correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
   if True: #with tf.Session() as sess:
@@ -180,9 +210,22 @@ def main(_):
     print ("iterations",FLAGS.iter)
     print ("batchsize",FLAGS.batch)
 
-    print('test accuracy %g' % accuracy.eval(feed_dict={
-        x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+    t0 = time.time()
+    accuracyvalue = accuracy.eval(feed_dict={
+        x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
+    test_time = time.time()-t0
+    print('test accuracy %g' % accuracyvalue)
 
+    cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,y_: mnist.test.labels, keep_prob: 1.0})
+    print (cm)
+    cm_accuracy = getAccuracy(cm)
+    cm_Fscore = get2f(cm)
+    print ("test CM accuracy",cm_accuracy,"CM F1",cm_Fscore)
+
+    go = str(uuid.uuid1())+'.json';
+    # BUILD JSON
+
+  
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str,
@@ -205,6 +248,7 @@ if __name__ == '__main__':
   parser.add_argument('--gradient_rate',default=0.5,type=float)
   parser.add_argument('--iter',help="iterations",default=1870)
   parser.add_argument('--batch',help="batch size",default=64)
+  parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   if FLAGS.original:
     # 1M

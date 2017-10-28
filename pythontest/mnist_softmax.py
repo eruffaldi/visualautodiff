@@ -25,6 +25,7 @@ from __future__ import print_function
 import time
 import argparse
 import sys
+import json
 import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -133,5 +134,6 @@ if __name__ == '__main__':
   parser.add_argument('--gradient_rate',default=0.5,type=float)
   parser.add_argument('--iter',help="iterations",default=6000)
   parser.add_argument('--batch',help="batch size",default=100)
+  parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

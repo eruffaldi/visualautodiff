@@ -4,7 +4,8 @@ o = [];
 pa = stats_path();
 d = dir(pa);
 for I=1:length(d)
-    if d(I).isdir == 0
+    if d(I).isdir == 0 & d(I).name(1) ~= '.'
+        
         w = load([d(I).folder,filesep,d(I).name]);
         w = w.data;
         if isstruct(w)
