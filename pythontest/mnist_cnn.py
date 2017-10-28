@@ -214,12 +214,25 @@ def main(_):
     print ("batchsize",FLAGS.batchsize)
 
     t0 = time.time()
-    accuracyvalue = accuracy.eval(feed_dict={
-        x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
+    evaliterations = int(math.ceil(10000.0/FLAGS.batchsize))
+    accuracyvalue = 0
+    accuracyvaluecount = 0
+    cm = None
+    for i in range(evaliterations):
+      batch = mnist.test.next_batch(FLAGS.batchsize)
+      accuracyvalue += accuracy.eval(feed_dict={
+        x: batch[0], y_: batch[1], keep_prob: 1.0})
+      accuracyvaluecount += 1
+      cma = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: batch[0],y_: batch[1], keep_prob: 1.0})
+      if cm is None:
+        cm =  cma
+      else:
+        cm += cma
+    accuracyvalue /= accuracyvaluecount
+
     test_time = time.time()-t0
     print('test accuracy %g' % accuracyvalue)
 
-    cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,y_: mnist.test.labels, keep_prob: 1.0})
     print (cm)
     cm_accuracy = getAccuracy(cm)
     cm_Fscore = get2f(cm)
