@@ -25,12 +25,39 @@ from __future__ import print_function
 import time
 import argparse
 import sys
-
+import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
 
 FLAGS = None
+
+def getAccuracy(matrix):
+  #sum(diag(mat))/(sum(mat))
+  sumd = np.sum(np.diagonal(matrix))
+  sumall = np.sum(matrix)
+  sumall = np.add(sumall,0.00000001)
+  return sumd/sumall
+
+def getPrecision(matrix):
+  #diag(mat) / rowSum(mat)
+  sumrow = np.sum(matrix,axis=1)
+  sumrow = np.add(sumrow,0.00000001)
+  precision = np.divide(np.diagonal(matrix),sumrow)
+  return np.sum(precision)/precision.shape[0]
+
+def getRecall(matrix):
+  #diag(mat) / colsum(mat)
+  sumcol = np.sum(matrix,axis=0)
+  sumcol = np.add(sumcol,0.00000001)
+  recall = np.divide(np.diagonal(matrix),sumcol)
+  return np.sum(recall)/recall.shape[0]
+
+def get2f(matrix):
+  #2*precision*recall/(precision+recall)
+  precision = getPrecision(matrix)
+  recall = getRecall(matrix)
+  return (2*precision*recall)/(precision+recall)
 
 
 def main(_):
@@ -82,11 +109,19 @@ def main(_):
   print ("iterations",FLAGS.iter)
   print ("batchsize",FLAGS.batch)
   # Test trained model
-  correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+  predictions = tf.argmax(y, 1)
+  correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
+  t0 = time.time()
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  print(sess.run(accuracy, feed_dict={x: mnist.test.images,
-                                      y_: mnist.test.labels}))
-
+  out_accuracy = sess.run(accuracy, feed_dict={x: mnist.test.images,
+                                      y_: mnist.test.labels})
+  test_time = time.time()-t0
+  cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,
+                                      y_: mnist.test.labels})
+  print (cm)
+  cm_accuracy = getAccuracy(cm)
+  cm_Fscore = get2f(cm)
+  print ("accuracy",cm_accuracy,"F1",cm_Fscore)
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',

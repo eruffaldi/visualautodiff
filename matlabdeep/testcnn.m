@@ -74,7 +74,8 @@ end
 
 %cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 %cross_entropy.grad(1)
-correct_prediction = EqualOp(ArgmaxOp(y_conv, 2), ArgmaxOp(y_, 2));
+prediction = ArgmaxOp(y_conv, 2);
+correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 2));
 accuracy = ReduceMeanOp(correct_prediction,0); 
 
 mtr = MnistBatcher("train");
@@ -126,25 +127,35 @@ mte = MnistBatcher("test");
 %    [test_images,~,test_labels] = mtr.whole();c cv 
 %    test_accuracy = accuracy.evalwith({x,test_images,y_,test_labels});
 correctnessall = zeros(mte.n,1,'like',deftype);
+predictionall = zeros(mte.n,1,'like',deftype);
 stepstest = ceil(mte.n/batchsize);
 % if(exist('bout','var'))
 %     b.set(squeeze(bout.Data(:,end))');
 %     W.set(squeeze(Wout.Data(:,:,end)));
 % end
-
+tic
 for I=1:stepstest
     [test_images,test_labels,test_labelshot] = mte.next(batchsize);    
     r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
+    ra = gather(prediction.xvalue-1);
     %prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
     last = I*batchsize;
     if last > mte.n
-        correctnessall((I-1)*batchsize+1:I*batchsize-(last-mte.n)) = r(1:batchsize-(last-mte.n));
+        II = (I-1)*batchsize+1:I*batchsize-(last-mte.n);
+        predictionall(II) = ra(1:batchsize-(last-mte.n));
+        correctnessall(II) = r(1:batchsize-(last-mte.n));
     else
-        correctnessall((I-1)*batchsize+1:I*batchsize) = r;
+        II= (I-1)*batchsize+1:I*batchsize;
+        predictionall(II) = ra;
+        correctnessall(II) = r;
     end
 
 end
 accuracy = gather(mean(correctnessall));
+predictionall = gather(predictionall);
+test_time = toc;
+[~,test_labels,~] = mte.whole();
+stats = multiclassinfo(test_labels,cast(predictionall,'like',test_labels));
 if testtestcnn
     accuracy
 end

@@ -116,11 +116,13 @@ if(exist('bout'))
     b.set(squeeze(bout.Data(:,end))');
     W.set(squeeze(Wout.Data(:,:,end)));
 end
+tic;
 %accuracy.evalshapewith({x,test_images,y_,test_labels})
 accuracy = gather(accuracy.evalwith({x,test_images,y_,test_labelshot}));
+test_time = toc;
 %prediction = predict_opl.evalwith({x,test_images});
-prediction = predict_op.xvalue-1; % because we go from argmax to 0-9
-
+prediction = gather(predict_op.xvalue)-1; % because we go from argmax to 0-9
+stats = multiclassinfo(cast(test_label,'like',prediction),prediction);
 if testtestsoft==0
 accuracy
 end

@@ -1,4 +1,5 @@
 addpath ../commondeep
+mysetup('json');
 clear all
 testtestcnn=1;
 filtersize1 = 5;
@@ -20,8 +21,15 @@ r.totalparams = totalparams;
 r.accuracy = accuracy;
 r.type = 'gpusingle';
 r.test = 'cnn';
-r2=r;
+r.machine = 'macos';
+r.gpu = 1;
+r.epochs = epochs;
+r.batchsize = batchsize;
+r.cm_accuracy =mean(stats.accuracy);
+r.cm_F1 =mean(stats.Fscore);
+stats_add(r);
 
+%%
 testtestcnn=1;
 filtersize1 = 5;
 filtersize2 = 5;
@@ -41,5 +49,10 @@ r.totalparams = totalparams;
 r.accuracy = accuracy;
 r.type = 'single';
 r.test = 'cnn';
-r1=r;
-
+r.gpu = 0;
+r.machine = 'macos';
+r.epochs = epochs;
+r.cm_accuracy =mean(stats.accuracy);
+r.cm_F1 =mean(stats.Fscore);
+r.batchsize = batchsize;
+stats_add(r);

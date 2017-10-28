@@ -12,21 +12,33 @@ deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 testsoftmax
 r = [];
 r.training_time = training_time;
+r.test_time = test_time;
 r.totalparams = totalparams;
 r.accuracy = accuracy;
-r.type = 'gpusingle';
+r.cm_accuracy =mean(stats.accuracy);
+r.cm_F1 =mean(stats.Fscore);
+r.type = 'single';
 r.test = 'softmax';
-r2=r;
+r.gpu = 1;
+r.machine = 'macos';
+r.epochs = epochs;
+r.batchsize = batchsize;
+
+stats_add(r);
 
 deftype = DeepOp.setgetDefaultType(single(0));
 testsoftmax
 r = [];
 r.training_time = training_time;
+r.test_time = test_time;
 r.totalparams = totalparams;
 r.accuracy = accuracy;
 r.type = 'single';
+r.gpu = 0;
 r.test = 'softmax';
-r1=r;
-
-r1
-r2
+r.cm_accuracy =mean(stats.accuracy);
+r.cm_F1 =mean(stats.Fscore);
+r.machine = 'macos';
+r.epochs = epochs;
+r.batchsize = batchsize;
+stats_add(r);
