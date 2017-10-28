@@ -5,9 +5,15 @@ pa = stats_path();
 d = dir(pa);
 for I=1:length(d)
     if d(I).isdir == 0 & d(I).name(1) ~= '.'
-        
-        w = load([d(I).folder,filesep,d(I).name]);
-        w = w.data;
+        fp = [d(I).folder,filesep,d(I).name];
+        if endsWith(d(I).name,'.json')
+            w = jsondecode(fileread(fp));
+        elseif endsWith(d(I).name,'.mat')
+            w = load(fp);
+           w = w.data;
+        else
+            continue
+        end
         if isstruct(w)
             if isempty(o)
                 o = struct2table(w);
@@ -36,7 +42,7 @@ for I=1:length(d)
                             end
                         end
                     end                
-                    if ndims(v) > 2 || size(v,2) > 1
+                    if ndims(v) > 2 || numel(v) > 1
                         o.(ff{I})(end+first,:) = v;                            
                     else                            
                         o.(ff{I})(end+first) = v;

@@ -22,11 +22,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import math
 import time
 import argparse
 import sys
 import json
 import numpy as np
+import uuid
+
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
@@ -91,6 +94,19 @@ def main(_):
   else:
     train_step = tf.train.GradientDescentOptimizer(FLAGS.gradient_rate).minimize(cross_entropy) #GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
+  total_parameters = 0
+  for variable in tf.trainable_variables():
+      # shape is an array of tf.Dimension
+      shape = variable.get_shape()
+      print(shape)
+      print(len(shape))
+      variable_parametes = 1
+      for dim in shape:
+          print(dim)
+          variable_parametes *= dim.value
+      print(variable_parametes)
+      total_parameters += variable_parametes
+  print("Total Parameters",total_parameters)
   kw = {}
   if FLAGS.no_gpu:
     kw["device_count"] = {'GPU': 0  }
@@ -102,19 +118,21 @@ def main(_):
   sess = tf.InteractiveSession(config=config)
   tf.global_variables_initializer().run()
   # Train
+  iterations = FLAGS.epochs*int(math.ceil(60000.0/FLAGS.batchsize))
   t0 = time.time()
-  for _ in range(FLAGS.iter):
-    batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch)
+  for _ in range(iterations):
+    batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batchsize)
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
-  print ("training_time",time.time()-t0)
-  print ("iterations",FLAGS.iter)
-  print ("batchsize",FLAGS.batch)
+  training_time = time.time()-t0
+  print ("training_time",training_time)
+  print ("iterations",iterations)
+  print ("batchsize",FLAGS.batchsize)
   # Test trained model
   predictions = tf.argmax(y, 1)
   correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
   t0 = time.time()
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-  out_accuracy = sess.run(accuracy, feed_dict={x: mnist.test.images,
+  accuracyvalue = sess.run(accuracy, feed_dict={x: mnist.test.images,
                                       y_: mnist.test.labels})
   test_time = time.time()-t0
   cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,
@@ -123,6 +141,19 @@ def main(_):
   cm_accuracy = getAccuracy(cm)
   cm_Fscore = get2f(cm)
   print ("accuracy",cm_accuracy,"F1",cm_Fscore)
+
+
+  cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,y_: mnist.test.labels})
+  print (cm)
+  cm_accuracy = getAccuracy(cm)
+  cm_Fscore = get2f(cm)
+  print ("test CM accuracy",cm_accuracy,"CM F1",cm_Fscore)
+
+  go = str(uuid.uuid1())+'.json';
+  args = FLAGS
+  out = dict(accuracy=float(accuracyvalue),training_time=training_time,implementation="tf",singlecore=args.singlecore,type='single',test='softmax',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
+  open(go,"w").write(json.dumps(out))
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str, default='/tmp/tensorflow/mnist/input_data',
@@ -132,8 +163,8 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--iter',help="iterations",default=6000)
-  parser.add_argument('--batch',help="batch size",default=100)
+  parser.add_argument('--epochs',help="epohcs",default=10)
+  parser.add_argument('--batchsize',help="batch size",default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

@@ -13,7 +13,6 @@ for I=1:length(codemodes)
 
         r = [];
         r.accuracy = accuracy.Data(end);
-        r.training_time = realtout1.Data(end)-realtout1.Data(1);
         r.block_codegen = codemode;
         r.simulation_mode = runmode;
         
@@ -30,6 +29,15 @@ for I=1:length(codemodes)
         r.cnn_specs = [hws.getVariable('filtersize1'),hws.getVariable('filtersize2'),hws.getVariable('features1'),hws.getVariable('filtersize2'),hws.getVariable('densesize')];
         r.epochs = eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
         r.batchsize = hws.getVariable('batchsize');
+        
+        istarttest = predictions.Time(1);
+        r.iterations = istarttest; % or -1
+        r.training_time = realtout.Data(istarttest)-realtout.Data(2);
+        r.testing_time = realtout.Data(end)-realtout.Data(istarttest);
+        stats = multiclassinfo(correct_predictions.Data(:),cast(predictions.Data(:)-1,'like',correct_predictions.Data));
+        assert(length(stats.accuracy) == 10);
+        r.cm_accuracy =mean(stats.accuracy);
+        r.cm_F1 =mean(stats.Fscore);
 
         stats_add(r);
     end

@@ -26,6 +26,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import time
+import math
 import argparse
 import sys
 import json
@@ -189,6 +190,7 @@ def main(_):
     kw["intra_op_parallelism_threads"]=1
     kw["inter_op_parallelism_threads"]=1
 
+  iterations = FLAGS.epochs*int(math.ceil(60000.0/FLAGS.batchsize))
   config = tf.ConfigProto(**kw)
   sess = tf.InteractiveSession(config=config)
   #train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
@@ -199,16 +201,17 @@ def main(_):
   if True: #with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     t0 = time.time()
-    for i in range(FLAGS.iter):
-      batch = mnist.train.next_batch(FLAGS.batch)
+    for i in range(iterations):
+      batch = mnist.train.next_batch(FLAGS.batchsize)
       if False and i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
             x: batch[0], y_: batch[1], keep_prob: 1.0})
         print('step %d, training accuracy %g' % (i, train_accuracy))
       train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    print ("training_time",time.time()-t0)
-    print ("iterations",FLAGS.iter)
-    print ("batchsize",FLAGS.batch)
+    training_time = time.time()-t0
+    print ("training_time",training_time)
+    print ("iterations",iterations)
+    print ("batchsize",FLAGS.batchsize)
 
     t0 = time.time()
     accuracyvalue = accuracy.eval(feed_dict={
@@ -223,8 +226,9 @@ def main(_):
     print ("test CM accuracy",cm_accuracy,"CM F1",cm_Fscore)
 
     go = str(uuid.uuid1())+'.json';
-    # BUILD JSON
-
+    args = FLAGS
+    out = dict(accuracy=float(accuracyvalue),training_time=training_time,singlecore=args.singlecore,implementation="tf",type='single',test='cnn',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cnn_specs=(args.filter1,args.filter2,args.features1,args.features2,args.dense),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
+    open(go,"w").write(json.dumps(out))
   
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -246,8 +250,8 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--iter',help="iterations",default=1870)
-  parser.add_argument('--batch',help="batch size",default=64)
+  parser.add_argument('--epochs',help="epochs",default=10,type=int)
+  parser.add_argument('--batchsize',help="batch size",default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   if FLAGS.original:
