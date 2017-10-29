@@ -80,12 +80,12 @@ accuracy = ReduceMeanOp(correct_prediction,0);
 
 mtr = MnistBatcher("train");
 train_step.reset();
-steps = (60000/batchsize)*epochs;
+iterations = ceil(mtr.n/batchsize)*epochs;
 losshistory = mzeros(steps,DeepOp.setgetDefaultType());
 accuracyhistory = losshistory;
 speedtest = 0;
 tic 
-for I=1:steps
+for I=1:iterations
     [batch_xs,~,batch_ys] = mtr.next(batchsize);
     loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
     losshistory(I) = loss;
@@ -153,7 +153,7 @@ for I=1:stepstest
 end
 accuracy = gather(mean(correctnessall));
 predictionall = gather(predictionall);
-test_time = toc;
+testing_time = toc;
 [~,test_labels,~] = mte.whole();
 stats = multiclassinfo(test_labels,cast(predictionall,'like',test_labels));
 if testtestcnn
@@ -181,5 +181,5 @@ end
 
 %test_accuracy = accuracy.evalwith({x,xtest,y_,ytest,keep_prob, 1.0});
 
-totalparams = sum(cellfun(@(x) numel(x.xvalue),{W_fc2,b_fc2,W_fc1,b_fc1,W_conv2,b_conv2,W_conv1,b_conv1}));
+total_params = sum(cellfun(@(x) numel(x.xvalue),{W_fc2,b_fc2,W_fc1,b_fc1,W_conv2,b_conv2,W_conv1,b_conv1}));
   

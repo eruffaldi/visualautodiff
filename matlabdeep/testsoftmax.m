@@ -119,7 +119,7 @@ end
 tic;
 %accuracy.evalshapewith({x,test_images,y_,test_labels})
 accuracy = gather(accuracy.evalwith({x,test_images,y_,test_labelshot}));
-test_time = toc;
+testing_time = toc;
 %prediction = predict_opl.evalwith({x,test_images});
 prediction = gather(predict_op.xvalue)-1; % because we go from argmax to 0-9
 stats = multiclassinfo(cast(test_label,'like',prediction),prediction);

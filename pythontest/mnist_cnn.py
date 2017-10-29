@@ -36,7 +36,12 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
 
+from sys import platform
 FLAGS = None
+
+def machine():
+  return dict(linux=glx64,darwin=maci64,win32=win32).get(platform)
+
 
 def getAccuracy(matrix):
   #sum(diag(mat))/(sum(mat))
@@ -240,7 +245,7 @@ def main(_):
 
     go = str(uuid.uuid1())+'.json';
     args = FLAGS
-    out = dict(accuracy=float(accuracyvalue),training_time=training_time,singlecore=args.singlecore,implementation="tf",type='single',test='cnn',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cnn_specs=(args.filter1,args.filter2,args.features1,args.features2,args.dense),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
+    out = dict(accuracy=float(accuracyvalue),training_time=training_time,single_core=1 if args.singlecore else 0,implementation="tf",type='single',test='cnn',gpu=0 if args.no_gpu else 1,machine=machine(),epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cnn_specs=(args.filter1,args.filter2,args.features1,args.features2,args.dense),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters)
     open(go,"w").write(json.dumps(out))
   
 if __name__ == '__main__':
@@ -253,9 +258,9 @@ if __name__ == '__main__':
   parser.add_argument('-d','--dense',type=int,default=1024,help='dense bank');
   parser.add_argument('-A','--features1',type=int,default=32,help='features of first');
   parser.add_argument('-B','--features2',type=int,default=64,help='features of second');
-  parser.add_argument('--original',help='picks original Tensorflow values (3.5M parameters)')
-  parser.add_argument('--light',help='light values (400k parameters)')
-  parser.add_argument('--lighter',help='lighter values (100k parameters)')
+  parser.add_argument('--original',action="store_true",help='picks original Tensorflow values (3.5M parameters)')
+  parser.add_argument('--light',action="store_true",help='light values (400k parameters)')
+  parser.add_argument('--lighter',action="store_true",help='lighter values (100k parameters)')
   parser.add_argument('--p57',action="store_true",help='(57k parameters)')
 
   parser.add_argument('--no-gpu',action="store_true")

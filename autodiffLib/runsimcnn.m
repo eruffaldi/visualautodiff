@@ -1,7 +1,8 @@
+clear all
 codemodes = {0,1};
 runmodes = {'normal','accelerator'};
-
 modelname ='mnist_cnn_adam';
+open_system(modelname);
 for I=1:length(codemodes)
     for J=1:length(runmodes)
         codemode = codemodes{I};
@@ -24,7 +25,6 @@ for I=1:length(codemodes)
         r.type = 'single';
         r.test = 'cnn';
         r.gpu = 0;
-        r.machine = 'macos';
         hws = get_param(modelname,'modelworkspace');
         r.cnn_specs = [hws.getVariable('filtersize1'),hws.getVariable('filtersize2'),hws.getVariable('features1'),hws.getVariable('filtersize2'),hws.getVariable('densesize')];
         r.epochs = eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
@@ -37,7 +37,7 @@ for I=1:length(codemodes)
         stats = multiclassinfo(correct_predictions.Data(:),cast(predictions.Data(:)-1,'like',correct_predictions.Data));
         assert(length(stats.accuracy) == 10);
         r.cm_accuracy =mean(stats.accuracy);
-        r.cm_F1 =mean(stats.Fscore);
+        r.cm_Fscore =mean(stats.Fscore);
 
         stats_add(r);
     end

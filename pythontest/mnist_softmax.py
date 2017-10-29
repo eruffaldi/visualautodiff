@@ -38,7 +38,7 @@ from sys import platform
 FLAGS = None
 
 def machine():
-  return dict(linux=glx64,darwin=maci64,win32=win32).get(platform)
+  return dict(linux="glx64",darwin="maci64",win32="win32").get(platform,"other")
 
 def getAccuracy(matrix):
   #sum(diag(mat))/(sum(mat))
@@ -156,7 +156,7 @@ def main(_):
 
   go = str(uuid.uuid1())+'.json';
   args = FLAGS
-  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",singlecore=args.singlecore,type='single',test='softmax',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
+  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",singlecore=1 if args.singlecore else 0,type='single',test='softmax',gpu=0 if args.no_gpu else 1,epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters)
   open(go,"w").write(json.dumps(out))
 
 if __name__ == '__main__':
@@ -168,8 +168,8 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--epochs',help="epohcs",default=10)
-  parser.add_argument('--batchsize',help="batch size",default=100)
+  parser.add_argument('--epochs',help="epohcs",type=int,default=10)
+  parser.add_argument('--batchsize',help="batch size",type=int,default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
