@@ -25,12 +25,15 @@ for I=1:length(d)
                     v = w.(ff{I});
                     if sum(fi) == 0 % not existent
                         if iscell(v)
-                            o.(ff{I}) = cell(height(o),size(v));
+                            o.(ff{I}) = cellfun(@(x) '',cell(height(o),size(v)));
                         elseif ischar(v)
                             v = {v};
                             o.(ff{I}) = cell(height(o),1);
                         else
                             ss = size(v);
+                            if ndims(v) == 2 & ss(1) > 1
+                                ss = [ss(2) ss(1)];
+                            end
                             ss(1) = height(o);
                             o.(ff{I}) = zeros(ss,'like',v);
                         end

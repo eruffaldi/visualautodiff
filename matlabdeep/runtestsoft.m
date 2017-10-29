@@ -22,7 +22,6 @@ r.type = 'single';
 r.iterations = steps;
 r.test = 'softmax';
 r.gpu = 1;
-r.machine = 'macos';
 r.epochs = epochs;
 r.batchsize = batchsize;
 

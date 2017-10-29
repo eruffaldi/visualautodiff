@@ -19,12 +19,12 @@ deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
 testcnn
 r = [];
 r.training_time = training_time;
+r.testing_time = testing_time;
 r.totalparams = totalparams;
 r.accuracy = accuracy;
-r.type = 'gpusingle';
+r.type = 'single';
 r.test = 'cnn';
 r.implementation = 'matlab';
-r.machine = 'macos';
 r.gpu = 1;
 r.epochs = epochs;
 r.batchsize = batchsize;

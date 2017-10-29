@@ -33,8 +33,12 @@ import uuid
 from tensorflow.examples.tutorials.mnist import input_data
 
 import tensorflow as tf
+from sys import platform
 
 FLAGS = None
+
+def machine():
+  return dict(linux=glx64,darwin=maci64,win32=win32).get(platform)
 
 def getAccuracy(matrix):
   #sum(diag(mat))/(sum(mat))
@@ -127,6 +131,7 @@ def main(_):
   print ("training_time",training_time)
   print ("iterations",iterations)
   print ("batchsize",FLAGS.batchsize)
+
   # Test trained model
   predictions = tf.argmax(y, 1)
   correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
@@ -151,7 +156,7 @@ def main(_):
 
   go = str(uuid.uuid1())+'.json';
   args = FLAGS
-  out = dict(accuracy=float(accuracyvalue),training_time=training_time,implementation="tf",singlecore=args.singlecore,type='single',test='softmax',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
+  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",singlecore=args.singlecore,type='single',test='softmax',gpu=0 if args.no_gpu else 1,machine='local',epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,totalparams=total_parameters)
   open(go,"w").write(json.dumps(out))
 
 if __name__ == '__main__':
