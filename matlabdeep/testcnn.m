@@ -81,7 +81,7 @@ accuracy = ReduceMeanOp(correct_prediction,0);
 mtr = MnistBatcher("train");
 train_step.reset();
 iterations = ceil(mtr.n/batchsize)*epochs;
-losshistory = mzeros(steps,DeepOp.setgetDefaultType());
+losshistory = mzeros(iterations,DeepOp.setgetDefaultType());
 accuracyhistory = losshistory;
 speedtest = 0;
 tic 

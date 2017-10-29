@@ -33,6 +33,7 @@ for KK=1:length(gpumode)
     r.epochs = epochs;
     r.batchsize = batchsize;
     r.cnn_specs = cnn_specs;
+    r.iterations = iterations;
     r.cm_accuracy = mean(stats.accuracy);
     r.cm_Fscore = mean(stats.Fscore);
     stats_add(r);

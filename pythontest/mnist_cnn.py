@@ -40,7 +40,7 @@ from sys import platform
 FLAGS = None
 
 def machine():
-  return dict(linux=glx64,darwin=maci64,win32=win32).get(platform)
+  return dict(linux="glx64",darwin="maci64",win32="win32").get(platform)
 
 
 def getAccuracy(matrix):

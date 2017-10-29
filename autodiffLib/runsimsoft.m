@@ -1,5 +1,5 @@
 clear all
-codemodes = {0,1};
+codemodes = {1};
 runmodes = {'normal','accelerator'};
 modelname ='mnist_softmax_adam_whole';
 open_system(modelname);

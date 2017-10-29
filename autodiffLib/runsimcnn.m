@@ -1,5 +1,5 @@
 clear all
-codemodes = {0,1};
+codemodes = {1};
 runmodes = {'normal','accelerator'};
 modelname ='mnist_cnn_adam';
 open_system(modelname);
