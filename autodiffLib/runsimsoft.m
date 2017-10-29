@@ -27,8 +27,8 @@ for I=1:length(codemodes)
         r.test = 'softmax';
         r.gpu = 0;
         hws = get_param(modelname,'modelworkspace');
-        r.epochs = eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
-        r.batchsize = hws.getVariable('BatchSize');
+        r.epochs = hws.getVariable('epochs');%eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
+        r.batchsize = hws.getVariable('batchsize');
 
                 istarttest = predictions.Time(1);
         r.iterations = istarttest; % or -1

@@ -27,7 +27,8 @@ for I=1:length(codemodes)
         r.gpu = 0;
         hws = get_param(modelname,'modelworkspace');
         r.cnn_specs = [hws.getVariable('filtersize1'),hws.getVariable('filtersize2'),hws.getVariable('features1'),hws.getVariable('filtersize2'),hws.getVariable('densesize')];
-        r.epochs = eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
+        r.epochs = hws.getVariable('epochs');
+        %eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
         r.batchsize = hws.getVariable('batchsize');
         
         istarttest = predictions.Time(1);
