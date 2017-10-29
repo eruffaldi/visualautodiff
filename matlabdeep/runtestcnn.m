@@ -1,5 +1,4 @@
 addpath ../commondeep
-mysetup('json');
 clear all
 testtestcnn=1;
 filtersize1 = 5;

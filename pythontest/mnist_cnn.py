@@ -264,7 +264,7 @@ if __name__ == '__main__':
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
   parser.add_argument('--epochs',help="epochs",default=10,type=int)
-  parser.add_argument('--batchsize',help="batch size",default=100)
+  parser.add_argument('--batchsize',help="batch size",type=int,default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
   if FLAGS.original:
