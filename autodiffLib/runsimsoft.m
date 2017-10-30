@@ -38,8 +38,11 @@ for I=1:length(codemodes)
         assert(length(stats.accuracy) == 10);
         r.cm_accuracy =mean(stats.accuracy);
         r.cm_Fscore =mean(stats.Fscore);
+        r.cm_specificity =mean(stats.specificity);
+        r.cm_sensitivity =mean(stats.sensitivity);
+        
+        stats_add(r,struct('loss',loss.Data(1:iterations),'cm',stats.confusionMat));
 
-        stats_add(r);
     end
 end
 

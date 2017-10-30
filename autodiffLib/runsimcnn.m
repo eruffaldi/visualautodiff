@@ -44,13 +44,17 @@ for I=1:length(codemodes)
             assert(length(stats.accuracy) == 10);
             r.cm_accuracy =mean(stats.accuracy);
             r.cm_Fscore =mean(stats.Fscore);
+            r.cm_specificity =mean(stats.specificity);
+            r.cm_sensitivity =mean(stats.sensitivity);
         catch me
+            stats = [];
+            stats.confusionMat = [];
             r.cm_accuracy = NaN;
             r.cm_Fscore = NaN;
             r.testing_time = NaN;
         end
 
-        stats_add(r);
+        stats_add(r,struct('loss',simout.loss.Data(1:iterations),'cm',stats.confusionMat));
     end
 end
 

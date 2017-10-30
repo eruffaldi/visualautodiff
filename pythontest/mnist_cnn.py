@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Modified by Emanuele Ruffaldi 2017
+#
 # ==============================================================================
 
 """A deep MNIST classifier using convolutional layers.
@@ -43,32 +46,36 @@ def machine():
   return dict(linux="glx64",darwin="maci64",win32="win32").get(platform)
 
 
-def getAccuracy(matrix):
-  #sum(diag(mat))/(sum(mat))
-  sumd = np.sum(np.diagonal(matrix))
-  sumall = np.sum(matrix)
-  sumall = np.add(sumall,0.00000001)
-  return sumd/sumall
 
-def getPrecision(matrix):
-  #diag(mat) / rowSum(mat)
-  sumrow = np.sum(matrix,axis=1)
-  sumrow = np.add(sumrow,0.00000001)
-  precision = np.divide(np.diagonal(matrix),sumrow)
-  return np.sum(precision)/precision.shape[0]
+#https://i.stack.imgur.com/AuTKP.png
+class MulticlassStat:
+  def __init__(self,matrix):
+    sumall = np.sum(matrix)
+    sumall = np.add(sumall,0.00000001) # TP+FP+TN+FN
 
-def getRecall(matrix):
-  #diag(mat) / colsum(mat)
-  sumcol = np.sum(matrix,axis=0)
-  sumcol = np.add(sumcol,0.00000001)
-  recall = np.divide(np.diagonal(matrix),sumcol)
-  return np.sum(recall)/recall.shape[0]
+    TP = np.diagonal(matrix)
 
-def get2f(matrix):
-  #2*precision*recall/(precision+recall)
-  precision = getPrecision(matrix)
-  recall = getRecall(matrix)
-  return (2*precision*recall)/(precision+recall)
+    sumrow = np.sum(matrix,axis=1)
+    sumrow = np.add(sumrow,0.00000001) # TP+FP
+    uprecision = np.divide(TP,sumrow) # TP/(TP+FP)
+
+    sumcol = np.sum(matrix,axis=0)
+    sumcol = np.add(sumcol,0.00000001) # TP+FN
+    urecall = np.divide(TP,sumcol) # TP/(TP+FN)
+
+    FP = sumrow-TP
+    FN = sumcol-TP
+
+    ufpr = np.divide(FP,sumrow) # FP/(FP+FN)
+
+    self.accuracy = np.sum(TP)/sumall  # (TP+TN)/all
+    self.precision = np.sum(uprecision)/uprecision.shape[0] # TP/(TP+FP) aka positive predictive value PPV
+    self.recall = np.sum(urecall)/urecall.shape[0] # TP / (TP+FN)  aka sensitivity aka hit rate aka true positive rate TPR
+    self.fpr = np.sum(ufpr)/ufpr.shape[0] 
+    self.specificity = 1-self.fpr # TN/(TN+FP) aka true negative rate (TNR) === 1-FPR ==  fall out or false positive rate FP/(FP+TP)
+    self.Fscore  = (2*self.precision*self.recall)/(self.precision+self.recall) # 2*precision*recall/(precision+recall)
+
+
 
 
 def deepnn(x,filter1_size=5,features1=32,filter2_size=5,features2=64,densesize=1024,classes=10):
@@ -212,7 +219,9 @@ def main(_):
         train_accuracy = accuracy.eval(feed_dict={
             x: batch[0], y_: batch[1], keep_prob: 1.0})
         print('step %d, training accuracy %g' % (i, train_accuracy))
-      train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+      _,cross_entropy_value = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys,keep_prob: 0.5})
+      losses[i] = cross_entropy_value
+      #train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
     training_time = time.time()-t0
     print ("training_time",training_time)
     print ("iterations",iterations)
@@ -239,15 +248,21 @@ def main(_):
     print('test accuracy %g' % accuracyvalue)
 
     print (cm)
-    cm_accuracy = getAccuracy(cm)
-    cm_Fscore = get2f(cm)
+    qs = MulticlassStat(cm)
+    cm_accuracy = qs.accuracy
+    cm_Fscore = qs.Fscore
+    cm_sensitivity = qs.recall
+    cm_fpr = qs.fpr
+
     print ("test CM accuracy",cm_accuracy,"CM F1",cm_Fscore)
 
     go = str(uuid.uuid1())+'.json';
     args = FLAGS
-    out = dict(accuracy=float(accuracyvalue),training_time=training_time,single_core=1 if args.singlecore else 0,implementation="tf",type='single',test='cnn',gpu=0 if args.no_gpu else 1,machine=machine(),epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cnn_specs=(args.filter1,args.filter2,args.features1,args.features2,args.dense),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters)
+    out = dict(accuracy=float(accuracyvalue),training_time=training_time,single_core=1 if args.singlecore else 0,implementation="tf",type='single',test='cnn',gpu=0 if args.no_gpu else 1,machine=machine(),epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cnn_specs=(args.filter1,args.filter2,args.features1,args.features2,args.dense),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters,cm_fpr=float(cm_fpr))
     open(go,"w").write(json.dumps(out))
-  
+    np.savetxt(go+".loss.txt", losses)
+    np.savetxt(go+".cm.txt", cm)
+    
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--data_dir', type=str,
