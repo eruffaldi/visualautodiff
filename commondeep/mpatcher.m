@@ -28,7 +28,7 @@ else
             % MEX
             % MATLAB intepreted and MATLAB System Blocks
             w = gathermatrix(Sel,as,length(Sel));
-        elseif coder.target('Sfun') || coder.target('Rtw')      
+        elseif false && (coder.target('Sfun') || coder.target('Rtw'))
             % codegen MATLAB System Blocks
             w = coder.nullcopy(zeros(sXp,'like',as)); % uninited
 %TODO            void gathermatrix_float(const float * pdata,int rows,int cols,const int32_t * psubs,int nsubs,float * pout,int outcols);
@@ -37,7 +37,8 @@ else
             nsubs = int32(numel(Sel));
             outcols = int32(length(Sel));
             % gathermatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
-            coder.ceval(['gathermatrix_' class(w)],{coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols}); % c version
+            
+            coder.ceval(['gathermatrix_' class(w)],coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols); % c version
         else
             % slow fallback
             w = gathermatrixmat(Sel,as,length(Sel));            

@@ -38,19 +38,22 @@ else
             % MEX
             % also interpreted mode MATLAB System Blocks
             w = accummatrix(Sel,Xpm,SelA);
-        elseif coder.target('Sfun') || coder.target('Rtw')                
+        elseif false && (coder.target('Sfun') || coder.target('Rtw'))
             % CODEGEN typed
             % also code gen MATLAB System Blocks
             w = coder.nullcopy(zeros(oshape,'like',Xpm));
             
+            % REMEMBER: set_param(gcs, 'SupportModelReferenceSimTargetCustomCode', 'on');
+
             % TODO
             % void accummatrix_float(const float * pdata,int rows,int cols,const int32_t * psubs,int nsubs,float * pout,int outcols);
             rows = int32(size(Xpm,1));
             cols = int32(size(Xpm,2));
             nsubs = int32(numel(Sel));
+            
             outcols = int32(SelA);
             % ORIGINAL: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
-            coder.ceval(['accummatrix_' class(w)],{coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols});
+            coder.ceval(['accummatrix_' class(w)],coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols);
         else
             % SLOW fallback
             w = accummatrixmat(Sel,Xpm,SelA);
