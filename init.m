@@ -1,0 +1,5 @@
+addpath matlabdeep
+addpath commondeep
+addpath tests
+addpath autodiffLib
+addpsth logreg_mnist

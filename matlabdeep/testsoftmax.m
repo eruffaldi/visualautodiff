@@ -2,7 +2,7 @@
 addpath ../logreg_mnist
 addpath ../commondeep
 
-if exist('testtestcnn','var') == 0
+if exist('testtestsoft','var') == 0
     testtestsoft = 0;
 end
 
@@ -10,9 +10,9 @@ if testtestsoft == 0
 
     speedtest = 1;
 
-    useadam=1;
-    deftype = DeepOp.setgetDefaultType(double(0));
+    useadam=0;
     deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
+    deftype = DeepOp.setgetDefaultType(double(0));
     training_time=0;
     batchsize = 100;
     epochs = 10;
@@ -132,12 +132,12 @@ end
 %train_accuracyfake = accuracyfake.evalwith({x,test_images,y_,test_labels})
 %%
 if testtestsoft==0
-disp('Final Values')
-for I=1:length(train_step.variables)
-    v = train_step.variables{I};
-    disp(sprintf('Variable %s',v.name))
-   	v.xvalue;
-end
+    disp('Final Values')
+    for I=1:length(train_step.variables)
+        v = train_step.variables{I};
+        disp(sprintf('Variable %s',v.name))
+        v.xvalue;
+    end
 end
 
 % Tensorflow: 91%

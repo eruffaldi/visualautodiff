@@ -36,7 +36,7 @@ classdef Conv2dOp < BinaryOp
             assert(length(W.xshape) == 4,'W should have 4D shape: K K 1 F');
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
-            obj.matlabconv = 1;
+            obj.matlabconv = 0;
             obj.padding = -1;
             obj.xtype = obj.setgetDefaultType();
         end
@@ -53,8 +53,12 @@ classdef Conv2dOp < BinaryOp
             h_filter = xr(1);
             w_filter = xr(2);
             
+            if obj.padding ~= -1
+                obj.matconv = 0;
+            end
+            
             [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],obj.stride(2:3),obj.padding);
-
+            
 %             
 %             if obj.padding == -1
 %                 % automatic padding to satisfy requirement
@@ -81,7 +85,20 @@ classdef Conv2dOp < BinaryOp
             PA_BP_KC = mpatcher(A_B_I_C,obj.Sel_PKC_IC,obj.shape_BP_KC);             
             
             obj.Xp_BP_KC = PA_BP_KC; % for gradient
-            obj.xvalue = reshape(PA_BP_KC*reshape(W_K_C_Q,[],nQ),obj.xshape); % B_Ph_Pw_Q
+            if obj.matlabconv
+                % given left: ABIC right: WKCQ convolution with same size
+                % outputs: A B I Q
+                %
+                obj.xvalue = zeros(obj.xshape,'like',obj.left.xvalue);
+                for I=1:size(obj.xvalue,1)
+                    for J=1:size(obj.xvalue,4)
+                        q = squeeze(sum(convn(A_B_I_C(I,:,:,:),W_K_C_Q(:,:,:,J),'same'),4));
+                        obj.xvalue(I,:,:,J) =  reshape(q,[1,size(q,1),size(q,2),1]);
+                    end
+                end
+            else
+                obj.xvalue = reshape(PA_BP_KC*reshape(W_K_C_Q,[],nQ),obj.xshape); % B_Ph_Pw_Q
+            end
             r = obj.xvalue;
         end
         

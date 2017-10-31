@@ -23,22 +23,43 @@ Xpm = reshape(Xp,nB,[]); % keep on the left
 
 %sparse Approach => no GPU, only double
 %w = double(Xpm)*Sel.A;
-
+oshape = [nB,Ih,Iw,nC];
 %accumarray Approach: notpossibly because value is vector => loops
 %w = accumarray(Sel.kq,Xpm,[size(Xpm,1),size(Sel.A,2)]);
 if isa(Xpm,'gpuArray')
     w = accummatrix(Sel.pickidx,gather(Xpm),SelA); %size(Sel.A,2));
 else
     if isstruct(Sel)
+        % ALWAYS MATLAB path
         f = Sel.accum;
         w = f(Sel.pickidx,Xpm,SelA); %size(Sel.A,2));
     else 
-        w = accummatrixmat(Sel,Xpm,SelA);
+        if coder.target('MATLAB')
+            % MEX
+            % also interpreted mode MATLAB System Blocks
+            w = accummatrix(Sel,Xpm,SelA);
+        elseif coder.target('Sfun') || coder.target('Rtw')                
+            % CODEGEN typed
+            % also code gen MATLAB System Blocks
+            w = coder.nullcopy(zeros(oshape,'like',Xpm));
+            
+            % TODO
+            % void accummatrix_float(const float * pdata,int rows,int cols,const int32_t * psubs,int nsubs,float * pout,int outcols);
+            rows = int32(size(Xpm,1));
+            cols = int32(size(Xpm,2));
+            nsubs = int32(numel(Sel));
+            outcols = int32(SelA);
+            % ORIGINAL: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
+            coder.ceval(['accummatrix_' class(w)],{coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols});
+        else
+            % SLOW fallback
+            w = accummatrixmat(Sel,Xpm,SelA);
+        end
     end
         
 end
 
-X = reshape(w,nB,Ih,Iw,nC); % product is Nx(Ih Iw C)
+X = reshape(w,oshape); % product is Nx(Ih Iw C)
 
 if isa(Xpm,'gpuArray')
     X =  cast(X,'like',Xpm);

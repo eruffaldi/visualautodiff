@@ -20,11 +20,28 @@ if isa(as,'gpuArray')
     w = gathermatrix(Sel.pickidx,gather(as),length(Sel.pickidx));
 else
     if isstruct(Sel)
+        % ALWAYS MATLAB path
         f = Sel.gather;
         w = f(Sel.pickidx,as,length(Sel.pickidx));
     else
-        % SIMULINK use manual gathermatrix
-        w = gathermatrixmat(Sel,as,length(Sel));
+        if coder.target('MATLAB')
+            % MEX
+            % MATLAB intepreted and MATLAB System Blocks
+            w = gathermatrix(Sel,as,length(Sel));
+        elseif coder.target('Sfun') || coder.target('Rtw')      
+            % codegen MATLAB System Blocks
+            w = coder.nullcopy(zeros(sXp,'like',as)); % uninited
+%TODO            void gathermatrix_float(const float * pdata,int rows,int cols,const int32_t * psubs,int nsubs,float * pout,int outcols);
+            rows = int32(size(as,1));
+            cols = int32(size(as,2));
+            nsubs = int32(numel(Sel));
+            outcols = int32(length(Sel));
+            % gathermatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
+            coder.ceval(['gathermatrix_' class(w)],{coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols}); % c version
+        else
+            % slow fallback
+            w = gathermatrixmat(Sel,as,length(Sel));            
+        end
     end
 end
 Xp = reshape(w,sXp); % [nB , P, F, C]

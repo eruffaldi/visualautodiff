@@ -1,7 +1,7 @@
-%%
-addpath ../commondeep
-addpath ../matlabdeep
-
+                                                                                                                                                                                        %% test_conv2dsys
+%
+% Compares: Conv2dOp of matlabdeep with conv2d_* of Simulink
+%
 
 %% Declare Input and W
 X = rand([2,28,28,2]);

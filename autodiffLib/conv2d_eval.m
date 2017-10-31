@@ -89,11 +89,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
         
         function [y_B_Ph_Pw_Q,Xp_BP_KC] = stepImpl(obj,X_B_I_C,W_K_C_Q,Sel_PKC_IC,Zero_Ph_PW)           
             
-            %Xp_BP_KC = mpatcher(A_B_I_C,Sel_PKC_IC,obj.shape_BP_KC); % for gradient                        
-            w = gathermatrixmat(Sel_PKC_IC,reshape(X_B_I_C,obj.xshape),length(Sel_PKC_IC));
-            Xp_BP_KC = reshape(w,obj.shape_BP_KC); % [nB , P, F, C]
-
-
+            Xp_BP_KC = mpatcher(X_B_I_C,Sel_PKC_IC,obj.shape_BP_KC); % for gradient                        
             y_B_Ph_Pw_Q = reshape(Xp_BP_KC*reshape(W_K_C_Q,obj.wshape),obj.yshape); % B_Ph_Pw_Q
                        
         end

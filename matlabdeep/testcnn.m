@@ -1,5 +1,4 @@
-%deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
-addpath ../logreg_mnist
+
 
 if exist('testtestcnn','var') == 0
     testtestcnn = 0;
@@ -23,9 +22,9 @@ else
 end
 
 classes = 10;
-batchsize = 64; % was 64
+batchsize = 50; % was 64
 useadam=1;
-epochs = 2;
+epochs = 10;
 end
 
 weight_variable = @(name,shape) Variable(name,truncated_normal_gen(shape,0,0.1,deftype));
@@ -87,13 +86,12 @@ speedtest = 0;
 tic 
 for I=1:iterations
     [batch_xs,~,batch_ys] = mtr.next(batchsize);
-    loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
+    loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys),keep_prob,0.4});
     losshistory(I) = loss;
     if speedtest == 0 && mod(I,10) == 0
         I
         %[whole_xs,~,whole_ys] = mtr.whole();
-        %test_accuracy = accuracy.evalwith({x,whole_xs,y_,whole_ys});
-        %accuracyhistory(I) = test_accuracy;
+        %test_accuracy = accuracy.evalwith({x,whole_xs,y_,whole_ys})
     end
     
 end

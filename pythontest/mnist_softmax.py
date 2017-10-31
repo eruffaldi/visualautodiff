@@ -61,13 +61,15 @@ class MulticlassStat:
 
     FP = sumrow-TP
     FN = sumcol-TP
+    TN = sumall-FP-FN-TP
 
     ufpr = np.divide(FP,sumrow) # FP/(FP+FN)
 
-    self.accuracy = np.sum(TP)/sumall  # (TP+TN)/all
+    self.accuracy = np.sum(TP+TN)/sumall  # (TP+TN)/all
     self.precision = np.sum(uprecision)/uprecision.shape[0] # TP/(TP+FP) aka positive predictive value PPV
     self.recall = np.sum(urecall)/urecall.shape[0] # TP / (TP+FN)  aka sensitivity aka hit rate aka true positive rate TPR
     self.fpr = np.sum(ufpr)/ufpr.shape[0] 
+    self.specificity = 1-self.fpr # TN/(TN+FP) aka true negative rate (TNR) === 1-FPR ==  fall out or false positive rate FP/(FP+TP)
     self.Fscore  = (2*self.precision*self.recall)/(self.precision+self.recall) # 2*precision*recall/(precision+recall)
 
 
