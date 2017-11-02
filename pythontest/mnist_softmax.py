@@ -150,13 +150,8 @@ def main(_):
   test_time = time.time()-t0
   cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,
                                       y_: mnist.test.labels})
-  print (cm)
-  cm_accuracy = getAccuracy(cm)
-  cm_Fscore = get2f(cm)
-  print ("accuracy",cm_accuracy,"F1",cm_Fscore)
 
 
-  cm = sess.run(tf.contrib.metrics.confusion_matrix(tf.argmax(y_, 1),predictions,10),feed_dict={x: mnist.test.images,y_: mnist.test.labels})
   print (cm)
   qs = MulticlassStat(cm)
   cm_accuracy = qs.accuracy

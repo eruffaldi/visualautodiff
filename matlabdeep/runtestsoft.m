@@ -1,4 +1,3 @@
-addpath ../commondeep
 clear all
 
 testtestsoft=1;
@@ -9,8 +8,8 @@ speedtest = 1;
 gpumode = [0,1];
 total_params = 7850;
 
-for I=1:length(gpumode)
-    if gpumode(I)
+for Q=1:length(gpumode)
+    if gpumode(Q)
         deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
     else
         deftype = DeepOp.setgetDefaultType(single(0));
@@ -27,7 +26,7 @@ for I=1:length(gpumode)
     r.type = 'single';
     r.iterations = steps;
     r.test = 'softmax';
-    r.gpu = gpumode(I);
+    r.gpu = gpumode(Q);
     r.epochs = epochs;
     r.batchsize = batchsize;
 

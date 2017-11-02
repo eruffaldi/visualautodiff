@@ -28,7 +28,7 @@ else
             % MEX
             % MATLAB intepreted and MATLAB System Blocks
             w = gathermatrix(Sel,as,length(Sel));
-        elseif false && (coder.target('Sfun') || coder.target('Rtw'))
+        elseif   coder.target('Rtw') % false && (coder.target('Sfun') ||
             % codegen MATLAB System Blocks
             w = coder.nullcopy(zeros(sXp,'like',as)); % uninited
 %TODO            void gathermatrix_float(const float * pdata,int rows,int cols,const int32_t * psubs,int nsubs,float * pout,int outcols);

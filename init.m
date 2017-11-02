@@ -2,4 +2,4 @@ addpath matlabdeep
 addpath commondeep
 addpath tests
 addpath autodiffLib
-addpsth logreg_mnist
+addpath logreg_mnist

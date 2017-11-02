@@ -13,11 +13,11 @@ save(pf,'data');
 if nargin > 1
     ff = fieldnames(extra);
     for I=1:length(ff)
-        pq = [pa filesep extra];
+        pq = [pa filesep ff{I}];
         mkdir(pq);
         pf = [pq,filesep,out,sprintf('-%d',q),'.mat'];
         s1 = [];
-        s1.(ff{I}) = exta.(ff{I});
+        s1.(ff{I}) = extra.(ff{I});
         save(pf,'-struct','s1');
     end
 end
