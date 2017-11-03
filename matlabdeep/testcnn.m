@@ -62,11 +62,12 @@ y_conv = h_fc1_drop * W_fc2 + b_fc2;
 
 % TODO fix softmax_cross_entropy_with_logits
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv),0);
-
+gradient_rate = 0.5;
+adam_rate = 1e-4;
 if useadam == 0
-    train_step = GradientDescentOptimizer(0.05,cross_entropy);
+    train_step = GradientDescentOptimizer(gradient_rate,cross_entropy);
 else
-      train_step = AdamOptimizer(1e-4,cross_entropy);
+    train_step = AdamOptimizer(adam_rate,cross_entropy);
 end
 
 %train_step.evalshapewith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
@@ -74,8 +75,8 @@ end
 %cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 %cross_entropy.grad(1)
 prediction = ArgmaxOp(y_conv, 2);
-correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 2));
-accuracy = ReduceMeanOp(correct_prediction,0); 
+%correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 2));
+%accuracy = ReduceMeanOp(correct_prediction,0); 
 
 mtr = MnistBatcher("train");
 train_step.reset();
@@ -134,8 +135,10 @@ stepstest = ceil(mte.n/batchsize);
 tic
 for I=1:stepstest
     [test_images,test_labels,test_labelshot] = mte.next(batchsize);    
-    r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
-    ra = gather(prediction.xvalue-1);
+    %r = correct_prediction.evalwith({x,test_images,y_,test_labelshot});   
+    prediction.evalwith({x,(test_images),y_,(test_labelshot),keep_prob,1.0}); % y_ is NOT used
+    ra = prediction.xvalue; % 1-10
+    r = gather(ra) == (test_labels+1);
     %prediction = ArgmaxOp(y_conv, 2).evalwith({x,test_images});
     last = I*batchsize;
     if last > mte.n
@@ -153,7 +156,7 @@ accuracy = gather(mean(correctnessall));
 predictionall = gather(predictionall);
 testing_time = toc;
 [~,test_labels,~] = mte.whole();
-stats = multiclassinfo(test_labels,cast(predictionall,'like',test_labels));
+stats = multiclassinfo(test_labels+1,cast(predictionall,'like',test_labels));
 if testtestcnn
     accuracy
 end

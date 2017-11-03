@@ -1,4 +1,4 @@
-addpath ../commondeep
+
 clear all
 
 testtestcnn=1;
@@ -12,7 +12,7 @@ cnn_specs = [filtersize1,filtersize2,features1,features2,densesize];
 
 batchsize = 50; % was 64
 useadam=1;
-epochs = 10;
+epochs = 5;
 gpumode=[0,1];
 for KK=1:length(gpumode)
     if gpumode(KK)
@@ -32,6 +32,12 @@ for KK=1:length(gpumode)
     r.gpu = gpumode(KK);
     r.epochs = epochs;
     r.batchsize = batchsize;
+    r.use_adam = useadam;
+    if useadam
+        r.adam_rate = adam_rate;
+    else
+        r.gradient_rate = gradient_rate;
+    end
     r.cnn_specs = cnn_specs;
     r.iterations = iterations;
     r.cm_accuracy = mean(stats.accuracy);

@@ -3,7 +3,7 @@ clear all
 testtestsoft=1;
 useadam=0;
 batchsize = 100;
-epochs = 10;
+epochs = 5;
 speedtest = 1;
 gpumode = [0,1];
 total_params = 7850;
@@ -27,6 +27,12 @@ for Q=1:length(gpumode)
     r.iterations = steps;
     r.test = 'softmax';
     r.gpu = gpumode(Q);
+    r.use_adam = useadam;
+    if useadam
+        r.adam_rate = adam_rate;
+    else
+        r.gradient_rate = gradient_rate;
+    end
     r.epochs = epochs;
     r.batchsize = batchsize;
 

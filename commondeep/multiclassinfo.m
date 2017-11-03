@@ -36,19 +36,21 @@ else
 end
 
 numOfClasses = size(value1,1);
-totalSamples = sum(sum(value1));
+totalSamples = sum(value1(:));
 
-[TP,TN,FP,FN,accuracy,sensitivity,specificity,precision,f_score] = deal(zeros(numOfClasses,1));
+[TP,TN,FP,FN,accuracy,sensitivity,specificity,precision,f_score,eaccuracy] = deal(zeros(numOfClasses,1));
+   TP = diag(value1);
+
 for class = 1:numOfClasses
-   TP(class) = value1(class,class);
    tempMat = value1;
    tempMat(:,class) = []; % remove column
    tempMat(class,:) = []; % remove row
-   TN(class) = sum(sum(tempMat));
+   TN(class) = sum(tempMat(:));
    FP(class) = sum(value1(:,class))-TP(class);
    FN(class) = sum(value1(class,:))-TP(class);
 end
 
+if 0==1
 for class = 1:numOfClasses
     accuracy(class) = (TP(class) + TN(class)) / totalSamples;
     sensitivity(class) = TP(class) / (TP(class) + FN(class));
@@ -56,6 +58,14 @@ for class = 1:numOfClasses
     precision(class) = TP(class) / (TP(class) + FP(class));
     f_score(class) = 2*TP(class)/(2*TP(class) + FP(class) + FN(class));
 end
+else
+    accuracy = (TP+TN)/totalSamples;
+    sensitivity = TP./(TP+FN);
+    specificity = TN./(FP+TN);
+    precision = TP./(TP+FP);
+    f_score = 2*TP./(2*TP+FP+FN);
+end
+
 
 field2 = 'accuracy';  value2 = accuracy;
 field3 = 'sensitivity';  value3 = sensitivity;
@@ -63,7 +73,8 @@ field4 = 'specificity';  value4 = specificity;
 field5 = 'precision';  value5 = precision;
 field6 = 'recall';  value6 = sensitivity;
 field7 = 'Fscore';  value7 = f_score;
-stats = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7);
 if exist('gorder','var')
     stats = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7,'groupOrder',gorder);
+else
+    stats = struct(field1,value1,field2,value2,field3,value3,field4,value4,field5,value5,field6,value6,field7,value7);
 end

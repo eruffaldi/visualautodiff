@@ -35,10 +35,12 @@ end
       rs = ReduceSumOp(MatmulwiseOp(y_,LogOp(p_y_given_x)),2); 
       cross_entropy = ReduceMeanOp(NegateOp(rs),0);
   end
+  gradient_rate = 0.5;
+  adam_rate = 1e-4;
   if useadam == 0
-    train_step = GradientDescentOptimizer(0.5,cross_entropy);
+    train_step = GradientDescentOptimizer(gradient_rate,cross_entropy);
   else
-      train_step = AdamOptimizer(1e-4,cross_entropy);
+      train_step = AdamOptimizer(adam_rate,cross_entropy);
   end
 
 %  train_step.variables

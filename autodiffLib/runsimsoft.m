@@ -29,7 +29,8 @@ for I=1:length(codemodes)
         hws = get_param(modelname,'modelworkspace');
         r.epochs = hws.getVariable('epochs');%eval(get_param([modelname,'/','Train Test Manager'],'epochs'));
         r.batchsize = hws.getVariable('batchsize');
-
+        r.use_adam = 0;
+        r.gradient_rate =  hws.getVariable('learningrate');
                 istarttest = predictions.Time(1);
         r.iterations = istarttest; % or -1
         r.training_time = realtout.Data(istarttest)-realtout.Data(2);
@@ -40,8 +41,8 @@ for I=1:length(codemodes)
         r.cm_Fscore =mean(stats.Fscore);
         r.cm_specificity =mean(stats.specificity);
         r.cm_sensitivity =mean(stats.sensitivity);
-        
-        stats_add(r,struct('loss',loss.Data(1:iterations),'cm',stats.confusionMat));
+        r.total_params = 7850;
+        stats_add(r,struct('loss',loss.Data(1:istarttest),'cm',stats.confusionMat));
 
     end
 end
