@@ -2,6 +2,14 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
+    % Original TF
+    % https://github.com/tensorflow/tensorflow/blob/4433079e7f317724eaa92ec120c6b1c3c0c52f2f/tensorflow/contrib/nn/python/ops/cross_entropy.py
+    %   Deprecated in favor of tf.nn.softmax_cross_entropy_with_logits
+    %   https://github.com/tensorflow/tensorflow/blob/398699286064bc0821056209e1c62065f0e00f82/tensorflow/python/ops/nn_ops.py
+    % Calling C++
+    %    https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/xent_op.cc
+    %    (PART)
+    %    
     properties
         labels
         logits

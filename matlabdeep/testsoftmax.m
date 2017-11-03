@@ -1,6 +1,4 @@
 %%
-addpath ../logreg_mnist
-addpath ../commondeep
 
 if exist('testtestsoft','var') == 0
     testtestsoft = 0;
@@ -12,7 +10,7 @@ if testtestsoft == 0
 
     useadam=0;
     deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
-    deftype = DeepOp.setgetDefaultType(double(0));
+    deftype = DeepOp.setgetDefaultType(single(0));
     training_time=0;
     batchsize = 100;
     epochs = 10;
@@ -38,7 +36,7 @@ end
       cross_entropy = ReduceMeanOp(NegateOp(rs),0);
   end
   if useadam == 0
-    train_step = GradientDescentOptimizer(0.05,cross_entropy);
+    train_step = GradientDescentOptimizer(0.5,cross_entropy);
   else
       train_step = AdamOptimizer(1e-4,cross_entropy);
   end

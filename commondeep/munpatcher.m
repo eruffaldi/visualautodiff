@@ -38,7 +38,7 @@ else
             % MEX
             % also interpreted mode MATLAB System Blocks
             w = accummatrix(Sel,Xpm,SelA);
-        elseif  coder.target('Rtw')) % false && (coder.target('Sfun') ||
+        elseif  coder.target('Rtw') % false && (coder.target('Sfun') ||
             % CODEGEN typed
             % also code gen MATLAB System Blocks
             w = coder.nullcopy(zeros(oshape,'like',Xpm));
