@@ -42,6 +42,6 @@ for KK=1:length(gpumode)
     r.iterations = iterations;
     r.cm_accuracy = mean(stats.accuracy);
     r.cm_Fscore = mean(stats.Fscore);
-    stats_add(r,struct('loss',losshistory,'cm',stats.confusionMat));
+    stats_add(r,struct('loss',gather(losshistory),'cm',stats.confusionMat));
 end
 

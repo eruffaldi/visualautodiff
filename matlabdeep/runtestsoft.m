@@ -36,5 +36,5 @@ for Q=1:length(gpumode)
     r.epochs = epochs;
     r.batchsize = batchsize;
 
-    stats_add(r,struct('loss',losshistory,'cm',stats.confusionMat));
+    stats_add(r,struct('loss',gather(losshistory),'cm',stats.confusionMat));
 end

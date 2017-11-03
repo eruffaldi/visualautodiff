@@ -5,6 +5,9 @@ import base64
 import StringIO
 import matplotlib.pyplot as plt
 import sys
+import os
+import matplotlib.pyplot as plt
+plt.rcParams["font.family"] = "Times New Roman"
 
 #https://www.iterm2.com/utilities/imgls
 def encode_iterm2_image(data,height=None):
@@ -18,6 +21,8 @@ def encode_iterm2_image(data,height=None):
 def main():
     for x in sys.argv[1:]:
         cmf = x+".loss.txt"
+        if not os.path.isfile(cmf):
+            continue
         mat0 = np.loadtxt(cmf)
         f = json.load(open(x,"rb"))
 
@@ -29,7 +34,7 @@ def main():
         plt.legend();
         buf = StringIO.StringIO()
         plt.savefig(buf,format="png")
-        print cmf,f["test"],"gpu" if f["gpu"] else "","singlecore" if f["single_core"] else ""
+        print cmf,f["test"],f["implementation"],"gpu" if f["gpu"] else "","singlecore" if f.get("single_core",False) else ""
         print encode_iterm2_image(buf.getvalue(),200)
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 clear all
 codemodes = {1};
-runmodes = {'normal','accelerator'};
 runmodes = {'accelerator'};
+runmodes = {'normal','accelerator'};
 modelname ='mnist_cnn_adam';
 open_system(modelname);
 for I=1:length(codemodes)
@@ -13,7 +13,7 @@ for I=1:length(codemodes)
         
         simout = sim(modelname);
         r = [];
-        r.accuracy = simout.accuracy.Data(end);
+        r.accuracy = accuracy.Data(end);
         r.block_codegen = codemode;
         r.simulation_mode = runmode;
         
@@ -32,15 +32,17 @@ for I=1:length(codemodes)
         r.batchsize = hws.getVariable('batchsize');
         
         try
-        istarttest = simout.predictions.Time(1);
+        istarttest = predictions.Time(1);
         catch me
-            istarttest = length(simout.realtout.Data);
+            istarttest = length(realtout.Data);
         end
         r.iterations = istarttest; % or -1
-        r.training_time = simout.realtout.Data(istarttest)-simout.realtout.Data(2);
-        r.testing_time = simout.realtout.Data(end)-simout.realtout.Data(istarttest);
+        r.training_time = realtout.Data(istarttest)-realtout.Data(2);
+        r.testing_time = realtout.Data(end)-realtout.Data(istarttest);
+        r.use_adam = 1;
+        r.adam_rate = 1e-4;
         try
-            stats = multiclassinfo(simout.correct_predictions.Data(:),cast(simout.predictions.Data(:)-1,'like',simout.correct_predictions.Data));
+            stats = multiclassinfo(correct_predictions.Data(:),cast(predictions.Data(:)-1,'like',correct_predictions.Data));
             assert(length(stats.accuracy) == 10);
             r.cm_accuracy =mean(stats.accuracy);
             r.cm_Fscore =mean(stats.Fscore);
@@ -53,8 +55,8 @@ for I=1:length(codemodes)
             r.cm_Fscore = NaN;
             r.testing_time = NaN;
         end
-
-        stats_add(r,struct('loss',simout.loss.Data(1:iterations),'cm',stats.confusionMat));
+        r.total_params = 0;
+        stats_add(r,struct('loss',loss.Data(1:r.iterations),'cm',stats.confusionMat));
     end
 end
 
