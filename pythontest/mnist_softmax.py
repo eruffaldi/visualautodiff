@@ -43,6 +43,7 @@ FLAGS = None
 def machine():
   return dict(linux="glx64",darwin="maci64",win32="win32").get(platform,"other")
 
+
 #https://i.stack.imgur.com/AuTKP.png
 class MulticlassStat:
   def __init__(self,matrix):
@@ -61,17 +62,20 @@ class MulticlassStat:
 
     FP = sumrow-TP
     FN = sumcol-TP
-    TN = sumall-FP-FN-TP
+    #TN = sumall-FP-FN-TP
 
     ufpr = np.divide(FP,sumrow) # FP/(FP+FN)
 
-    self.accuracy = np.sum(TP+TN)/sumall  # (TP+TN)/all
+    self.TP = TP
+    self.FP = FP
+    self.FN = FN
+    #self.TN = TN
+    self.accuracy = np.sum(TP)/sumall # (TP+TN)/all
     self.precision = np.sum(uprecision)/uprecision.shape[0] # TP/(TP+FP) aka positive predictive value PPV
     self.recall = np.sum(urecall)/urecall.shape[0] # TP / (TP+FN)  aka sensitivity aka hit rate aka true positive rate TPR
     self.fpr = np.sum(ufpr)/ufpr.shape[0] 
     self.specificity = 1-self.fpr # TN/(TN+FP) aka true negative rate (TNR) === 1-FPR ==  fall out or false positive rate FP/(FP+TP)
     self.Fscore  = (2*self.precision*self.recall)/(self.precision+self.recall) # 2*precision*recall/(precision+recall)
-
 
 
 def main(_):
@@ -162,7 +166,7 @@ def main(_):
 
   go = str(uuid.uuid1())+'.json';
   args = FLAGS
-  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",single_core=1 if args.singlecore else 0,type='single',test='softmax',gpu=0 if args.no_gpu else 1,epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters,cm_fpr=float(cm_fpr))
+  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",single_core=1 if args.singlecore else 0,type='single',test='softmax',gpu=0 if args.no_gpu else 1,epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters,cm_fpr=float(cm_fpr),use_adam=FLAGS.adam,rate=FLAGS.adam_rate if FLAGS.adam else FLAGS.gradient_rate)
   open(go,"w").write(json.dumps(out))
   np.savetxt(go+".loss.txt", losses)
   np.savetxt(go+".cm.txt", cm)
@@ -176,7 +180,7 @@ if __name__ == '__main__':
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--gradient_rate',default=0.5,type=float)
-  parser.add_argument('--epochs',help="epohcs",type=int,default=10)
+  parser.add_argument('--epochs',help="epohcs",type=int,default=5)
   parser.add_argument('--batchsize',help="batch size",type=int,default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
