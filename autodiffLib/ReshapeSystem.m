@@ -45,7 +45,10 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
                 % fixed exception optionally the first dimension
                 sz_1 = obj.shape;
                 if obj.shape(1) == -1
+                    % row-major
                     sz_1(1) = s(1);
+                elseif obj.shape(end) == -1
+                    sz_1(end) = s(end);
                 end
             end
         end
