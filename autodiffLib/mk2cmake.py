@@ -60,7 +60,7 @@ def main():
 			o.write("set(%s %s)\n" % (k,vars[k]))
 	what = "executable" if vars["PRODUCT_TYPE"] == "\"executable\"" else "library"
 	what = "executable"
-	o.write("make_policy(SET CMP0069 NEW)\n")
+	o.write("cmake_policy(SET CMP0069 NEW)\n")
 	o.write("#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)\n")
 	o.write("add_definitions(-march=native -O3)\n")
 	o.write("add_definitions(${DEFINES})\n")

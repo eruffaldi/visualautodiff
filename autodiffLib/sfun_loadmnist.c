@@ -100,6 +100,8 @@ static void mdlInitializeSizes(SimStruct *S)
  */
 static void mdlStart(SimStruct *S)
 {
+    int train = *(double*)mxGetData(ssGetSFcnParam(S,0)) != 0;
+    ssPrintf("sfun_loadmnist MNIST mdlStart data:%s\n",train?"train":"test");
     ssSetIWorkValue(S,0,0);
 }
 #endif
@@ -127,14 +129,14 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 {
     if(ssGetIWorkValue(S,0) == 0)
     {
-        ssPrintf("loading MNIST data\n");
-        ssSetIWorkValue(S,0,1);
+        int train = *(double*)mxGetData(ssGetSFcnParam(S,0)) != 0;
         uint8_t *yimage = (uint8_t *) ssGetOutputPortSignal(S, 0);
         int8_t *ylabels = (int8_t *) ssGetOutputPortSignal(S, 1);
         O_TYPE *yhot = (O_TYPE *) ssGetOutputPortSignal(S, 2);
         O_TYPE *dyimage = (O_TYPE *) ssGetOutputPortSignal(S, 3);
-        int train = *(double*)mxGetData(ssGetSFcnParam(S,0)) != 0;
         int nitems = train ? 60000 : 10000;
+        ssPrintf("sfun_loadmnist MNIST load tid:%d data:%s\n",tid,train?"train":"test");
+        ssSetIWorkValue(S,0,1);
         
         const char * imagefile = train ? "train-images-idx3-ubyte-le" : "t10k-images-idx3-ubyte-le";
         const char * labelfile = train ? "train-labels-idx1-ubyte-le" : "t10k-labels-idx1-ubyte-le";
@@ -162,7 +164,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                 ssSetErrorStatus(S,"abort bad file");
             }
             fclose(fp);
-            ssPrintf("loaded MNIST data\n");
+            ssPrintf("\tloaded labels\n");
         }
         else
         {
@@ -185,7 +187,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                 fread(yimage,q,1,fp);
                 for ( i = 0; i < q; i++)
                 {
-                    dyimage[i] = (O_TYPE)(yimage[i])/255.0;
+                    dyimage[i] = (O_TYPE)(yimage[i])/255.0f;
                 }
             }
             else
@@ -193,6 +195,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
                 ssPrintf("Bad magic %d or images %d or size %d %d\n",magic,numImages,numRows,numCols);
                 ssSetErrorStatus(S,"abort bad file content");
             }
+            ssPrintf("\tloaded images\n");
             fclose(fp);
         }
         else
