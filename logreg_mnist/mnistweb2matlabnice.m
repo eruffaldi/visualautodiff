@@ -8,10 +8,14 @@ Telabels = loadMNISTLabels('t10k-labels.idx1-ubyte')';
 %save mnist_test Teimages Telabels
 
 %%
-saveMNISTImagesLE('train-images-idx3-ubyte-le',Trimages,Trraw,Trinfo);
-saveMNISTImagesLE('t10k-images-idx3-ubyte-le',Teimages,Teraw,Teinfo);
+saveMNISTImagesLE('train-images-idx3-ubyte-le',Trraw,Trinfo,0);
+saveMNISTImagesLE('t10k-images-idx3-ubyte-le',Teraw,Teinfo,0);
 
 saveMNISTLabelsLE('train-labels-idx1-ubyte-le',Trlabels);
 saveMNISTLabelsLE('t10k-labels-idx1-ubyte-le',Telabels);
 
-%% save little endian
+%%
+%%
+saveMNISTImagesLE('train-images-idx3-ubyte-le-T',Trraw,Trinfo,1);
+saveMNISTImagesLE('t10k-images-idx3-ubyte-le-T',Teraw,Teinfo,1);
+

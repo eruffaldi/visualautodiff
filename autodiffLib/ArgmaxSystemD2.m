@@ -39,7 +39,7 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
         function [sz_1] = getOutputSizeImpl(obj) 
             s = propagatedInputSize(obj,1); 
             assert(prod(s) > 0);
-                            sz_1 = [s(1),1];
+                            sz_1 = [1,s(2)];
         end
         
         
@@ -50,7 +50,7 @@ classdef ArgmaxSystemD2 < matlab.System  & matlab.system.mixin.Propagates
         function [y] = stepImpl(obj,x)
            %[~,obj.t] = max(x,[],2);
            %y = single(obj.t);
-           [~,y] =  max(x,[],2);
+           [~,y] =  max(x,[],1);
            y = single(y);
         end
        

@@ -34,7 +34,9 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
             sl = propagatedInputSize(obj,1);
-            obj.w = [prod(sl(1:end-1)) sl(end)]; % A1...An-1,An. 100x10
+            %ROW-MAJOR obj.w = [prod(sl(1:end-1)) sl(end)]; %
+            %A1=B,A2,...,An ==> A1=B A2 ... An-1, An
+            obj.w = [sl(1) prod(sl(2:end))]; % A1...,An=B =>  A1, A2 ... An=B
 
         end
 
@@ -42,7 +44,10 @@ classdef SumBroadcast < matlab.System & matlab.system.mixin.Propagates
             sl = size(ul); % A1,...,An e.g. 100x10
             % sr = An,1 or 1,An
             %if coder.target('MATLAB')
-                y = reshape(reshape(ul,obj.w) + repmat(ur(:)',obj.w(1),1),sl);
+        %ROW MAJOR: y = reshape(reshape(ul,obj.w) + repmat(ur(:)',obj.w(1),1),sl);
+        y = reshape(reshape(ul,obj.w) + repmat(ur(:),1, obj.w(2)),sl);
+                
+                
             %else
                 % make output not initialized
 %                 ty = coder.nullcopy(zeros(obj.w,'like',ul));

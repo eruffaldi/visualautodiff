@@ -44,8 +44,9 @@ classdef SumBroadcastGrad < matlab.System & matlab.system.mixin.Propagates
         function [Jl,Jr] = stepImpl(obj,ul,ur,J)
             Jl = J;
             sxl = size(ul);
-            w = [prod(sxl(1:end-1)) sxl(end)]; % cache
-            Jr = reshape(sum(reshape(J,w),1),size(ur));
+            %ROW MAJOR: w = [prod(sxl(1:end-1)) sxl(end)]; % cache
+            w = [sxl(1) prod(sxl(2:end))]; % cache
+            Jr = reshape(sum(reshape(J,w),2),size(ur));
         end
         function [p1,p2]= isOutputFixedSizeImpl(obj)
             p1 = true;

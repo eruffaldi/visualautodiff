@@ -38,7 +38,7 @@ classdef AtJ_sys < matlab.System & matlab.system.mixin.Propagates
         function [sz_1] = getOutputSizeImpl(obj) 
             s1 = propagatedInputSize(obj,1); % J 
             s2 = propagatedInputSize(obj,2); % A
-            sz_1 = [s2(2) s1(2)];
+            sz_1 =  [s2(2) s1(2)];
         end
         
 

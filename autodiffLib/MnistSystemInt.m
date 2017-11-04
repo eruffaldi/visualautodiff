@@ -66,7 +66,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
             
         function [sz_1] = getOutputSizeImpl(obj) 
             
-              sz_1 = [obj.items,1];
+              sz_1 = [1,obj.items];
         end
         
          function resetImpl(obj)
@@ -83,7 +83,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
         
         function [indices] = stepImpl(obj)
            needed = obj.items;
-           indices= zeros(obj.items,1,'int32'); %size(obj.allimages,2));
+           indices= zeros(1,obj.items,'int32'); %size(obj.allimages,2));
           writeindex = 1;
            while needed > 0
                 thisstep = min(needed,obj.n-obj.lastdone);
@@ -98,7 +98,7 @@ classdef MnistSystemInt < matlab.System  & matlab.system.mixin.Propagates
                     thisstep = min(needed,obj.n-obj.lastdone);
                 end
                 if thisstep > 0
-                    indices(writeindex:writeindex+thisstep-1,:) = obj.indices(obj.lastdone+1:obj.lastdone+thisstep);
+                    indices(writeindex:writeindex+thisstep-1) = obj.indices(obj.lastdone+1:obj.lastdone+thisstep);
                     obj.lastdone = obj.lastdone + thisstep;
                     writeindex = writeindex + thisstep;
                     needed = needed - thisstep;
