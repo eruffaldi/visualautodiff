@@ -27,7 +27,7 @@ oshape = [nB,Ih,Iw,nC];
 %accumarray Approach: notpossibly because value is vector => loops
 %w = accumarray(Sel.kq,Xpm,[size(Xpm,1),size(Sel.A,2)]);
 if isa(Xpm,'gpuArray')
-    w = accummatrix(Sel.pickidx,gather(Xpm),SelA); %size(Sel.A,2));
+    w = accummatrix_cm(Sel.pickidx,gather(Xpm),SelA); %size(Sel.A,2));
 else
     if isstruct(Sel)
         % ALWAYS MATLAB path
@@ -37,7 +37,7 @@ else
         if coder.target('MATLAB')
             % MEX
             % also interpreted mode MATLAB System Blocks
-            w = accummatrix(Sel,Xpm,SelA);
+            w = accummatrix_cm(Sel,Xpm,SelA);
         elseif  coder.target('Rtw') % false && (coder.target('Sfun') ||
             % CODEGEN typed
             % also code gen MATLAB System Blocks
@@ -53,10 +53,10 @@ else
             
             outcols = int32(SelA);
             % ORIGINAL: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
-            coder.ceval(['accummatrix_' class(w)],coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols);
+            coder.ceval(['accummatrix_cm_' class(w)],coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols);
         else
             % SLOW fallback
-            w = accummatrixmat(Sel,Xpm,SelA);
+            w = accummatrixmat_cm(Sel,Xpm,SelA);
         end
     end
         

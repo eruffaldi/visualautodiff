@@ -17,7 +17,7 @@ as = reshape(X,nB,[]); % [nB , Ih Iw C]
 %sparse Approach: only double and optimizable
 %w = double(as)*Sel.A';
 if isa(as,'gpuArray')
-    w = gathermatrix(Sel.pickidx,gather(as),length(Sel.pickidx));
+    w = gathermatrix_cm(Sel.pickidx,gather(as),length(Sel.pickidx));
 else
     if isstruct(Sel)
         % ALWAYS MATLAB path
@@ -27,7 +27,7 @@ else
         if coder.target('MATLAB')
             % MEX
             % MATLAB intepreted and MATLAB System Blocks
-            w = gathermatrix(Sel,as,length(Sel));
+            w = gathermatrix_cm(Sel,as,length(Sel));
         elseif   coder.target('Rtw') % false && (coder.target('Sfun') ||
             % codegen MATLAB System Blocks
             w = coder.nullcopy(zeros(sXp,'like',as)); % uninited
@@ -38,10 +38,10 @@ else
             outcols = int32(length(Sel));
             % gathermatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
             
-            coder.ceval(['gathermatrix_' class(w)],coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols); % c version
+            coder.ceval(['gathermatrix_cm_' class(w)],coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols); % c version
         else
             % slow fallback
-            w = gathermatrixmat(Sel,as,length(Sel));            
+            w = gathermatrixmat_cm(Sel,as,length(Sel));            
         end
     end
 end
