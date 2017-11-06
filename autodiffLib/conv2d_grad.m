@@ -24,44 +24,44 @@ classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
         end
         
 
-        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q]= isOutputFixedSizeImpl(obj)
-            dzdx_B_Ph_Pw_Q = true;
-            dzdW_K_C_Q = true;
+        function [dzdx_Q_Pw_Ph_B,dzdQ_C_K_W]= isOutputFixedSizeImpl(obj)
+            dzdx_Q_Pw_Ph_B = true;
+            dzdQ_C_K_W = true;
         end
-        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = getOutputDataTypeImpl(obj)
-            dzdx_B_Ph_Pw_Q = propagatedInputDataType(obj,1);
-            dzdW_K_C_Q = propagatedInputDataType(obj,1);
+        function [dzdx_Q_Pw_Ph_B,dzdQ_C_K_W] = getOutputDataTypeImpl(obj)
+            dzdx_Q_Pw_Ph_B = propagatedInputDataType(obj,1);
+            dzdQ_C_K_W = propagatedInputDataType(obj,1);
         end
-        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = getOutputSizeImpl(obj)
-            dzdx_B_Ph_Pw_Q = propagatedInputSize(obj,2);
-            dzdW_K_C_Q = propagatedInputSize(obj,3);
+        function [dzdx_Q_Pw_Ph_B,dzdQ_C_K_W] = getOutputSizeImpl(obj)
+            dzdx_Q_Pw_Ph_B = propagatedInputSize(obj,2);
+            dzdQ_C_K_W = propagatedInputSize(obj,3);
         end
-        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = isOutputComplexImpl(obj)
-            dzdx_B_Ph_Pw_Q = false;
-            dzdW_K_C_Q = false;
+        function [dzdx_Q_Pw_Ph_B,dzdQ_C_K_W] = isOutputComplexImpl(obj)
+            dzdx_Q_Pw_Ph_B = false;
+            dzdQ_C_K_W = false;
         end        
 
-        function [dzdx_B_Ph_Pw_Q,dzdW_K_C_Q] = stepImpl(obj,U_B_Ph_Pw_Q,A_B_I_C,W_K_C_Q,Sel_PKC_IC,Xp_BP_KC)
-            nB = size(A_B_I_C,1);
-            nP = size(U_B_Ph_Pw_Q,2)*size(U_B_Ph_Pw_Q,3); 
-            nQ = size(W_K_C_Q,4); % can be 1 if W is 3D
-            nK = size(W_K_C_Q,1)*size(W_K_C_Q,2);
-            nC = size(W_K_C_Q,3);
-            assert(size(A_B_I_C,4) == nC,'same input C');
-            assert(size(Xp_BP_KC,2) == nC*nK,'same input C and K for Xp_BP_KC');
+        function [dzdx_Q_Pw_Ph_B,dzdQ_C_K_W] = stepImpl(obj,U_Q_Pw_Ph_B,A_C_I_B,W_Q_C_K,Sel_PKC_IC,Xp_CK_PB)
+            nB = size(A_C_I_B,4);
+            nP = size(U_Q_Pw_Ph_B,2)*size(U_Q_Pw_Ph_B,3); 
+            nQ = size(W_Q_C_K,1); % can be 1 if W is 3D
+            nK = size(W_Q_C_K,3)*size(W_Q_C_K,4);
+            nC = size(W_Q_C_K,2);
+            assert(size(A_C_I_B,4) == nC,'same input C');
+            assert(size(Xp_CK_PB,2) == nC*nK,'same input C and K for Xp_CK_PB');
             
-            U_BP_Q = reshape(U_B_Ph_Pw_Q,nB*nP,nQ); 
+            U_Q_PB = reshape(U_Q_Pw_Ph_B,nQ,nB*nP); 
             
             % work using matrix product in flat space [B P, K C] [K C, Q]
             %   d/dA A W = U W'   [B P, Q] [K C, Q]
             %   d/dW A W = A' U
-            %W_K_C_Q = obj.right.xvalue;
-            dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,nK*nC,nQ)';
-            dzdx_B_PKC  = reshape(dzdx_BP_KC,nB,nP*nK*nC);
+            %W_Q_C_K = obj.right.xvalue;
+            dzdx_CK_PB = reshape(W_Q_C_K,nQ,nK*nC)' * U_Q_PB;
+            dzdx_CKP_B  = reshape(dzdx_CK_PB,nP*nK*nC,nB);
 
-            ss = size(A_B_I_C); % for thr intermediate result
-            dzdx_B_Ph_Pw_Q = munpatcher(dzdx_B_PKC,Sel_PKC_IC,size(A_B_I_C),prod(ss(2:end)));            
-            dzdW_K_C_Q = reshape(Xp_BP_KC' * U_BP_Q,size(W_K_C_Q));          
+            ss = size(A_C_I_B); % for thr intermediate result
+            dzdx_Q_Pw_Ph_B = munpatcher(dzdx_CKP_B,Sel_PKC_IC,size(A_C_I_B),prod(ss(1:end-1)));            
+            dzdQ_C_K_W = reshape(U_Q_PB*Xp_CK_PB',size(W_Q_C_K));          
         end
 
         function resetImpl(obj)

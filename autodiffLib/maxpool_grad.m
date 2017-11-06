@@ -13,7 +13,7 @@ classdef maxpool_grad < matlab.System & matlab.system.mixin.Propagates
 
     % Pre-computed constants
     properties(Nontunable,Access = private)
-        shape_BPC_K
+        shape_K_CPB
         yshape
     end
 
@@ -37,7 +37,7 @@ classdef maxpool_grad < matlab.System & matlab.system.mixin.Propagates
             r = [nB nPh nPw nC]; % output BPC
              h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
-            obj.shape_BPC_K = [prod(r) h_filter*w_filter]; % patches for max: BPC K              
+            obj.shape_K_CPB = [prod(r) h_filter*w_filter]; % patches for max: BPC K              
             obj.yshape = sizeA_B_I_C4;
             
         end
@@ -52,26 +52,26 @@ classdef maxpool_grad < matlab.System & matlab.system.mixin.Propagates
           
         end
         function [y] = getOutputSizeImpl(obj)
-                    y = propagatedInputSize(obj,6); % == X_B_I_C
+                    y = propagatedInputSize(obj,6); % == X_C_I_B
         end
         function [dzdx] = isOutputComplexImpl(obj)
                 dzdx = false;
         end        
         
 
-        function J_BIC = stepImpl(obj,U_B_Ph_Pw_Q,argmaxbase,maxindices_BPC,argmaxbasescale,Zero_Ph_Pw,X_B_I_C,Sel_PCK_IC,Sel_PCK_IC_A)
-            Jp_BPC_K = zeros(obj.shape_BPC_K,'like',X_B_I_C); % empty patches            
+        function J_CIB = stepImpl(obj,U_B_Ph_Pw_Q,argmaxbase,maxindices_BPC,argmaxbasescale,Zero_Ph_Pw,X_C_I_B,Sel_PCK_IC,Sel_PCK_IC_A)
+            Jp_K_CPB = zeros(obj.shape_K_CPB,'like',X_C_I_B); % empty patches            
             ind = argmaxbase + (maxindices_BPC(:)-1)*argmaxbasescale; % winning indices from eval step
             
             %Alternative: dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 
             
             % ?? => [nB patches]  TODO
             % => [nB patches, Fh Fw Fin] via assignment
-            Jp_BPC_K(ind) = U_B_Ph_Pw_Q;  % propagate up to them
+            Jp_K_CPB(ind) = U_B_Ph_Pw_Q;  % propagate up to them
             
             % => [nB Ph Pw Fin] via unpatching
-            ss = size(X_B_I_C);
-            J_BIC = munpatcher(Jp_BPC_K,Sel_PCK_IC,obj.yshape,prod(ss(2:end))); % aggregate contributions
+            ss = size(X_C_I_B);
+            J_CIB = munpatcher(Jp_K_CPB,Sel_PCK_IC,obj.yshape,prod(ss(2:end))); % aggregate contributions
             
         end
 

@@ -17,10 +17,10 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
 
     % Pre-computed constants
     properties(Nontunable,Access = private)
-        Sel_PCK_IC
-        Sel_PCK_IC_A
+        Sel_IC_KCP
+        Sel_IC_KCP_A
         shapeP
-        shape_BPC_K
+        shape_K_CPB
         Zero_Ph_Pw
         argmaxbase
         argmaxbasescale
@@ -28,7 +28,7 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
 
     methods(Access = protected)
         
-        function [Sel_PCK_IC,shape_BPC_K,shapeP,Sel_PCK_IC_A] = computeSomething(obj,state)
+        function [Sel_IC_KCP,shape_K_CPB,shapeP,Sel_IC_KCP_A] = computeSomething(obj,state)
             assert(numel(obj.ksize) == 4);
             assert(obj.ksize(1) == 1 & obj.ksize(4) == 1);
             assert(obj.strides(1) == 1 & obj.strides(4) == 1);
@@ -37,14 +37,15 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
 %             if isempty(xla)
 %                 %disp(sprintf('maxpool_setup(%d): %s no input',state,gcb));
 %                 w = [];
-%                 Sel_PCK_IC = [];
-%                 shape_BPC_K = [];
+%                 Sel_IC_KCP = [];
+%                 shape_K_CPB = [];
 %                 shapeP = [];
 %                 return;
 %             end
             
             xl = ones(1,4);
             xl(1:length(xla)) = xla;
+            nB = xl(end);
             nC = xl(4);
 
             % General case
@@ -57,8 +58,8 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             % Patch Representation: B Ph Pw C Kh Kw
             %   the max reduction is over the last two dimensions
             %   obtaining: B Ph Pw C
-            [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],padding,'BPCK'); % N independent
-            r = [xl(1) shapeP(1) shapeP(2) nC]; % output BPC
+            [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],padding,'KCPB'); % N independent
+            r = [nC shapeP(1) shapeP(2) nB]; % output BPC
             
             %disp(sprintf('maxpool_setup(%d): %s input shapeP and padding:',state,gcb));
             %disp(xl);
@@ -66,15 +67,15 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
             %disp(padding);
             
             %obj.xshape = r;            
-            Sel_PCK_IC_A = int32(1);
-            Sel_PCK_IC = w.pickidx;
+            Sel_IC_KCP_A = int32(1);
+            Sel_IC_KCP = w.pickidx;
             
-            shape_BPC_K = [prod(r) h_filter*w_filter]; % patches for max: BPC K
+            shape_K_CPB = [h_filter*w_filter prod(r)]; % patches for max: BPC K
         end
         
         function setupImpl(obj)
-            [obj.Sel_PCK_IC,obj.shape_BPC_K,obj.shapeP,obj.Sel_PCK_IC_A] = obj.computeSomething(1);
-            [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
+            [obj.Sel_IC_KCP,obj.shape_K_CPB,obj.shapeP,obj.Sel_IC_KCP_A] = obj.computeSomething(1);
+            [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(obj.shape_K_CPB,2); 
             obj.argmaxbase = cast(objargmaxbase,'int32');
             obj.argmaxbasescale = cast(objargmaxbasescale,'int32');
             obj.Zero_Ph_Pw = false(obj.shapeP(:)');
@@ -106,31 +107,31 @@ classdef maxpool_setup < matlab.System & matlab.system.mixin.Propagates
         end
 
         % outputs mask and y are same size
-        function [Sel_PCK_IC,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_PCK_IC_A] = getOutputSizeImpl(obj) 
+        function [Sel_IC_KCP,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_IC_KCP_A] = getOutputSizeImpl(obj) 
 
             xla = propagatedInputSize(obj,1);
             if isempty(xla)
-                 Sel_PCK_IC= 0;
-                 Sel_PCK_IC_A = 0;
+                 Sel_IC_KCP= 0;
+                 Sel_IC_KCP_A = 0;
                  argmaxbase = 0;
                  argmaxbasescale = 0;
                  Zero_Ph_Pw = 0;
                  return;
              end
-            [w,shape_BPC_K,shapeP,wa] = obj.computeSomething(2);
+            [w,shape_K_CPB,shapeP,wa] = obj.computeSomething(2);
             
-            Sel_PCK_IC = size(w); % decided only after SETUP
-            Sel_PCK_IC_A = 1; %size(wa);
+            Sel_IC_KCP = size(w); % decided only after SETUP
+            Sel_IC_KCP_A = 1; %size(wa);
             Zero_Ph_Pw = shapeP;
-            [ab,abs] = argmax_to_max_setup(shape_BPC_K,2); 
+            [ab,abs] = argmax_to_max_setup(shape_K_CPB,2); 
             argmaxbasescale = size(abs);
             argmaxbase =size(ab);
         end
 
 
-        function [Sel_PCK_IC,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_PCK_IC_A] = stepImpl(obj,X)
-            Sel_PCK_IC = obj.Sel_PCK_IC;
-            Sel_PCK_IC_A = obj.Sel_PCK_IC_A;
+        function [Sel_IC_KCP,argmaxbase,argmaxbasescale,Zero_Ph_Pw,Sel_IC_KCP_A] = stepImpl(obj,X)
+            Sel_IC_KCP = obj.Sel_IC_KCP;
+            Sel_IC_KCP_A = obj.Sel_IC_KCP_A;
             Zero_Ph_Pw = obj.Zero_Ph_Pw;
             argmaxbase = obj.argmaxbase;
             argmaxbasescale = obj.argmaxbasescale;

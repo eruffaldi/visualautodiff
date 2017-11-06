@@ -16,73 +16,73 @@ ksize
 
     % Pre-computed constants
     properties(Nontunable,Access = private)
-        shape_BPC_K
+        shape_K_CPB
         yshape
     end
 
     methods(Access = protected)
         function setupImpl(obj)
-            sizeA_B_I_C = propagatedInputSize(obj,1);
+            sizeA_C_I_B = propagatedInputSize(obj,1);
             sizeZero_Ph_Pw = propagatedInputSize(obj,3);
-            nB = sizeA_B_I_C(1); 
-            if length(sizeA_B_I_C) == 3
+            nB = sizeA_C_I_B(end); 
+            if length(sizeA_C_I_B) == 3
                 nC = 1;
             else
-                nC = sizeA_B_I_C(4);
+                nC = sizeA_C_I_B(1);
             end
             h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
             nPh = sizeZero_Ph_Pw(1);
             nPw = sizeZero_Ph_Pw(2);
             nP = nPh*nPw;
-            r = [nB nPh nPw nC]; % output BPC
-            obj.shape_BPC_K = [prod(r) h_filter*w_filter];               
-            obj.yshape = [nB,nPh,nPw,nC];
+            r = [nC nPh nPw nB]; % output BPC
+            obj.shape_K_CPB = [h_filter*w_filter prod(r)];               
+            obj.yshape = [nC,nPh,nPw,nB];
         end
 
-        function [y,maxindices_BP_C]= isOutputFixedSizeImpl(obj)
+        function [y,maxindices_C_PB]= isOutputFixedSizeImpl(obj)
             y = true;
-            maxindices_BP_C = true;
+            maxindices_C_PB = true;
         end
-        function [y,maxindices_BP_C] = getOutputDataTypeImpl(obj)
+        function [y,maxindices_C_PB] = getOutputDataTypeImpl(obj)
             y = propagatedInputDataType(obj,1);
-            maxindices_BP_C = 'int32';
+            maxindices_C_PB = 'int32';
         end
-        function [y,maxindices_BP_C] = getOutputSizeImpl(obj)
-            sizeA_B_I_Cx = propagatedInputSize(obj,1);
-            sizeA_B_I_C = ones(1,4);
-            sizeA_B_I_C(1:length(sizeA_B_I_Cx)) = sizeA_B_I_Cx;
+        function [y,maxindices_C_PB] = getOutputSizeImpl(obj)
+            sizeA_Cx_I_B = propagatedInputSize(obj,1);
+            sizeA_C_I_B = ones(1,4);
+            sizeA_C_I_B(1:length(sizeA_Cx_I_B)) = sizeA_Cx_I_B;
             
             sizeZero_Ph_Pw = propagatedInputSize(obj,3);
-            nB = sizeA_B_I_C(1); 
-            nC = sizeA_B_I_C(4);
+            nB = sizeA_C_I_B(1); 
+            nC = sizeA_C_I_B(4);
             nPh = sizeZero_Ph_Pw(1);
             nPw = sizeZero_Ph_Pw(2);
             nP = nPh*nPw;
-            r = [nB nPh nPw nC]; % output BPC
+            r = [nC nPh nPw nB]; % output BPC
              h_filter = obj.ksize(2);
             w_filter = obj.ksize(3);
-            shape_BPC_K = [prod(r) h_filter*w_filter]; % patches for max: BPC K              
-            obj.yshape = [nB,nPh,nPw,nC];
+            shape_K_CPB = [ h_filter*w_filter prod(r)]; % patches for max: BPC K              
+            obj.yshape = [nC,nPh,nPw,nB];
             
             y = obj.yshape;           
-            maxindices_BP_C = [shape_BPC_K(1),1];        
+            maxindices_C_PB = [shape_K_CPB(1),1];        
         end
-        function [y,maxindices_BP_C] = isOutputComplexImpl(obj)
+        function [y,maxindices_C_PB] = isOutputComplexImpl(obj)
             y = false;
-            maxindices_BP_C = false;
+            maxindices_C_PB = false;
         end
         
         
-        function [y_B_P_C,maxindices_BPC] = stepImpl(obj,X_B_I_C,Sel_PCK_IC,Zero_Ph_Pw)
+        function [y_C_P_B,maxindices_CPB] = stepImpl(obj,X_C_I_B,Sel_IC_KCP,Zero_Ph_Pw)
             
             % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-            Xp_BPC_K = mpatcher(X_B_I_C,Sel_PCK_IC,obj.shape_BPC_K);
+            Xp_K_CPB = mpatcher(X_C_I_B,Sel_IC_KCP,obj.shape_K_CPB);
             % => [nB patches]
-            [Y_BPC,Yind_BPC] = max(Xp_BPC_K,[],2);
+            [Y_CPB,Yind_CPB] = max(Xp_K_CPB,[],1);
                             
-            y_B_P_C = reshape(Y_BPC,obj.yshape);
-            maxindices_BPC = cast(Yind_BPC,'int32'); % in [nB P, S]
+            y_C_P_B = reshape(Y_CPB,obj.yshape);
+            maxindices_CPB = cast(Yind_CPB,'int32'); % in [nB P, S]
         end
 
         function resetImpl(obj)
