@@ -20,18 +20,18 @@
 //
 // take the subs as indices to the 
 template <class T, class DT = T>
-void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outcols)
+void accummatrix_rows(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outrows)
 {
     // nsubs <= cols
-    for(int input_col = 0; input_col < nsubs; input_col++)
+    for(int input_row = 0; input_row < nsubs; input_row++)
     {
-        auto itarget_col = psubs[input_col];
-        if(itarget_col > 0 && itarget_col <= outcols)
+        auto itarget_row = psubs[input_row];
+        if(itarget_row > 0 && itarget_row <= outrows)
         {
-            itarget_col--; // 0-based
-            for(int r = 0; r < rows; r++)
+            itarget_row--; // 0-based
+            for(int c = 0; c < cols; c++)
             {
-                pout[itarget_col*rows+r] += pdata[input_col*rows+r];
+                pout[itarget_row+c*rows] += pdata[itarget_row+c*rows];
             }
         }
     }

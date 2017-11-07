@@ -1,4 +1,4 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,sizeout,stride,paddinga,mode)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,sizeout,stride,paddinga,mode,colmajor)
 
 if length(paddinga) == 1
     padding = repmat(paddinga,4,1);
@@ -24,7 +24,7 @@ nC = NHWCshape(4);
 
 
 
-[outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode);
+[outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode,colmajor);
 nCO = size(i,1);
 nP = size(i,2);
 assert(nCO == nC*filtersizes(1)*filtersizes(2),'expected CO');
@@ -39,6 +39,10 @@ if strcmp(mode,'BPKC')
 elseif strcmp(mode,'BPCK')
     %kk = reshape(repmat(k,nP,1),1,[]); % C runs faster
     sXp = [nB,nP,nC,filtersizes(1),filtersizes(2)]; % we append the nP
+elseif strcmp(mode,'KCPB')
+    error('not yet implemented mode KCPB')
+elseif strcmp(mode,'CKPB')
+    error('not yet implemented mode KCPB')
 end
 
 % shift selector by topleft padding and mark all not valid indices as extra
@@ -67,6 +71,8 @@ elseif strcmp(mode,'BPKC')
     nameddims.Fh = 3;
     nameddims.Fw = 4;
     nameddims.K = [3,4];
+elseif strcmp(mode,'KCPB')
+elseif strcmp(mode,'CKPB')
 end
 if 1==1
     % build indexing inside the input that is: B Ih Iw C

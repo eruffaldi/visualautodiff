@@ -7,12 +7,10 @@
 % Output: Xp patches
 function Xp = mpatcher(X,Sel,sXp)
 
-nB = size(X,1);
-%sXp(1) = sXp(1)*nB;  % removed
-% sel: [ H W C, P F C]
-% as:  [ N H W C ]
-% Xp:  [ N P F C ]
-as = reshape(X,nB,[]); % [nB , Ih Iw C]
+% RM: tomatrix_first
+% CM: tomatrix_last
+nB = size(X,4);
+as = reshape(X,[],nB); % [nB , Ih Iw C]
 
 %sparse Approach: only double and optimizable
 %w = double(as)*Sel.A';

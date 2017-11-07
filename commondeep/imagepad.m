@@ -3,7 +3,7 @@
 % padding is 4d: top left bottom right
 % stride is  2d
 % k is NOT neeed
-function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,padding,stride,mode)
+function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,padding,stride,mode,colmajor)
 
   H = xshape(1);
   W = xshape(2);
@@ -34,6 +34,8 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,p
       % no action needed
       Kbycol = Kbycolx;
       Kbyrow = interrepeat0(field_width,field_height);
+  elseif strcmp(mode,'CKPB')
+  elseif strcmp(mode,'KCPB')
   end  
 
   % then the macro blocks
@@ -61,6 +63,8 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,p
           k = repmat(0:C-1,field_height*field_width*nP,1);
           i = ia;
           j = ja;
+      elseif strcmp(mode,'CKPB')
+      elseif strcmp(mode,'KCPB')
       elseif strcmp(mode,'BPCK')
           % Input: B Ih Iw C
           % we set ijk to scan IhIwC building the manual indexing

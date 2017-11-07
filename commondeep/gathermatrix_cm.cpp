@@ -20,26 +20,26 @@
 //
 // take the subs as indices to the 
 template <class T>
-void gathermatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outcols)
+void gathermatrix_rows(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outrows)
 {
-    for(int itarget_col = 0; itarget_col < nsubs; itarget_col++)
+    for(int itarget_row = 0; itarget_row < nsubs; itarget_row++)
     {
-        auto input_col = psubs[itarget_col];
-        if(input_col > 0) // SKIPPED input_col <= cols
+        auto input_row = psubs[itarget_row];
+        if(input_row > 0) // SKIPPED input_col <= cols
         {
-            input_col--; // 1-based with 0 as null
-            for(int r = 0; r < rows; r++)
+            input_row--; // 1-based with 0 as null
+            for(int c = 0; c < cols; c++)
             {
-                pout[itarget_col*rows+r] = pdata[input_col*rows+r];
+                pout[itarget_row+c*rows] = pdata[input_row+c*rows];
             }
         }
     }
     // excess columns if ny DUE to Uninited
     for(int itarget_col = nsubs; itarget_col < outcols; itarget_col++)
     {
-        for(int r = 0; r < rows; r++)
+        for(int c =  0; c < cols; c++)
         {
-            pout[itarget_col*rows+r] = 0; 
+            pout[itarget_row+c*rows] = 0; 
         }
     }
 }
