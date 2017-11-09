@@ -5,7 +5,7 @@ useadam=0;
 batchsize = 100;
 epochs = 5;
 speedtest = 1;
-gpumode = [0,1];
+gpumode = [1,0];
 total_params = 7850;
 
 for Q=1:length(gpumode)

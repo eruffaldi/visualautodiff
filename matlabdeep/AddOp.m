@@ -23,6 +23,8 @@ classdef AddOp < BinaryOp
                     obj.xvalue = xl+xr;
                 case 2 %  2D + 1D col
                     obj.xvalue = xl+xr';
+                case 4 %  2D + 1D col using broadcast
+                    obj.xvalue = xl+xr;
                 case 3 %  xD + 1D with last shared
                     % input (C1,...K) ->reshaped ((C1...CK),K) -> broadcash
                     obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
@@ -42,6 +44,10 @@ classdef AddOp < BinaryOp
             elseif length(sxl) == 2 && length(sxr) == 2 && sxr(1) == 1
                 obj.broadcastmode = 1;
                 obj.w = [sxl(1) sxr(2)];
+            % 2D + 1D col            
+            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 1
+                obj.broadcastmode = 4;
+                obj.w = sxl;
             % 2D + 1D col
             elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 2
                 obj.broadcastmode = 2;
@@ -58,6 +64,7 @@ classdef AddOp < BinaryOp
         end
 
         function grad(obj,up)
+            assert(all(size(obj.left.xvalue)==size(up)));
             obj.left.grad(up); % always same size
             
             switch(obj.broadcastmode)
@@ -69,6 +76,8 @@ classdef AddOp < BinaryOp
                     up = sum(reshape(up,obj.w),1);
                 case 3 %  xD + 1D with last shared
                     up = sum(reshape(up,obj.w),1);
+                case 4
+                    up = sum(reshape(up,obj.w),2);
                 otherwise
                     error('not implemented');
             end                    

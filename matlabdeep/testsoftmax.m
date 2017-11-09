@@ -17,13 +17,12 @@ if testtestsoft == 0
 end
 %deftype = DeepOp.setgetDefaultType(single(0));
 %%
-  x = Placeholder('float',[-1, 784]);
-  W = Variable('W',zeros([784,10])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
-  b = Variable('b',0.1*mzeros([1,10])); %zeros([10,1]));
-  y = AddOp(MatmulOp(x,W),b);
+  x = Placeholder('float',[784,-1]);
+  W = Variable('W',zeros([10, 784])); %(truncated_normal_gen([784,10],0,0.1,'float')); %zeros([784, 10]));
+  b = Variable('b',0.1*mzeros([10,1])); %zeros([10,1]));
+  y = AddOp(MatmulOp(W,x),b);
   %y = AddOp(y,b); % for testing unique variable selection
-  y_ = Placeholder('float',[-1,10]);
-
+  y_ = Placeholder('float',[10,-1]);
   %Plain:
   %   ReduceMeanOp(-ReduceSumOp(y_ * LogOp(SoftMaxOp(y)),1)
   %Optimized:0
@@ -44,8 +43,8 @@ end
   end
 
 %  train_step.variables
-  predict_op = ArgmaxOp(y, 2);
-   correct_prediction = EqualOp(predict_op, ArgmaxOp(y_, 2));
+  predict_op = ArgmaxOp(y, 1);
+   correct_prediction = EqualOp(predict_op, ArgmaxOp(y_, 1));
 accuracy = ReduceMeanOp(correct_prediction,0); 
 
 %%
@@ -65,8 +64,10 @@ steps = 60000/batchsize*epochs;
 losshistory = mzeros(steps,DeepOp.setgetDefaultType());
 accuracyhistory = losshistory;
 tic 
+lis = [];
 for I=1:steps
-    [batch_xs,~,batch_ys] = mtr.next(batchsize);
+    [batch_xs,~,batch_ys,li] = mtr.next(batchsize);
+    lis = [lis;li];
     loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys)});
     losshistory(I) = loss;
     if speedtest == 0 && mod(I,10) == 0

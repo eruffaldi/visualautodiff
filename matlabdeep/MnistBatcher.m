@@ -3,13 +3,14 @@ classdef MnistBatcher < handle
     
     properties
         epoch
-        iteration
+        last
         alllabels
         allimages
         alllabelshot
         n
         indices
         shuffle
+        colmajor
     end
     
 
@@ -17,58 +18,95 @@ classdef MnistBatcher < handle
         function obj = MnistBatcher(content,shuffle)
                 
             if nargin < 2
-                shuffle = 0;
+                shuffle = 1;
             end
+            obj.colmajor = 1;
             obj.shuffle = shuffle;
              obj.epoch = 1;
-             obj.iteration = 1;
+             obj.last = 0;
              if strcmp(content,'train')
-                 Trimages = loadMNISTImages('train-images.idx3-ubyte');
-                Trlabels = loadMNISTLabels('train-labels.idx1-ubyte')';
+                 if obj.colmajor
+                    Trimages = loadMNISTImages('train-images.idx3-ubyte',1);
+                    Trlabels = loadMNISTLabels('train-labels.idx1-ubyte')';
+                    Trlabelshot = onehot(Trlabels,0,9)'; %full(ind2vec((Trlabels+1)))';
+                assert(size(Trlabels,1) == 1);
+                 else
+                    Trimages = loadMNISTImages('train-images.idx3-ubyte');
+                    Trlabels = loadMNISTLabels('train-labels.idx1-ubyte')';
                 Trlabelshot = onehot(Trlabels,0,9); %full(ind2vec((Trlabels+1)))';
+                assert(size(Trlabels,1) == 2);
+                 end
                 %Trimagesx = makefromworkspace(1:length(Trimages),Trimages);
                 %Trlabelshotsx = makefromworkspace(1:length(Trlabelshot),Trlabelshot')
-                obj.alllabels = Trlabels';                
+                obj.alllabels = Trlabels;                
                 obj.alllabelshot = Trlabelshot;
                 obj.allimages = Trimages;
              else
-                Teimages = loadMNISTImages('t10k-images.idx3-ubyte');
-                Telabels = loadMNISTLabels('t10k-labels.idx1-ubyte')';
-                Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';
-                obj.alllabels = Telabels';                
+                 if obj.colmajor
+                    Teimages = loadMNISTImages('t10k-images.idx3-ubyte',1);
+                    Telabels = loadMNISTLabels('t10k-labels.idx1-ubyte')';
+                    Telabelshot = onehot(Telabels,0,9)'; % full(ind2vec((Telabels+1)))';
+                 else
+                    Teimages = loadMNISTImages('t10k-images.idx3-ubyte',0);
+                    Telabels = loadMNISTLabels('t10k-labels.idx1-ubyte')';
+                    Telabelshot = onehot(Telabels,0,9); % full(ind2vec((Telabels+1)))';
+                 end
+                 
+                obj.alllabels = Telabels;                
                 obj.alllabelshot = Telabelshot;
                 obj.allimages = Teimages;
              end
-             obj.n = size(obj.alllabels,1);
+             obj.n = length(obj.alllabels);
+             if obj.shuffle
              obj.indices = randperm(obj.n);
+             else
+                 obj.indices = 1:obj.n;
+             end
         end
         
-        function [i,l,lh] = next(obj,items)
-            left = min(items,obj.n-obj.iteration);
+        function [i,l,lh,li] = next(obj,items)
+            left = min(items,obj.n-obj.last);
             if left > 0
-                Q = obj.indices(obj.iteration:obj.iteration+left-1);
-                i = obj.allimages(Q,:);
-                l = obj.alllabels(Q,:);
-                lh = obj.alllabelshot(Q,:);
-                obj.iteration = obj.iteration + left;
+                Q = obj.indices(obj.last+1:obj.last+left);
+                if obj.colmajor
+                    i = obj.allimages(:,Q);
+                    l = obj.alllabels(Q);
+                    lh = obj.alllabelshot(:,Q);
+                    li = Q;
+                else
+                    i = obj.allimages(Q,:);
+                    l = obj.alllabels(Q,:);
+                    lh = obj.alllabelshot(Q,:);
+                    li = Q;
+                end
+                obj.last = obj.last + left;
             else
                 i = [];
                 l = [];
                 lh = [];
+                li = [];
             end               
             if left < items
                 % new epoch reshuffle and recurse
-                obj.iteration = 1;
+                obj.last = 0;
                 obj.epoch = obj.epoch + 1;   
                 if obj.shuffle
                     obj.indices = randperm(obj.n);
                 else
                     obj.indices = 1:obj.n;
                 end
-                [ti,tl,tlh] = obj.next(items-left);
-                i = [i;ti];
-                l = [l;tl];
-                lh = [lh;tlh];
+                [ti,tl,tlh,tli] = obj.next(items-left);
+                if obj.colmajor
+                    i = [i,ti];                    
+                        l = [l,tl];
+                    lh = [lh,tlh];
+                    li = [li,tli];
+                else
+                    i = [i;ti];
+                    l = [l,tl];
+                    lh = [lh;tlh];
+                    li = [li;tli];
+                end
             end            
         end   
         

@@ -3,7 +3,7 @@
 % padding is 4d: top left bottom right
 % stride is  2d
 % k is NOT neeed
-function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,padding,stride,mode,colmajor)
+function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,~,padding,stride,mode,colmajor)
 
   H = xshape(1);
   W = xshape(2);
@@ -26,16 +26,15 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,p
   end
 
   % block repeat means that we reat each digit 
-  Kbycolx = blockrepeat0(field_height,field_width);
-  if strcmp(mode,'BPKC')
+  if strcmp(mode,'BPKC') || strcmp(mode,'KCPB')
+      Kbycolx = blockrepeat0(field_height,field_width);
       Kbycol = repmat(Kbycolx, 1, C); % was np.tile(i0,C) along X
       Kbyrow = interrepeat0(field_width,field_height*C);
-  elseif strcmp(mode,'BPCK')
+  elseif strcmp(mode,'BPCK') || strcmp(mode,'CKPB')
+      Kbycolx = blockrepeat0(field_height,field_width);
       % no action needed
       Kbycol = Kbycolx;
       Kbyrow = interrepeat0(field_width,field_height);
-  elseif strcmp(mode,'CKPB')
-  elseif strcmp(mode,'KCPB')
   end  
 
   % then the macro blocks
@@ -58,14 +57,12 @@ function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,sizeout,p
   else
       % now deal with the C channel, working in last position BPKC or in
       % pre-last BPCK
-      if strcmp(mode,'BPKC')
+      if strcmp(mode,'BPKC') || strcmp(mode,'KCPB')
           % i and j are ready correctly replicated
           k = repmat(0:C-1,field_height*field_width*nP,1);
           i = ia;
           j = ja;
-      elseif strcmp(mode,'CKPB')
-      elseif strcmp(mode,'KCPB')
-      elseif strcmp(mode,'BPCK')
+      elseif strcmp(mode,'BPCK') || strcmp(mode,'CKPB')
           % Input: B Ih Iw C
           % we set ijk to scan IhIwC building the manual indexing
           % (sub2ind). 

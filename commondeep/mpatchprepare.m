@@ -1,4 +1,4 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWCshapex,filtersizesa,sizeout,stride,paddinga,mode,colmajor)
+function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWC_CWHN_shape,filtersizesa,sizeout,stride,paddinga,mode,colmajor)
 
 if length(paddinga) == 1
     padding = repmat(paddinga,4,1);
@@ -11,22 +11,34 @@ if length(filtersizesa == 1)
     filtersizes = [filtersizesa,filtersizesa];
 else
     filtersizes = filtersizesa;
-    
 end
 % ensure length 4
-NHWCshape = ones(1,4);
-NHWCshape(1:numel(NHWCshapex)) = NHWCshapex;
-nB = NHWCshape(1);
-Ih = NHWCshape(2);
-Iw = NHWCshape(3);
-nC = NHWCshape(4);
-
-
+if colmajor 
+    CWHNshape = ones(1,4);
+    CWHNshape(1:numel(NHWC_CWHN_shape)) = NHWC_CWHN_shape;
+    nB = CWHNshape(4);
+    Ih = CWHNshape(3);
+    Iw = CWHNshape(2);
+    nC = CWHNshape(1);
+else
+    NHWCshape = ones(1,4);
+    NHWCshape(1:numel(NHWC_CWHN_shape)) = NHWC_CWHN_shape;
+    nB = NHWCshape(1);
+    Ih = NHWCshape(2);
+    Iw = NHWCshape(3);
+    nC = NHWCshape(4);
+end
 
 
 [outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode,colmajor);
-nCO = size(i,1);
-nP = size(i,2);
+if colmajor
+    warning('verify')
+    nCO = size(i,1);
+    nP = size(i,2);
+else
+    nCO = size(i,1);
+    nP = size(i,2);
+end
 assert(nCO == nC*filtersizes(1)*filtersizes(2),'expected CO');
 assert(all(size(i) == size(j)));
 assert(numel(k) == numel(i))
@@ -40,9 +52,9 @@ elseif strcmp(mode,'BPCK')
     %kk = reshape(repmat(k,nP,1),1,[]); % C runs faster
     sXp = [nB,nP,nC,filtersizes(1),filtersizes(2)]; % we append the nP
 elseif strcmp(mode,'KCPB')
-    error('not yet implemented mode KCPB')
+    sXp = [nC,filtersizes(2),filtersizes(1),nP,nB]; % we append the nP
 elseif strcmp(mode,'CKPB')
-    error('not yet implemented mode KCPB')
+    sXp = [filtersizes(2),filtersizes(1),nC,nP,nB]; % we append the nP
 end
 
 % shift selector by topleft padding and mark all not valid indices as extra
@@ -59,61 +71,61 @@ id1(n) = 0;
 id2(n) = nC; % extra
 nameddims = struct();
 
-nameddims.B = 1;
-nameddims.P = 2;
+% TODO: automate this
 if strcmp(mode,'BPCK')
+    nameddims.B = 1;
+    nameddims.P = 2;
     nameddims.C = 3;
     nameddims.Fh = 4;
     nameddims.Fw = 5;
     nameddims.K = [4,5];
 elseif strcmp(mode,'BPKC')
+    nameddims.B = 1;
+    nameddims.P = 2;
     nameddims.C = 5;
     nameddims.Fh = 3;
     nameddims.Fw = 4;
     nameddims.K = [3,4];
 elseif strcmp(mode,'KCPB')
+    nameddims.B = 5;
+    nameddims.P = 4;
+    nameddims.C = 3;
+    nameddims.Fh = 2;
+    nameddims.Fw = 1;
+    nameddims.K = [2,1];
 elseif strcmp(mode,'CKPB')
+    nameddims.B = 5;
+    nameddims.P = 4;
+    nameddims.C = 1;
+    nameddims.Fh = 3;
+    nameddims.Fw = 2;
+    nameddims.K = [3,2];
 end
-if 1==1
-    % build indexing inside the input that is: B Ih Iw C
-    kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
-    %extrakq = Iw*Ih+1; % this marks the kq that is outside
-    if 0==1
-    Selx = sparse(1:length(kq),kq,true(length(kq),1));
-        if sum(n) > 0
-            Selx = Selx(:,1:end-1); % remove spurious rightmost
-            kq(n) = 0;  % mark as 0 for output
-        end
-    else
-        if sum(n) > 0
-            kq(n) = 0;  % mark as 0 for output
-        end
-        Selx = [];
-    end
-    % given kq construct the equivalent of the selector of sparse matrix
-    % that is:
-    %   slotsfor = full(sum(Selx,1))
-    %   indexes = cumsum(slotsfor)
-    %   find(kq == 1) ... each or find(Sel(:,I))
-    %   find(Sel(I,:)) has 0 or 1 element
-    %   find(Sel(:,I)) has 1 to patchsize elements such as slotsfor
-    Sel = struct();
-    Sel.A = Selx;
-    Sel.pickidx = int32(kq);
-    Sel.sXp = sXp;
-    Sel.outshape = outshape;
-    Sel.gather = @gathermatrix;
-    Sel.accum = @accummatrix;
+
+% build indexing inside the input that is: B Ih Iw C
+if colmajor
+    kq = sub2ind([nC+1,Iw,Ih],id2+1,id1+1,id0+1); 
 else
-    % manually expressing (Ih,Iw,C+1)
-    aiC = Ih*Iw;
-    aih = 1;
-    aiw = Ih;
-    % (ii,jj,kk) selects 0-based into IC
-    kq = kk*aiC + ii*aih + jj*aiw + 1; % column inde
-    kq(n) = nC*Ih*Iw+1; % do we need this? NO
-    Sel = sparse(1:length(kq),kq,ones(length(kq),1)); 
-    Sel = Sel(:,1:end-1); % remove spurious rightmost
+    kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
 end
+if sum(n) > 0
+    kq(n) = 0;  % mark as 0 for output
+end
+Selx = [];
+% given kq construct the equivalent of the selector of sparse matrix
+% that is:
+%   slotsfor = full(sum(Selx,1))
+%   indexes = cumsum(slotsfor)
+%   find(kq == 1) ... each or find(Sel(:,I))
+%   find(Sel(I,:)) has 0 or 1 element
+%   find(Sel(:,I)) has 1 to patchsize elements such as slotsfor
+Sel = struct();
+Sel.A = Selx;
+Sel.pickidx = int32(kq);
+Sel.sXp = sXp;
+Sel.outshape = outshape;
+Sel.gather = @gathermatrix;
+Sel.accum = @accummatrix;
+
 
 

@@ -7,12 +7,29 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
     %   Deprecated in favor of tf.nn.softmax_cross_entropy_with_logits
     %   https://github.com/tensorflow/tensorflow/blob/398699286064bc0821056209e1c62065f0e00f82/tensorflow/python/ops/nn_ops.py
     % Calling C++
-    %    https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/xent_op.cc
+    %    https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/xent_op.h
     %    (PART)
     %    
+    
+    % // max_logits along classes.
+    %scratch.reshape(batch_only).device(d) = logits.maximum(along_class);
+    %// logits - max_logits.
+    %backprop.device(d) = logits - scratch.broadcast(one_by_class);
+    %// sum(exp(logits - max_logits)) along classes.
+    %scratch.reshape(batch_only).device(d) = backprop.exp().sum(along_class);
+    %loss.device(d) =
+     %   (labels * (scratch.log().eval().broadcast(one_by_class) - backprop))
+     %       .eval()
+     %       .sum(along_class);
+    %// backprop: prob - labels, where
+    %//   prob = exp(logits - max_logits) / sum(exp(logits - max_logits))
+    %backprop.device(d) =
+     %   (backprop.exp() / scratch.broadcast(one_by_class)) - labels;
+        
     properties
         labels
         logits
+        classdim
     end
     
     properties (Transient)
@@ -27,22 +44,35 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
             obj = obj@BinaryOp(labels,logits);
             obj.labels = labels;
             obj.logits = logits;
+            obj.classdim = 1;
         end
         
         function r = eval(obj)
             xlabels = obj.labels.eval();
             xlogits = obj.logits.eval();
-            classes = size(xlogits,2);
-            classdim = 2;
-            
-            logitsmax = max(xlogits,[],classdim); % along class
-            obj.logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
-            scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
-            loss = sum((xlabels .* (repmat(log(scratch),1,classes) - obj.logitsoffsetted)),classdim); 
-            obj.xvalue = loss;
-            obj.sumx = scratch;
-            r = loss;
-            assert(~isempty(r));
+            classdim = obj.classdim;
+            classes = size(xlogits,classdim);
+            if classdim == 2   % B,C
+                batch_size = size(xlogits,1);
+                logitsmax = max(xlogits,[],classdim); % along class
+                obj.logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
+                scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
+                loss = sum((xlabels .* (repmat(log(scratch),1,classes) - obj.logitsoffsetted)),classdim); 
+                obj.xvalue = loss;
+                obj.sumx = scratch;
+                r = loss;
+                assert(~isempty(r));
+            else % C,B
+                batch_size = size(xlogits,1);
+                logitsmax = max(xlogits,[],classdim); % along class
+                obj.logitsoffsetted = xlogits - repmat(logitsmax,classes,1); % broadcast class
+                scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
+                loss = sum((xlabels .* (repmat(log(scratch),classes,1) - obj.logitsoffsetted)),classdim); 
+                obj.xvalue = loss;
+                obj.sumx = scratch;
+                r = loss;
+                assert(~isempty(r));
+            end
         end
         
         function r = evalshape(obj)
@@ -50,7 +80,11 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
              sr = obj.logits.evalshape();
              assert(length(sl) == 2,'only (batch,classes)');
              assert(all(sl == sr),'same inputs in softmax');
-             obj.xshape = obj.labels.xshape(2:end); % remove first batch size
+             if obj.classdim == 2
+                 obj.xshape = obj.labels.xshape(2:end); % remove first batch size
+             else
+                 obj.xshape = obj.labels.xshape(1:end-1); % remove last batch size
+             end
              r = obj.xshape;
         end
 
@@ -61,8 +95,12 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
             % if up we reduce 
             % backprop: prob - labels
             %   prob = exp(logits - max_logits) / sum(exp(logits - max_logits))
-            classes = size(obj.logits.xvalue,2);
-            J = (exp(obj.logitsoffsetted) ./ repmat(obj.sumx,1,classes))-obj.labels.xvalue;
+            classes = size(obj.logits.xvalue,obj.classdim);
+            if obj.classdim == 2
+                J = (exp(obj.logitsoffsetted) ./ repmat(obj.sumx,1,classes))-obj.labels.xvalue;
+            else
+                J = (exp(obj.logitsoffsetted) ./ repmat(obj.sumx,classes,1))-obj.labels.xvalue;
+            end
             obj.logits.grad(up*J);
         end
         

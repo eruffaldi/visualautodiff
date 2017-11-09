@@ -65,6 +65,7 @@ classdef Variable < DeepOp
 
          function reset(obj)             
             % no reset
+            obj.resetgrad();
          end
         
          function r = eval(obj)
