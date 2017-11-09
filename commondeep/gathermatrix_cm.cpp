@@ -15,31 +15,32 @@
 #include <array>
 #include <memory>
 #include <algorithm>
-
+#include <iostream>
 // works iterating by row of input
 //
 // take the subs as indices to the 
 template <class T>
 void gathermatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outrows)
 {
-    for(int itarget_row = 0; itarget_row < nsubs; itarget_row++)
+    for(int c = 0; c < cols; c++)
     {
-        auto input_row = psubs[itarget_row];
-        if(input_row > 0) // SKIPPED input_col <= cols
+        const int ic = c*rows;
+        const int oc = c*outrows;
+        
+        // sequential inoutput, variable in input
+        for(int itarget_row = 0; itarget_row < nsubs; itarget_row++)
         {
-            input_row--; // 1-based with 0 as null
-            for(int c = 0; c < cols; c++)
+            auto input_row = psubs[itarget_row];
+            if(input_row > 0) // SKIPPED input_col <= cols
             {
-                pout[itarget_row+c*rows] = pdata[input_row+c*rows];
+                input_row--; // 1-based with 0 as null
+                pout[itarget_row+oc] = pdata[input_row+ic];
             }
         }
-    }
-    // excess columns if ny DUE to Uninited
-    for(int itarget_row = nsubs; itarget_row < outrows; itarget_row++)
-    {
-        for(int c =  0; c < cols; c++)
+        // sequence of zeros AKA memset
+        for(int itarget_row = nsubs; itarget_row < outrows; itarget_row++)
         {
-            pout[itarget_row+c*rows] = 0; 
+            pout[itarget_row+oc] = 0; 
         }
     }
 }
@@ -90,8 +91,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             break;
     }
 	const mwSize * dimi = mxGetDimensions(prhs[1]);
-    int rows = dimi[0];
-    int cols = dimi[1];
+    int rows = dimi[0]; // values
+    int cols = dimi[1]; // batch
     int nsubs = mxGetNumberOfElements(prhs[0]);
     if(nsubs > outrows)   
     {

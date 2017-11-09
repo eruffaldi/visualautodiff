@@ -13,7 +13,9 @@ cnn_specs = [filtersize1,filtersize2,features1,features2,densesize];
 batchsize = 50; % was 64
 useadam=1;
 epochs = 5;
+dropout = 0.4;
 gpumode=[0,1];
+gpumode = 0;
 for KK=1:length(gpumode)
     if gpumode(KK)
         deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));

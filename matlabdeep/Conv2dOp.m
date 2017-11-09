@@ -155,17 +155,17 @@ classdef Conv2dOp < BinaryOp
             if obj.colmajor
                 U_Q_Pw_Ph_B = in;
                 nB = obj.left.xshape(4);
-                nP = size(U_Q_Pw_Ph_B,2)*size(U_B_Ph_Pw_Q,3);
+                nP = size(U_Q_Pw_Ph_B,2)*size(U_Q_Pw_Ph_B,3);
                 nQ = size(U_Q_Pw_Ph_B,1);
-                U_BP_Q = reshape(U_Q_Pw_Ph_B,nQ,nB*nP); % B_Ph_Pw_Q => BP_Q
+                U_Q_PB = reshape(U_Q_Pw_Ph_B,nQ,nB*nP); % B_Ph_Pw_Q => BP_Q
 
                 % work using matrix product in flat space [B P, K C] [K C, Q]
                 %   d/dA A W = U W'   [B P, Q] [K C, Q]
                 %   d/dW A W = A' U
                 W_Q_C_K = obj.right.xvalue;
-                dzdx_CK_PB = reshape(W_Q_C_K,nQ,[])'*U_Q_BP;
+                dzdx_CK_PB = reshape(W_Q_C_K,nQ,[])'*U_Q_PB;
                 dzdx_CKP_B  = reshape(dzdx_CK_PB,[],nB*nP);
-                dzdx = munpatcher(dzdx_CKP_B,obj.Sel_IC_PKC,obj.left.xshape,prod(obj.left.xshape(1:end-1)));
+                dzdx = munpatcher(dzdx_CKP_B,obj.Sel_IC_CKP,obj.left.xshape,prod(obj.left.xshape(1:end-1)),obj.colmajor);
                 obj.left.grad(dzdx);
 
                 dzdW = reshape(U_Q_PB * obj.Xp_CK_PB',obj.right.xshape);          

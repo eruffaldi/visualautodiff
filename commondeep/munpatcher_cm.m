@@ -10,20 +10,20 @@
 %   Q = input space
 function X = munpatcher(Xp,Sel,NHWCshape,SelA)
 
-nB = NHWCshape(1);
+    nC = NHWCshape(1);
 Ih = NHWCshape(2);
 Iw = NHWCshape(3);
 if length(NHWCshape) == 3
-    nC = 1;
+    nB = 1;
 else
-    nC = NHWCshape(4);
+nB = NHWCshape(4);
 end
 
-Xpm = reshape(Xp,nB,[]); % keep on the left
+Xpm = reshape(Xp,[],nB); % keep on the left
 
 %sparse Approach => no GPU, only double
 %w = double(Xpm)*Sel.A;
-oshape = [nB,Ih,Iw,nC];
+oshape = [nC,Iw,Ih,nB];
 %accumarray Approach: notpossibly because value is vector => loops
 %w = accumarray(Sel.kq,Xpm,[size(Xpm,1),size(Sel.A,2)]);
 if isa(Xpm,'gpuArray')
@@ -51,9 +51,9 @@ else
             cols = int32(size(Xpm,2));
             nsubs = int32(numel(Sel));
             
-            outcols = int32(SelA);
+            outrows = int32(SelA);
             % ORIGINAL: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)
-            coder.ceval(['accummatrix_cm_' class(w)],coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outcols);
+            coder.ceval(['accummatrix_cm_' class(w)],coder.rref(Xpm),rows,cols,coder.rref(Sel),nsubs,coder.wref(w),outrows);
         else
             % SLOW fallback
             w = accummatrixmat_cm(Sel,Xpm,SelA);

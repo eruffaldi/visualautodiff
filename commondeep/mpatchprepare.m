@@ -32,7 +32,6 @@ end
 
 [outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode,colmajor);
 if colmajor
-    warning('verify')
     nCO = size(i,1);
     nP = size(i,2);
 else
@@ -52,9 +51,9 @@ elseif strcmp(mode,'BPCK')
     %kk = reshape(repmat(k,nP,1),1,[]); % C runs faster
     sXp = [nB,nP,nC,filtersizes(1),filtersizes(2)]; % we append the nP
 elseif strcmp(mode,'KCPB')
-    sXp = [nC,filtersizes(2),filtersizes(1),nP,nB]; % we append the nP
-elseif strcmp(mode,'CKPB')
     sXp = [filtersizes(2),filtersizes(1),nC,nP,nB]; % we append the nP
+elseif strcmp(mode,'CKPB')
+    sXp = [nC,filtersizes(2),filtersizes(1),nP,nB]; % we append the nP
 end
 
 % shift selector by topleft padding and mark all not valid indices as extra
@@ -66,9 +65,15 @@ id2 = reshape(k,1,[]);
 % identify out of shape (due to padding) and remove them marking as special
 % extra item that will be removed from the sparse matrix
 n = id0 < 0 | id1 < 0 | id0 >= Ih | id1 >= Iw;
+if colmajor
+id0(n) = Ih; 
+id1(n) = 0;
+id2(n) = 0; % extra
+else
 id0(n) = 0; 
 id1(n) = 0;
 id2(n) = nC; % extra
+end
 nameddims = struct();
 
 % TODO: automate this
@@ -82,29 +87,29 @@ if strcmp(mode,'BPCK')
 elseif strcmp(mode,'BPKC')
     nameddims.B = 1;
     nameddims.P = 2;
-    nameddims.C = 5;
     nameddims.Fh = 3;
     nameddims.Fw = 4;
     nameddims.K = [3,4];
+    nameddims.C = 5;
 elseif strcmp(mode,'KCPB')
-    nameddims.B = 5;
-    nameddims.P = 4;
-    nameddims.C = 3;
     nameddims.Fh = 2;
     nameddims.Fw = 1;
     nameddims.K = [2,1];
-elseif strcmp(mode,'CKPB')
-    nameddims.B = 5;
+    nameddims.C = 3;
     nameddims.P = 4;
+    nameddims.B = 5;
+elseif strcmp(mode,'CKPB')
     nameddims.C = 1;
+    nameddims.K = [3,2];
+    nameddims.P = 4;
+    nameddims.B = 5;
     nameddims.Fh = 3;
     nameddims.Fw = 2;
-    nameddims.K = [3,2];
 end
 
 % build indexing inside the input that is: B Ih Iw C
 if colmajor
-    kq = sub2ind([nC+1,Iw,Ih],id2+1,id1+1,id0+1); 
+    kq = sub2ind([nC,Iw,Ih+1],id2+1,id1+1,id0+1); 
 else
     kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
 end

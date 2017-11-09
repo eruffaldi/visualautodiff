@@ -98,7 +98,7 @@ classdef MaxPoolOp < UnaryOp
                 X_CIB = obj.left.eval();
 
                 % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-                Xp_K_CPB = mpatcher(X_CIB,obj.Sel_IC_CKP,obj.shape_K_CPB);
+                Xp_K_CPB = mpatcher(X_CIB,obj.Sel_IC_KCP,obj.shape_K_CPB,obj.colmajor);
                 % => [nB patches]
                 [Y_CPB,Yind_CPB] = max(Xp_K_CPB,[],1);
 
@@ -107,7 +107,7 @@ classdef MaxPoolOp < UnaryOp
                 X_CIB = obj.left.eval();
 
                 % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-                Xp_K_CPB = mpatcher(X_CIB,obj.Sel_IC_KCP,obj.shape_K_CPB);
+                Xp_K_CPB = mpatcher(X_CIB,obj.Sel_IC_KCP,obj.shape_K_CPB,obj.colmajor);
                 % => [nB patches]
                 [Y_CPB,Yind_CPB] = max(Xp_K_CPB,[],1);
 
@@ -132,7 +132,7 @@ classdef MaxPoolOp < UnaryOp
                 Jp_K_CPB(ind) = up_CPB;  % propagate up to them
 
                 % => [nB Ph Pw Fin] via unpatching
-                J_CIB = munpatcher(Jp_K_CPB,obj.Sel_IC_KCP,obj.left.xshape,prod(obj.left.xshape(1:end-1))); % aggregate contributions
+                J_CIB = munpatcher(Jp_K_CPB,obj.Sel_IC_KCP,obj.left.xshape,prod(obj.left.xshape(1:end-1)),obj.colmajor); % aggregate contributions
                 obj.left.grad(J_CIB);
             else
                 up_BPC = up;
@@ -147,7 +147,7 @@ classdef MaxPoolOp < UnaryOp
                 Jp_BPC_K(ind) = up_BPC;  % propagate up to them
 
                 % => [nB Ph Pw Fin] via unpatching
-                J_BIC = munpatcher(Jp_BPC_K,obj.Sel_PCK_IC,obj.left.xshape,prod(obj.left.xshape(2:end))); % aggregate contributions
+                J_BIC = munpatcher(Jp_BPC_K,obj.Sel_PCK_IC,obj.left.xshape,prod(obj.left.xshape(2:end)),obj.colmajor); % aggregate contributions
                 obj.left.grad(J_BIC);
             end
         end

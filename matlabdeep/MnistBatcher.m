@@ -58,6 +58,7 @@ classdef MnistBatcher < handle
              end
              obj.n = length(obj.alllabels);
              if obj.shuffle
+                 disp('Reshuffle data');
              obj.indices = randperm(obj.n);
              else
                  obj.indices = 1:obj.n;
@@ -91,6 +92,7 @@ classdef MnistBatcher < handle
                 obj.last = 0;
                 obj.epoch = obj.epoch + 1;   
                 if obj.shuffle
+                 disp('Reshuffle data');
                     obj.indices = randperm(obj.n);
                 else
                     obj.indices = 1:obj.n;

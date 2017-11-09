@@ -22,16 +22,18 @@
 template <class T, class DT = T>
 void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outrows)
 {
-    // nsubs <= cols
-    for(int input_row = 0; input_row < nsubs; input_row++)
+    for(int c = 0; c < cols; c++)
     {
-        auto itarget_row = psubs[input_row];
-        if(itarget_row > 0 && itarget_row <= outrows)
+        int ic = rows*c;
+        int oc = outrows*c;
+
+        for(int input_row = 0; input_row < nsubs; input_row++)
         {
-            itarget_row--; // 0-based
-            for(int c = 0; c < cols; c++)
+            auto itarget_row = psubs[input_row];
+            if(itarget_row > 0 && itarget_row <= outrows)
             {
-                pout[itarget_row+c*rows] += pdata[itarget_row+c*rows];
+                itarget_row--; // 0-based
+                pout[itarget_row+oc] += pdata[input_row+ic];
             }
         }
     }
@@ -43,7 +45,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     if(nrhs != 3 || nlhs != 1)
     {
-        mexPrintf("accummatrix Emanuele Ruffaldi 2017\naccummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
+        mexPrintf("accummatrix Emanuele Ruffaldi 2017\naccummatrix(S=subs_of_rows,A=val_matrix,n=size_out_rows)");
         return;
     }
     if(mxIsSparse(prhs[0]) || mxIsComplex(prhs[0]) || mxGetNumberOfDimensions(prhs[0]) != 2 || mxGetClassID(prhs[0]) != mxINT32_CLASS)
@@ -62,8 +64,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         return;
     }    
 	// dimension argument
-    auto outcols = (int)mxGetScalar(prhs[2]);
-    if(outcols <= 0)
+    auto outrows = (int)mxGetScalar(prhs[2]);
+    if(outrows <= 0)
     {
         mexErrMsgTxt("number of output colums should be positive. API: accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
         return;
@@ -86,12 +88,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int rows = dimi[0];
     int cols = dimi[1];
     int nsubs = mxGetNumberOfElements(prhs[0]);
-    if(nsubs > cols)   
+    if(nsubs > rows)   
     {
-        mexErrMsgTxt("S size larger than input columns of A\nSee accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
+        mexPrintf("S size larger than input columns of A: nsubs=%d rows=%d cols=%d\nSee accummatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)",nsubs,rows,cols);
+        mexErrMsgTxt("S size larger than input columns of A");
         return;
     }
-    mwSize dimo[2] = { (mwSize)rows, (mwSize)outcols };
+    mwSize dimo[2] = { (mwSize)outrows, (mwSize)cols };
     // zero inited
     plhs[0] = mxCreateNumericArray(2,(mwSize*)dimo,mxGetClassID(prhs[1]),mxREAL);
     int32_t * psubs = (int32_t*)mxGetData(prhs[0]);
@@ -100,16 +103,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     switch(mxGetClassID(prhs[1]))
     {
         case mxDOUBLE_CLASS:
-            accummatrix_cols<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outcols);
+            accummatrix_cols<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outrows);
             break;
         case mxSINGLE_CLASS:
-            accummatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
+            accummatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outrows);
             break;
         case mxINT32_CLASS:
-            accummatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
+            accummatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outrows);
             break;
         case mxINT64_CLASS:
-            accummatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
+            accummatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outrows);
             break;
         default:
             mexErrMsgTxt("Unsupported type");

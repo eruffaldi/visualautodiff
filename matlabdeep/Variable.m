@@ -74,7 +74,7 @@ classdef Variable < DeepOp
 
          function increment(obj,v)
              assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'increment same size or scalar');
-!             obj.xvalue = obj.xvalue + cast(v,'like',obj.xtype);
+             obj.xvalue = obj.xvalue + cast(v,'like',obj.xtype);
          end
 
          function grad(obj,v)

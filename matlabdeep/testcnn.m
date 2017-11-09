@@ -45,27 +45,28 @@ x_image = ReshapeOp(x, [1, 28, 28, -1]);
 %   Fh Fw C Q
 
 W_conv1 = weight_variable('W_conv1',[features1, 1, filtersize1, filtersize1]);
-b_conv1 = bias_variable('b_conv1',[features1]);
+b_conv1 = bias_variable('b_conv1',[features1,1]);
 h_conv1 = ReluOp(conv2d(x_image, W_conv1)+b_conv1);
 h_pool1 = max_pool_2x2(h_conv1); h_pool1.name = 'h_pool1';
 
 W_conv2 = weight_variable('W_conv2',[features2, features1, filtersize2, filtersize2]);
-b_conv2 = bias_variable('b_conv2',[features2]);
+b_conv2 = bias_variable('b_conv2',[features2,1]);
 h_conv2 = ReluOp(conv2d(h_pool1, W_conv2) + b_conv2);
 h_pool2 = max_pool_2x2(h_conv2); h_pool2.name = 'h_pool2';
 
 h_pool2_flat = ReshapeOp(h_pool2, [7*7*features2,-1]);
 
-W_fc1 = weight_variable('W_fc1',[7 * 7 * features2, densesize]);
-b_fc1 = bias_variable('b_fc1',[densesize]);
+W_fc1 = weight_variable('W_fc1',[densesize, 7 * 7 * features2]);
+b_fc1 = bias_variable('b_fc1',[densesize,1]);
 h_fc1 = ReluOp(W_fc1 * h_pool2_flat + b_fc1);
 
 keep_prob = Placeholder('keep_prob',1);
 h_fc1_drop = DropoutOp(h_fc1, keep_prob);
 
 W_fc2 = weight_variable('W_fc2',[classes,densesize]);
-b_fc2 = bias_variable('b_fc2',[classes]);
-y_conv =  W_fc2 * h_fc1_drop  + b_fc2;
+b_fc2 = bias_variable('b_fc2',[classes,1]);
+ma = W_fc2 * h_fc1_drop;
+y_conv =  ma  + b_fc2;
 
 % TODO fix softmax_cross_entropy_with_logits
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv),0);
@@ -94,7 +95,7 @@ speedtest = 0;
 tic 
 for I=1:iterations
     [batch_xs,~,batch_ys] = mtr.next(batchsize);
-    loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys),keep_prob,0.4});
+    loss = train_step.evalwith({x,(batch_xs),y_,(batch_ys),keep_prob,dropout});
     losshistory(I) = loss;
     if speedtest == 0 && mod(I,10) == 0
         I

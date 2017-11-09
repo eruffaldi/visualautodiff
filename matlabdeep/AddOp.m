@@ -12,6 +12,30 @@ classdef AddOp < BinaryOp
             obj.broadcastmode = 0;
         end
         
+        function r = evalshape(obj)
+            sxl = obj.left.evalshape();
+            sxr = obj.right.evalshape();
+            % exactly
+            if length(sxl) == length(sxr) && all(sxl == sxr)
+                obj.broadcastmode = 0;
+                obj.w = [];
+            % always the first term
+            % [a,b] + [a, 1]
+            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 1 && sxr(1) == sxl(1)
+                obj.broadcastmode = 1;
+                obj.w = sxr;
+            % [a,b,c,d] + [a, 1]
+            % xD + 1D with last dimension of xD == length of vector
+            elseif length(sxl) > 2 && length(sxr) == 2 && sxr(2) == 1 && sxr(1) == sxl(1)
+                obj.broadcastmode = 2;
+                obj.w = [sxl(1) prod(sxl(2:end))];
+            else
+                error('unsupported broadcast mode in %s + %s',num2str(sxl(:)'),num2str(sxr(:)'));
+            end                
+            obj.xshape = sxl;
+            r = obj.xshape;
+        end
+
         function r = eval(obj)
             xl = obj.left.eval() ;
             xr = obj.right.eval();
@@ -19,54 +43,15 @@ classdef AddOp < BinaryOp
             switch(obj.broadcastmode)
                 case 0 % same
                     obj.xvalue = xl+xr;
-                case 1 %  2D + 1D row using broadcast 
-                    obj.xvalue = xl+xr;
-                case 2 %  2D + 1D col
-                    obj.xvalue = xl+xr';
-                case 4 %  2D + 1D col using broadcast
-                    obj.xvalue = xl+xr;
-                case 3 %  xD + 1D with last shared
+                case 1 %  [a,b] + [a, 1]
+                    obj.xvalue = xl+xr(:);
+                case 2 %  [a,b,c,d] + [a, 1]
                     % input (C1,...K) ->reshaped ((C1...CK),K) -> broadcash
-                    obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
-                case 5 %  xD + 1D with first shared
-                    % input (K,C1,..,CN) ->reshaped (K, (C1...CN)) -> broadcash
-                    obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
+                    obj.xvalue = reshape(reshape(xl,obj.w) + xr,obj.left.xshape);                
                 otherwise
                     error('not implemented');
             end
             r = obj.xvalue;
-        end
-
-        function r = evalshape(obj)
-            sxl = obj.left.evalshape();
-            sxr = obj.right.evalshape();
-            if length(sxl) == length(sxr) && all(sxl == sxr)
-                obj.broadcastmode = 0;
-                obj.w = [];
-            % 2D + 1D row            
-            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(1) == 1
-                obj.broadcastmode = 1;
-                obj.w = [sxl(1) sxr(2)];
-            % 2D + 1D col            
-            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 1
-                obj.broadcastmode = 4;
-                obj.w = sxl;
-            % 2D + 1D col
-            elseif length(sxl) == 2 && length(sxr) == 2 && sxr(2) == 2
-                obj.broadcastmode = 2;
-                obj.w = [sxl(1) sxr(2)];
-            % xD + 1D with last dimension of xD == length of vector
-            elseif length(sxl) > 2 && length(sxr) == 2 && min(sxr) == 1 && max(sxr) == sxl(end)
-                obj.broadcastmode = 3;
-                obj.w = [prod(sxl(1:end-1)) sxl(end)];
-            elseif length(sxl) > 2 && length(sxr) == 2 && min(sxr) == 1 && max(sxr) == sxl(1)
-                obj.broadcastmode = 5;
-                obj.w = [sxl(1), prod(sxl(2:end))];
-            else
-                error('unsupported broadcast mode in %s + %s',num2str(sxl(:)'),num2str(sxr(:)'));
-            end                
-            obj.xshape = sxl;
-            r = obj.xshape;
         end
 
         function grad(obj,up)
@@ -75,21 +60,17 @@ classdef AddOp < BinaryOp
             
             switch(obj.broadcastmode)
                 case 0
+                    upx = up;
                     % if not broadcast then it is just the input u
-                case 1 %  2D + 1D row using broadcast 
-                    up = sum(reshape(up,obj.w),1);
-                case 2 %  2D + 1D col
-                    up = sum(reshape(up,obj.w),1);
-                case 3 %  xD + 1D with last shared
-                    up = sum(reshape(up,obj.w),1);
-                case 4 % 
-                    up = sum(reshape(up,obj.w),2);
-                case 5
-                    up = sum(reshape(up,obj.w),1);
+                case 1 %  [a,b] + [a, 1]
+                    upx = sum(up,2);
+                case 2 %  [a,b,c,d] + [a, 1]
+                    upx = sum(reshape(up,obj.w),2);
                 otherwise
                     error('not implemented');
+                    upx = up;
             end                    
-            obj.right.grad(up);
+            obj.right.grad(upx);
         end
 
     end
