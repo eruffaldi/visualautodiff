@@ -124,8 +124,12 @@ Sel.A = Selx;
 Sel.pickidx = int32(kq);
 Sel.sXp = sXp;
 Sel.outshape = outshape;
-Sel.gather = @gathermatrix;
-Sel.accum = @accummatrix;
-
+if colmajor
+Sel.gather = @gathermatrix_cm;
+Sel.accum = @accummatrix_cm;
+else
+Sel.gather = @gathermatrix_rm;
+Sel.accum = @accummatrix_rm;
+end
 
 

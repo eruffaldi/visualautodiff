@@ -10,7 +10,7 @@ function Xp = mpatcher(X,Sel,sXp)
 % RM: tomatrix_first
 % CM: tomatrix_last
 nB = size(X,4);
-as = reshape(X,[],nB); % [nB , Ih Iw C]
+as = reshape(X,[],nB); % [C Iw Ih nB]
 
 %sparse Approach: only double and optimizable
 %w = double(as)*Sel.A';
@@ -43,7 +43,7 @@ else
         end
     end
 end
-Xp = reshape(w,sXp); % [nB , P, F, C]
+Xp = reshape(w,sXp); % [C, F, P, nB]
 if isa(as,'gpuArray')    
     Xp =  cast(Xp,'like',as);
 end

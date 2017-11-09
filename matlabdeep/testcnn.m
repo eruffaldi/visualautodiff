@@ -32,33 +32,40 @@ bias_variable = @(name,shape) Variable(name,0.1*mones(shape,deftype));
 max_pool_2x2 =@(x) MaxPoolOp(x,[1, 2, 2, 1],[1, 2, 2, 1],'SAME'); 
 conv2d = @(x,W) Conv2dOp(x,W,[1, 1, 1, 1],'SAME');
 
-x = Placeholder('float',[784,-1]);
-y_ = Placeholder('float',[classes,-1]);
+x = Placeholder('float',[-1,784]);
+y_ = Placeholder('float',[-1,classes]);
 
 x_image = ReshapeOp(x, [1, 28, 28, -1]);
 
-W_conv1 = weight_variable('W_conv1',[1, features1, filtersize1, filtersize1]);
+% Col Major: 
+%  C Iw Ih B
+%  Q C Fw Fh
+% Row Major
+%   B Ih Iw C
+%   Fh Fw C Q
+
+W_conv1 = weight_variable('W_conv1',[features1, 1, filtersize1, filtersize1]);
 b_conv1 = bias_variable('b_conv1',[features1]);
 h_conv1 = ReluOp(conv2d(x_image, W_conv1)+b_conv1);
 h_pool1 = max_pool_2x2(h_conv1); h_pool1.name = 'h_pool1';
 
-W_conv2 = weight_variable('W_conv2',[features1, features2, filtersize2, filtersize2]);
+W_conv2 = weight_variable('W_conv2',[features2, features1, filtersize2, filtersize2]);
 b_conv2 = bias_variable('b_conv2',[features2]);
 h_conv2 = ReluOp(conv2d(h_pool1, W_conv2) + b_conv2);
 h_pool2 = max_pool_2x2(h_conv2); h_pool2.name = 'h_pool2';
 
 h_pool2_flat = ReshapeOp(h_pool2, [7*7*features2,-1]);
 
-W_fc1 = weight_variable('W_fc1',[densesize, 7 * 7 * features2]);
+W_fc1 = weight_variable('W_fc1',[7 * 7 * features2, densesize]);
 b_fc1 = bias_variable('b_fc1',[densesize]);
 h_fc1 = ReluOp(W_fc1 * h_pool2_flat + b_fc1);
 
 keep_prob = Placeholder('keep_prob',1);
 h_fc1_drop = DropoutOp(h_fc1, keep_prob);
 
-W_fc2 = weight_variable('W_fc2',[classes, densesize]);
+W_fc2 = weight_variable('W_fc2',[classes,densesize]);
 b_fc2 = bias_variable('b_fc2',[classes]);
-y_conv = W_fc2 * h_fc1_drop  + b_fc2;
+y_conv =  W_fc2 * h_fc1_drop  + b_fc2;
 
 % TODO fix softmax_cross_entropy_with_logits
 cross_entropy = ReduceMeanOp(softmax_cross_entropy_with_logits(y_,y_conv),0);
@@ -74,7 +81,7 @@ end
 
 %cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 %cross_entropy.grad(1)
-prediction = ArgmaxOp(y_conv, 2);
+prediction = ArgmaxOp(y_conv, 1);
 %correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 2));
 %accuracy = ReduceMeanOp(correct_prediction,0); 
 

@@ -50,7 +50,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     if(nrhs != 3 || nlhs != 1)
     {
-        mexPrintf("accummatrix Emanuele Ruffaldi 2017\ngathermatrix(S=subs_of_col,A=val_matrix,n=size_out_cols)");
+        mexPrintf("accummatrix Emanuele Ruffaldi 2017\ngathermatrix(S=subs_of_row,A=val_matrix,n=size_out_rows)");
         return;
     }
     if(mxIsSparse(prhs[0]) || mxIsComplex(prhs[0]) || mxGetNumberOfDimensions(prhs[0]) != 2 || mxGetClassID(prhs[0]) != mxINT32_CLASS)
@@ -69,8 +69,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         return;
     }    
 	// dimension argument
-    auto outcols = (int)mxGetScalar(prhs[2]);
-    if(outcols <= 0)
+    auto outrows = (int)mxGetScalar(prhs[2]);
+    if(outrows <= 0)
     {
         mexErrMsgTxt("n positive");
         return;
@@ -93,12 +93,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int rows = dimi[0];
     int cols = dimi[1];
     int nsubs = mxGetNumberOfElements(prhs[0]);
-    if(nsubs > outcols)   
+    if(nsubs > outrows)   
     {
-        mexErrMsgTxt("S: larger than output columns");
+        mexErrMsgTxt("S: larger than output rows");
         return;
     }
-    mwSize dimo[2] = { (mwSize)rows, (mwSize)outcols };
+    mwSize dimo[2] = { (mwSize)outrows, (mwSize)cols };
     // zero inited
     plhs[0] = mxCreateUninitNumericArray(2,(mwSize*)dimo,mxGetClassID(prhs[1]),mxREAL);
     int32_t * psubs = (int32_t*)mxGetData(prhs[0]);
@@ -107,16 +107,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     switch(mxGetClassID(prhs[1]))
     {
         case mxDOUBLE_CLASS:
-            gathermatrix_cols<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outcols);
+            gathermatrix_cols<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outrows);
             break;
         case mxSINGLE_CLASS:
-            gathermatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
+            gathermatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outrows);
             break;
         case mxINT32_CLASS:
-            gathermatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
+            gathermatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outrows);
             break;
         case mxINT64_CLASS:
-            gathermatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
+            gathermatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outrows);
             break;
         default:
             mexErrMsgTxt("Unsupported type");

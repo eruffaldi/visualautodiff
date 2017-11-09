@@ -16,6 +16,8 @@ classdef ReshapeOp < UnaryOp
             xs = obj.left.evalshape();
             if obj.eshape(1) == -1
                 obj.xshape = [xs(1) obj.eshape(2:end)];
+            elseif obj.eshape(end) == -1
+                obj.xshape = [obj.eshape(1:end-1) xs(end)];
             else
                 obj.xshape = obj.eshape;
             end

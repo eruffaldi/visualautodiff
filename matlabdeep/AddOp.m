@@ -28,6 +28,9 @@ classdef AddOp < BinaryOp
                 case 3 %  xD + 1D with last shared
                     % input (C1,...K) ->reshaped ((C1...CK),K) -> broadcash
                     obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
+                case 5 %  xD + 1D with first shared
+                    % input (K,C1,..,CN) ->reshaped (K, (C1...CN)) -> broadcash
+                    obj.xvalue = reshape(reshape(xl,obj.w) + xr(:)',obj.left.xshape);
                 otherwise
                     error('not implemented');
             end
@@ -56,8 +59,11 @@ classdef AddOp < BinaryOp
             elseif length(sxl) > 2 && length(sxr) == 2 && min(sxr) == 1 && max(sxr) == sxl(end)
                 obj.broadcastmode = 3;
                 obj.w = [prod(sxl(1:end-1)) sxl(end)];
+            elseif length(sxl) > 2 && length(sxr) == 2 && min(sxr) == 1 && max(sxr) == sxl(1)
+                obj.broadcastmode = 5;
+                obj.w = [sxl(1), prod(sxl(2:end))];
             else
-                error('unsupported broadcast mode in AddOp %s %s',num2str(sxl(:)'),num2str(sxr(:)'));
+                error('unsupported broadcast mode in %s + %s',num2str(sxl(:)'),num2str(sxr(:)'));
             end                
             obj.xshape = sxl;
             r = obj.xshape;
@@ -76,8 +82,10 @@ classdef AddOp < BinaryOp
                     up = sum(reshape(up,obj.w),1);
                 case 3 %  xD + 1D with last shared
                     up = sum(reshape(up,obj.w),1);
-                case 4
+                case 4 % 
                     up = sum(reshape(up,obj.w),2);
+                case 5
+                    up = sum(reshape(up,obj.w),1);
                 otherwise
                     error('not implemented');
             end                    
