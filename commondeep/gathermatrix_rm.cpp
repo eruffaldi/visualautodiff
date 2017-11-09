@@ -20,7 +20,7 @@
 //
 // take the subs as indices to the 
 template <class T>
-void gathermatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outcols)
+void gathermatrix_rows(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,T * pout,int outcols)
 {
     for(int itarget_col = 0; itarget_col < nsubs; itarget_col++)
     {
@@ -107,16 +107,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     switch(mxGetClassID(prhs[1]))
     {
         case mxDOUBLE_CLASS:
-            gathermatrix_cols<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outcols);
+            gathermatrix_rows<double>((double*)pdata,rows,cols,psubs,nsubs,(double*)pout,outcols);
             break;
         case mxSINGLE_CLASS:
-            gathermatrix_cols<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
+            gathermatrix_rows<float>((float*)pdata,rows,cols,psubs,nsubs,(float*)pout,outcols);
             break;
         case mxINT32_CLASS:
-            gathermatrix_cols<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
+            gathermatrix_rows<int32_t>((int32_t*)pdata,rows,cols,psubs,nsubs,(int32_t*)pout,outcols);
             break;
         case mxINT64_CLASS:
-            gathermatrix_cols<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
+            gathermatrix_rows<int64_t>((int64_t*)pdata,rows,cols,psubs,nsubs,(int64_t*)pout,outcols);
             break;
         default:
             mexErrMsgTxt("Unsupported type");

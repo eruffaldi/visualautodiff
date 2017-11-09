@@ -20,7 +20,7 @@
 //
 // take the subs as indices to the 
 template <class T, class DT = T>
-void accummatrix_rows(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outrows)
+void accummatrix_cols(T * pdata,int rows,int cols,int32_t * psubs,int nsubs,DT * pout,int outrows)
 {
     // nsubs <= cols
     for(int input_row = 0; input_row < nsubs; input_row++)
