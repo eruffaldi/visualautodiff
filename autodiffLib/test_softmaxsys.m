@@ -10,14 +10,26 @@ U = 1;
 
 %%
 ss = [];
-ss.logits = X1;
-ss.labels = X2;
+ss.logits = encodematrix4json(X1,'R');
+ss.labels = encodematrix4json(X2,'R');
 filewrite('input.json',jsonencode(ss));
+
+%%
+z = encodematrix4json(X1);
+zu = decodematrix4json(z);
+assert(all(all(zu == X1)));
+z = encodematrix4json(X1,'R');
+zu2 = decodematrix4json(z);
+assert(all(all(zu2 == X1)));
+
+%%
+
 %%
 system('python ../commondeep/eval_softmax_logits.py');
 
 %%
 tfdata = jsondecode(fileread('output.json'));
+Yt = decodematrix4json(tfdata.output);
 
 %% Execute the DeepOp approach
 pX1 = Variable('float',X1);
@@ -32,11 +44,11 @@ pO.grad(U);
 Ym = pO.xvalue;
 JX1m = pX1.xgrad;
 %%
-assert(all( tfdata.output.data == Ym),'same Y');
+assert(all( Yt == Ym),'same Y');
 
 %%
 figure(1);
-plot(tfdata.output.data-Ym)
+plot(Yt-Ym)
 xlabel('Sample');
 ylabel('Output TF vs Ym');
 
