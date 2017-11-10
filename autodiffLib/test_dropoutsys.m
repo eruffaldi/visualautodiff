@@ -1,6 +1,3 @@
-%%
-addpath ../commondeep
-addpath ../matlabdeep
 
 
 %% Declare Input and W

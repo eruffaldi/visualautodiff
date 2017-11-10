@@ -1,12 +1,9 @@
-%%
-addpath ../commondeep
-addpath ../matlabdeep
 
 
 %% Declare Input and W
-X1 = rand([2,28]);
-X2 = rand([1,28]);
-U = rand([2,28]);
+X1 = rand([28,2]);
+X2 = rand([28,1]);
+U = rand([28,2]);
 
 %% Execute the DeepOp approach
 pX1 = Variable('float',X1);
