@@ -3,8 +3,8 @@
 %
 mysetup('json');
 %% Declare Input and W
-X1 = rand([100,2]); % logits 
-X2 = floor(rand([100,2])*10); % labels
+X1 = cast(rand([100,2]),'single'); % logits 
+X2 = cast((rand([100,2])*10),'single'); % labels
 
 U = 1;
 
@@ -22,7 +22,6 @@ z = encodematrix4json(X1,'R');
 zu2 = decodematrix4json(z);
 assert(all(all(zu2 == X1)));
 
-%%
 
 %%
 system('python ../commondeep/eval_softmax_logits.py');
@@ -32,6 +31,7 @@ tfdata = jsondecode(fileread('output.json'));
 Yt = decodematrix4json(tfdata.output);
 
 %% Execute the DeepOp approach
+deftype = DeepOp.setgetDefaultType(single(0));
 pX1 = Variable('float',X1);
 pX2 = Variable('float',X2);
 pO = softmax_cross_entropy_with_logits(pX2,pX1); % labels,logits
@@ -46,11 +46,6 @@ JX1m = pX1.xgrad;
 %%
 assert(all( Yt == Ym),'same Y');
 
-%%
-figure(1);
-plot(Yt-Ym)
-xlabel('Sample');
-ylabel('Output TF vs Ym');
 
 %% Execute the System Object 
 seval = softmax_cross_entropy_with_logitsSystem('classdim',2);
@@ -59,12 +54,17 @@ sgrad = softmax_cross_entropy_with_logitsGradSystem('classdim',2);
 JX1s = step(sgrad,X1,X2,U,logitsoffsetted,sumx);
 
 %%
+figure(1);
+plot(Yt-Ym)
+xlabel('Sample');
+ylabel('Output TF vs Ym');
 figure(2);
-plot(tfdata.output.data-Ys)
+plot(Yt-Ys)
 xlabel('Sample')
 ylabel('Output TF vs Ys');
 figure(3);
 plot(Ym-Ys)
+norm(Yt-Ys)
 xlabel('Sample');
 ylabel('Output Ym vs Ys');
 %%

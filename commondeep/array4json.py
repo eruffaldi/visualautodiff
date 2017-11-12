@@ -1,9 +1,10 @@
+
 import numpy as np
 
 
 def encodematrix4json(s,order=None):
 	if type(s) is np.ndarray:
-		meorder = 'F' if np.isfortran(s) else 'C'
+		meorder = 'C' if np.isfortran(s) else 'R'
 
 		if order is None:
 			order = meorder
@@ -37,8 +38,8 @@ def decodematrix4json(s):
 			d = np.array(s["data"],dtype=np.uint8).view(dtype=dt)
 		else:
 			d = np.frombuffer(s["data"],dt)
-		if s["order"] != "C":
-			return np.transpose(np.reshape(d,s["shape"][:-1:0]))
+		if s["order"] != "R":
+			return np.transpose(np.reshape(d,s["shape"][::-1]))
 		else:
 			return np.reshape(d,s["shape"])
 

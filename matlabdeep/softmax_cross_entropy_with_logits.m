@@ -51,28 +51,23 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
             xlabels = obj.labels.eval();
             xlogits = obj.logits.eval();
             classdim = obj.classdim;
-            classes = size(xlogits,classdim);
+            nclasses = size(xlogits,classdim);
+            logitsmax = max(xlogits,[],classdim); % along class => logitsmax is Bx1
             if classdim == 2   % B,C
-                batch_size = size(xlogits,1);
-                logitsmax = max(xlogits,[],classdim); % along class
-                obj.logitsoffsetted = xlogits - repmat(logitsmax,1,classes); % broadcast class
-                scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
-                loss = sum((xlabels .* (repmat(log(scratch),1,classes) - obj.logitsoffsetted)),classdim); 
-                obj.xvalue = loss;
-                obj.sumx = scratch;
-                r = loss;
-                assert(~isempty(r));
-            else % C,B
-                batch_size = size(xlogits,1);
-                logitsmax = max(xlogits,[],classdim); % along class
-                obj.logitsoffsetted = xlogits - repmat(logitsmax,classes,1); % broadcast class
-                scratch = sum(exp(obj.logitsoffsetted),classdim); % exp and sum along class
-                loss = sum((xlabels .* (repmat(log(scratch),classes,1) - obj.logitsoffsetted)),classdim); 
-                obj.xvalue = loss;
-                obj.sumx = scratch;
-                r = loss;
-                assert(~isempty(r));
+                obj.logitsoffsetted = xlogits - repmat(logitsmax,1,nclasses); % broadcast class
+            else
+                obj.logitsoffsetted = xlogits - repmat(logitsmax,nclasses,1); % broadcast class
+            end            
+            obj.sumx = sum(exp(obj.logitsoffsetted),classdim); % scratch is Bx1
+            if classdim == 2
+                bscratch = repmat(log(obj.sumx),1,nclasses);
+            else
+                bscratch = repmat(log(obj.sumx),nclasses,1);
             end
+            loss = sum(xlabels .* (bscratch - obj.logitsoffsetted),classdim); 
+            obj.xvalue = loss;
+            r = loss;
+            assert(~isempty(r));
         end
         
         function r = evalshape(obj)
