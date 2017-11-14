@@ -3,8 +3,8 @@
 %
 mysetup('json');
 %% Declare Input and W
-X1 = cast(rand([100,2]),'single'); % logits 
-X2 = cast((rand([100,2])*10),'single'); % labels
+X1 = cast(rand([1000,2]),'single'); % logits 
+X2 = cast((rand([1000,2])*10),'single'); % labels
 
 U = 1;
 
@@ -26,7 +26,6 @@ assert(all(all(zu2 == X1)));
 %%
 system('python ../commondeep/eval_softmax_logits.py');
 
-%%
 tfdata = jsondecode(fileread('output.json'));
 Yt = decodematrix4json(tfdata.output);
 
@@ -43,8 +42,6 @@ pO.eval(); % so we skip
 pO.grad(U);
 Ym = pO.xvalue;
 JX1m = pX1.xgrad;
-%%
-assert(all( Yt == Ym),'same Y');
 
 
 %% Execute the System Object 
@@ -65,6 +62,7 @@ ylabel('Output TF vs Ys');
 figure(3);
 plot(Ym-Ys)
 norm(Yt-Ys)
+norm(Ym-Ys)
 xlabel('Sample');
 ylabel('Output Ym vs Ys');
 %%

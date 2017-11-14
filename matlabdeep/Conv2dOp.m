@@ -39,8 +39,12 @@ classdef Conv2dOp < BinaryOp
             end
             assert(all(stride==1),'only stride 1');
             assert(strcmp(pad,'SAME'),'only pad SAME');
-            assert(isa(W,'Variable'),'W should be variable');
-            assert(length(W.xshape) == 4,'W should have 4D shape: K K 1 F');
+            assert(isa(W,'Variable') || isa(W,'Placeholder'),'W should be variable or placeholder');
+            if colmajor
+            assert(length(W.xshape) == 4,'W should have 4D shape: Fout Fin Kw Kh');
+            else
+            assert(length(W.xshape) == 4,'W should have 4D shape: Kh Kw Fin Fout');
+            end
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
             obj.matlabconv = 0;
@@ -57,13 +61,15 @@ classdef Conv2dOp < BinaryOp
         %   Fh Fw C Q
         function r = evalshape(obj)
             xl = obj.left.evalshape();
-            xr = obj.right.evalshape();            
-            assert(length(xl) == 4); % breaks if C=1
-            assert(length(xr) == 4); % breaks if Q=1
+            xr = obj.right.evalshape();  
             if obj.colmajor
                 assert(xl(1) == xr(2),'in_channel same'); 
                 nQ = xr(1);
-                nB = xl(4);
+                if length(xl) == 3
+                    nB = 1;
+                else
+                    nB = xl(4);
+                end
                 h_filter = xr(4);
                 w_filter = xr(3);
                 h_image =  xl(3);
@@ -87,12 +93,12 @@ classdef Conv2dOp < BinaryOp
             [padding,sizeout,offsetout] = paddingsetup([h_image w_image],[h_filter,w_filter],obj.stride(2:3),obj.padding);
             
             if obj.colmajor
-                [obj.Sel_IC_CKP,shape_CKPB,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'CKPB',obj.colmajor); % N independent
+                obj.Sel_IC_CKP = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'CwhWHB',obj.colmajor); % N independent
 
                 obj.shape_CK_PB = [prod(shape_CKPB(1:3)), prod(shape_CKPB(4:5))];
                 obj.xshape = [nQ obj.shapeP(2) obj.shapeP(1) nB];
             else
-                [obj.Sel_PKC_IC,shape_BPKC,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'BPKC',obj.colmajor); % N independent
+                obj.Sel_PKC_IC = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'BHWhwC',obj.colmajor); % N independent
                 
                 obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
                 obj.xshape = [nB obj.shapeP(1) obj.shapeP(2) nQ];

@@ -3,17 +3,12 @@
 % padding is 4d: top left bottom right
 % stride is  2d
 % k is NOT neeed
-function [outshape,k,i,j] = imagepad(C,xshape,field_height,field_width,~,padding,stride,mode,colmajor)
+function [outshape,outshapegroup,iH,iW,iC] = imagepad(inputform,outputform,inputshape,field_height,field_width,padding,stride,colmajor)
 
-H = xshape(1);
-W = xshape(2);
+H = inputshape(inputform.W);
+W = inputshape(inputform.H);
 stridey = stride(1);
 stridex = stride(2);
-
-% np.repeat(np.arange(A), B) =>  as 0000 1111 2222 ..
-% np.tile(np.arange(A), B))  =>  as 012 012 012e
-blockrepeat0= @(A,B) reshape(repmat((1:A)-1,B,1),1,[]);
-interrepeat0= @(A,B) reshape(repmat((1:A)-1,1,B),1,[]);
 
 assert (mod(H + padding(1)+padding(3) - field_height,stridey) == 0,'alignment of pad and stride-size in H');
 assert (mod(W + padding(2)+padding(4) - field_width,  stridex) == 0,'alignment of pad and stride-size in W');
@@ -21,57 +16,149 @@ out_height = (H + padding(1)+padding(3)-field_height ) / stridey+1 ;
 out_width = (W + padding(2)+padding(4)-field_width ) / stridex+1;
 outshape = [out_height out_width];
 
-if nargout < 2
-    return;
-end
+% np.repeat(np.arange(A), B) =>  as 0000 1111 2222 ..
+% np.tile(np.arange(A), B))  =>  as 012 012 012e
+blockrepeat0= @(A,B) reshape(repmat((1:A)-1,B,1),1,[]); % iterate 0..(A-1) repeating B times each: (0){B}...(A-1){B}
+interrepeat0= @(A,B) reshape(repmat((1:A)-1,1,B),1,[]); % iterate 0..(A-1) blockwise repeat:  ((0)..(A-1)){B}
+blockrepeat= @(S,B) reshape(repmat(S,B,1),1,[]); % iterate 0..(A-1) repeating B times each: (0){B}...(A-1){B}
+interrepeat= @(S,B) reshape(repmat(S,1,B),1,[]); % iterate 0..(A-1) blockwise repeat:  ((0)..(A-1)){B}
 
-% block repeat means that we reat each digit
-if strcmp(mode,'BPKC') || strcmp(mode,'KCPB')
-    Kbycolx = blockrepeat0(field_height,field_width);
-    Kbycol = repmat(Kbycolx, 1, C); % was np.tile(i0,C) along X
-    Kbyrow = interrepeat0(field_width,field_height*C);
-elseif strcmp(mode,'BPCK') || strcmp(mode,'CKPB')
-    Kbycolx = blockrepeat0(field_height,field_width);
-    % no action needed
-    Kbycol = Kbycolx;
-    Kbyrow = interrepeat0(field_width,field_height);
-end
-
-% then the macro blocks
-i1 = stridey *  blockrepeat0(out_width,out_height);
-j1 = stridex * interrepeat0(out_height,out_width);
-
-% i1 runs by row while i0 runs by cols: for each we add the offset of the
-% points inside
-
-% original
-ia = repmat(reshape(Kbycol,[],1),1,numel(i1)) + repmat(reshape(i1,1,[]),numel(Kbycol),1); % EXPANSION
-ja = repmat(reshape(Kbyrow,[],1),1,numel(j1)) + repmat(reshape(j1,1,[]),numel(Kbyrow),1); % EXPANSION
-
-nP = out_height*out_width;
-
-if C == 1
-    i = ia;
-    j = ja;
-    k = zeros(size(ia));
+if colmajor == 0
+    loopnew0 = blockrepeat0;
+    loopnew = blockrepeat;
+    loopold0 = interrepeat0;
+    loopold = interrepeat;
 else
-    % now deal with the C channel, working in last position BPKC or in
-    % pre-last BPCK
-    if strcmp(mode,'BPKC') || strcmp(mode,'KCPB')
-        % i and j are ready correctly replicated
-        k = repmat(0:C-1,field_height*field_width*nP,1);
-        i = ia;
-        j = ja;
-    elseif strcmp(mode,'BPCK') || strcmp(mode,'CKPB')
-        % Input: B Ih Iw C
-        % we set ijk to scan IhIwC building the manual indexing
-        % (sub2ind).
-        % [field_height*field_width*nC,nP]
-        k = repmat((0:C-1),field_height*field_width*nP,1);
-        nCO = C*field_width*field_height;
-        i = reshape(repmat(ia(:)',C,1),nCO,nP);
-        j = reshape(repmat(ja(:)',C,1),nCO,nP);
-        %k = blockrepeat0(C,nP)';
-        % k
+    loopold0 = blockrepeat0;
+    loopold = blockrepeat;
+    loopnew0 = interrepeat0;
+    loopnew = interrepeat;
+    
+end
+
+inputform = orderstructbyvalues(inputform);
+outputform = orderstructbyvalues(outputform);
+
+iH = [];
+iW = [];
+iC = [];
+S = 1; % current size
+fo = fieldnames(outputform);
+outshape = [];
+outshapegroup = struct('C',1,'W',1,'H',1);
+
+for I=1:length(fo)
+    f = fo{I};
+    
+    switch(f)
+    case 'B' % batch (ignored, should be first or last)
+        N = inputshape(inputform.(f));
+        assert(I == 1 || I == length(fo),'batch should be first or last');
+        continue
+    case 'C' % feature of input
+        N = inputshape(inputform.(f));
+        assert(isempty(iC),'no repetitions for C');
+                    focus = 'C';
+        zi = 0:N-1;
+    case 'w' % kernel width
+        N = field_width;
+        focus ='W';
+        if 0==1
+            if mod(N,2) == 0
+                zi = -N/2:(N/2-1);
+            else
+                zi = -(N-1)/2:(N-1)/2;
+            end
+        else
+            zi = 0:(N-1);
+        end
+    case 'h' % kernel height
+        N = field_height;
+        focus ='H';
+        % compose with existing
+        if 0==1
+            if mod(N,2)
+                zi = -N/2:(N/2-1);
+            else
+                zi = -(N-1)/2:(N-1)/2;
+            end
+        else
+            zi = 0:(N-1);
+        end
+    case 'W' % image width
+        N = inputshape(inputform.(f));
+        % compose with existing
+        focus ='W';
+        zi = 0:stridex:(N-1);
+    case 'H' % image height
+        N = inputshape(inputform.(f));
+        focus ='H';
+        zi = 0:stridey:(N-1);
+    otherwise
+        error(sprintf('unknown field %d',f));
     end
+    outshape.(f) = length(zi);
+    N = length(zi);
+    if focus == 'C'
+        outshapegroup.C = outshapegroup.C * N;
+    elseif focus == 'H'
+        outshapegroup.H = outshapegroup.H * N;
+    elseif focus == 'W'
+        outshapegroup.W = outshapegroup.W * N;
+    end
+    if nargin <2
+    else
+        if focus ~= 'C'
+            iC = loopold(iC,N);
+        else
+            % compose with existing
+            if isempty(iC)
+                iC = loopnew(zi,S);
+            else
+                % nested loop compositing with the previous
+                zia = loopnew(zi,S);
+                pre = loopold(iC,N);
+                iC = pre + zia;
+            end        
+        end
+        if focus ~= 'W'
+            iW = loopold(iW,N);
+        else
+            % compose with existing
+            if isempty(iW)
+                iW = loopnew(zi,S);
+            else
+                % nested loop compositing with the previous
+                zia = loopnew(zi,S);
+                pre = loopold(iW,N);
+                iW = pre + zia;
+            end                
+        end
+        if focus ~= 'H'
+            iH = loopold(iH,N);
+        else
+            % compose with existing
+            if isempty(iH)
+                iH = loopnew(zi,S);
+            else
+                % nested loop compositing with the previous
+                zia = loopnew(zi,S);
+                pre = loopold(iH,N);
+                iH = pre + zia;
+            end        
+        end
+    end
+    S = S * N;
+    
+end
+if isempty(iH)
+iH = zeros(1,S);
+end
+if isempty(iW)
+iW = zeros(1,S);
+end
+if isempty(iC)
+iC = zeros(1,S);
+end
+
 end

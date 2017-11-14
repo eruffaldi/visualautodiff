@@ -31,7 +31,7 @@ classdef softmax_cross_entropy_with_logitsGradSystem < matlab.System & matlab.sy
         % Constructor
         function obj = softmax_cross_entropy_with_logitsGradSystem(varargin)
             % Support name-value pair arguments when constructing object
-            obj.classdim = 1;
+            %obj.classdim = 1;
             setProperties(obj,nargin,varargin{:})
         end
     end

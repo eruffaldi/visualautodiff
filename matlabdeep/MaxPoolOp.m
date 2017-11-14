@@ -59,14 +59,22 @@ classdef MaxPoolOp < UnaryOp
                 nC = xl(1);
                 w_image = xl(2);
                 h_image =  xl(3);
-                nB = xl(4);
+                if length(xl) == 3
+                    nB =1;
+                else
+                    nB = xl(4);
+                end
                 
                 h_filter = obj.ksize(3);
                 w_filter = obj.ksize(2);
                 
             else
                 nB = xl(1);
-                nC = xl(4);
+                if length(xl) == 3
+                    nC = 1;
+                else
+                    nC = xl(4);
+                end
                 h_filter = obj.ksize(2);
                 w_filter = obj.ksize(3);
                 h_image =  xl(2);
@@ -76,18 +84,22 @@ classdef MaxPoolOp < UnaryOp
             [paddingout, sizeout, offsetout] = paddingsetup([h_image,w_image],[h_filter,w_filter],obj.strides(2:3),obj.padding);
 
             if obj.colmajor
-                [obj.Sel_IC_KCP,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'BPCK',obj.colmajor); % N independent
-                r = [nC obj.shapeP(1) obj.shapeP(2) nB]; % output BPC
+                mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'hwCWHB',obj.colmajor); % N independent
+                assert(length(mm.pickidx) == mm.outshapegroup.H*mm.outshapegroup.W*mm.outshapegroup.C);
+                r = [nC mm.outshape.W mm.outshape.H nB]; % output CWHB
+                obj.Sel_IC_KCP = mm;
                 obj.xshape = r;            
 
-                obj.shape_K_CPB = [h_filter*w_filter prod(r) ]; % patches for max: BPC K
+                obj.shape_K_CPB = [mm.outshape.w*mm.outshape.h prod(r) ]; % patches for max: BPC K
                 [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_K_CPB,1); 
             else
-                [obj.Sel_PCK_IC,~,obj.shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'BPCK',obj.colmajor); % N independent
-                r = [xl(1) obj.shapeP(1) obj.shapeP(2) xl(4)]; % output BPC
+                mm = mpatchprepare('BWHC',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'BHWCwh',obj.colmajor); % N independent
+                r = [nB mm.outshape.H mm.outshape.W nC]; % output BWHC
+                assert(length(mm.pickidx) == mm.outshapegroup.H*mm.outshapegroup.W*mm.outshapegroup.C);
+                obj.Sel_PCK_IC = mm;
                 obj.xshape = r;            
 
-                obj.shape_BPC_K = [prod(r) h_filter*w_filter]; % patches for max: BPC K
+                obj.shape_BPC_K = [prod(r) mm.outshape.w*mm.outshape.h]; % patches for max: BPC K
                 [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
             end
         end
@@ -104,15 +116,16 @@ classdef MaxPoolOp < UnaryOp
 
                 obj.xvalue = reshape(Y_CPB,obj.xshape);
                 obj.maxindices_CPB = Yind_CPB; % in [nB P, S]            else
-                X_CIB = obj.left.eval();
+            else
+                X_BIC = obj.left.eval();
 
                 % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-                Xp_K_CPB = mpatcher(X_CIB,obj.Sel_IC_KCP,obj.shape_K_CPB,obj.colmajor);
+                Xp_BPC_K = mpatcher(X_BIC,obj.Sel_PCK_IC,obj.shape_BPC_K,obj.colmajor);
                 % => [nB patches]
-                [Y_CPB,Yind_CPB] = max(Xp_K_CPB,[],1);
+                [Y_BPC,Yind_BPC] = max(Xp_BPC_K,[],2);
 
-                obj.xvalue = reshape(Y_CPB,obj.xshape);
-                obj.maxindices_CPB = Yind_CPB; % in [nB P, S]
+                obj.xvalue = reshape(Y_BPC,obj.xshape);
+                obj.maxindices_CPB = Yind_BPC; % in [nB P, S]            else
             end
             r = obj.xvalue;
         end

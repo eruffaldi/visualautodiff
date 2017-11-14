@@ -1,5 +1,5 @@
-function [Sel,sXp,outshape,nameddims] = mpatchprepare(NHWC_CWHN_shape,filtersizesa,sizeout,stride,paddinga,mode,colmajor)
-
+function [Sel,outshape,nameddims] = mpatchprepare(inputmode,inputshape,filtersizesa,sizeout,stride,paddinga,outputmode,colmajor)
+mode = outputmode;
 if length(paddinga) == 1
     padding = repmat(paddinga,4,1);
 elseif length(paddinga) == 2
@@ -12,106 +12,47 @@ if length(filtersizesa == 1)
 else
     filtersizes = filtersizesa;
 end
-% ensure length 4
-if colmajor 
-    CWHNshape = ones(1,4);
-    CWHNshape(1:numel(NHWC_CWHN_shape)) = NHWC_CWHN_shape;
-    nB = CWHNshape(4);
-    Ih = CWHNshape(3);
-    Iw = CWHNshape(2);
-    nC = CWHNshape(1);
-else
-    NHWCshape = ones(1,4);
-    NHWCshape(1:numel(NHWC_CWHN_shape)) = NHWC_CWHN_shape;
-    nB = NHWCshape(1);
-    Ih = NHWCshape(2);
-    Iw = NHWCshape(3);
-    nC = NHWCshape(4);
-end
+inshape = ones(1,4);
+inshape(1:numel(inputshape)) = inputshape;
 
+inputform = string2struct(inputmode);
+outputform = string2struct(outputmode);
 
-[outshape,k,i,j] = imagepad(nC,[Ih,Iw],filtersizes(1),filtersizes(2),sizeout,padding,stride,mode,colmajor);
-if colmajor
-    nCO = size(i,1);
-    nP = size(i,2);
-else
-    nCO = size(i,1);
-    nP = size(i,2);
-end
-assert(nCO == nC*filtersizes(1)*filtersizes(2),'expected CO');
-assert(all(size(i) == size(j)));
-assert(numel(k) == numel(i))
+nB = inputshape(inputform.B);
+nC = inputshape(inputform.C);
+Ih = inputshape(inputform.H);
+Iw = inputshape(inputform.W);
+[outshape,outshapegroup,iH,iW,iC] = imagepad(inputform,outputform,inputshape,filtersizes(1),filtersizes(2),padding,stride,colmajor);
 
+assert(isempty(iH) == 0);
+assert(isempty(iW) == 0);
+assert(isempty(iC) == 0);
 
-if strcmp(mode,'BPKC')
-    % iterate the nC (0-based) by all 
-    %kk = reshape(repmat(0:nC-1,filtersizes(1)*filtersizes(2)*nP,1),1,[]);
-    sXp = [nB,nP,filtersizes(1),filtersizes(2),nC]; % we append the nP
-elseif strcmp(mode,'BPCK')
-    %kk = reshape(repmat(k,nP,1),1,[]); % C runs faster
-    sXp = [nB,nP,nC,filtersizes(1),filtersizes(2)]; % we append the nP
-elseif strcmp(mode,'KCPB')
-    sXp = [filtersizes(2),filtersizes(1),nC,nP,nB]; % we append the nP
-elseif strcmp(mode,'CKPB')
-    sXp = [nC,filtersizes(2),filtersizes(1),nP,nB]; % we append the nP
-end
+nameddims = string2struct(mode);
 
-% shift selector by topleft padding and mark all not valid indices as extra
-% column
-id0 = reshape(j' - padding(1),1,[]);
-id1 = reshape(i' - padding(2),1,[]);
-id2 = reshape(k,1,[]);
+idH = reshape(iH - padding(1),1,[]);
+idW = reshape(iW - padding(2),1,[]);
+idC = reshape(iC,1,[]);
 
 % identify out of shape (due to padding) and remove them marking as special
 % extra item that will be removed from the sparse matrix
-n = id0 < 0 | id1 < 0 | id0 >= Ih | id1 >= Iw;
+n = idW < 0 | iH < 0 | idH >= Ih | idW >= Iw;
 if colmajor
-id0(n) = Ih; 
-id1(n) = 0;
-id2(n) = 0; % extra
+idH(n) = Ih; % last column (except Batch)
+idW(n) = 0;
+idC(n) = 0; % extra
 else
-id0(n) = 0; 
-id1(n) = 0;
-id2(n) = nC; % extra
+idH(n) = 0; 
+idW(n) = 0;
+idC(n) = nC; % last column
 end
-nameddims = struct();
 
-% TODO: automate this
-if strcmp(mode,'BPCK')
-    nameddims.B = 1;
-    nameddims.P = 2;
-    nameddims.C = 3;
-    nameddims.Fh = 4;
-    nameddims.Fw = 5;
-    nameddims.K = [4,5];
-elseif strcmp(mode,'BPKC')
-    nameddims.B = 1;
-    nameddims.P = 2;
-    nameddims.Fh = 3;
-    nameddims.Fw = 4;
-    nameddims.K = [3,4];
-    nameddims.C = 5;
-elseif strcmp(mode,'KCPB')
-    nameddims.Fh = 2;
-    nameddims.Fw = 1;
-    nameddims.K = [2,1];
-    nameddims.C = 3;
-    nameddims.P = 4;
-    nameddims.B = 5;
-elseif strcmp(mode,'CKPB')
-    nameddims.C = 1;
-    nameddims.K = [3,2];
-    nameddims.P = 4;
-    nameddims.B = 5;
-    nameddims.Fh = 3;
-    nameddims.Fw = 2;
-end
 
 % build indexing inside the input that is: B Ih Iw C
 if colmajor
-    kq = sub2ind([nC,Iw,Ih+1],id2+1,id1+1,id0+1); 
+    kq = sub2ind([nC,Iw,Ih+1],iC+1,iW+1,iH+1); 
 else
-    kq = sub2ind([Ih,Iw,nC+1],id0+1,id1+1,id2+1); 
+    kq = sub2ind([Ih,Iw,nC+1],iH+1,iW+1,iC+1); 
 end
 if sum(n) > 0
     kq(n) = 0;  % mark as 0 for output
@@ -127,8 +68,8 @@ Selx = [];
 Sel = struct();
 Sel.A = Selx;
 Sel.pickidx = int32(kq);
-Sel.sXp = sXp;
 Sel.outshape = outshape;
+Sel.outshapegroup = outshapegroup;
 if colmajor
 Sel.gather = @gathermatrix_cm;
 Sel.accum = @accummatrix_cm;

@@ -1,4 +1,4 @@
-classdef DropoutOp < ElementWiseUnaryOp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     classdef DropoutOp < ElementWiseUnaryOp
     
     properties
         prob

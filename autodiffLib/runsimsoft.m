@@ -1,8 +1,9 @@
 clear all
 codemodes = {1};
-runmodes = {'normal','accelerator'};
+%runmodes = {'normal','accelerator'};
+runmodes = {'accelerator'};
 modelname ='mnist_softmax_adam_whole';
-open_system(modelname);
+load_system(modelname);
 
 for I=1:length(codemodes)
     for J=1:length(runmodes)
@@ -14,7 +15,7 @@ for I=1:length(codemodes)
         simout = sim(modelname);
 
         r = [];
-        r.accuracy = accuracy.Data(end);
+        r.accuracy = simout.accuracy.Data(end);
         r.block_codegen = codemode;
         r.simulation_mode = runmode;
         
@@ -31,18 +32,19 @@ for I=1:length(codemodes)
         r.batchsize = hws.getVariable('batchsize');
         r.use_adam = 0;
         r.gradient_rate =  hws.getVariable('learningrate');
-                istarttest = predictions.Time(1);
+                istarttest = simout.predictions.Time(1);
         r.iterations = istarttest; % or -1
-        r.training_time = realtout.Data(istarttest)-realtout.Data(2);
-        r.testing_time = realtout.Data(end)-realtout.Data(istarttest);
-        stats = multiclassinfo(correct_predictions.Data(:),cast(predictions.Data(:)-1,'like',correct_predictions.Data));
+        r.training_time = simout.realtout.Data(istarttest)-simout.realtout.Data(2);
+        % +1 because of the loading spike
+        r.testing_time = simout.realtout.Data(end)-simout.realtout.Data(istarttest+1);
+        stats = multiclassinfo(simout.correct_predictions.Data(:),cast(simout.predictions.Data(:)-1,'like',simout.correct_predictions.Data));
         assert(length(stats.accuracy) == 10);
         r.cm_accuracy =mean(stats.accuracy);
         r.cm_Fscore =mean(stats.Fscore);
         r.cm_specificity =mean(stats.specificity);
         r.cm_sensitivity =mean(stats.sensitivity);
         r.total_params = 7850;
-        stats_add(r,struct('loss',loss.Data(1:istarttest),'cm',stats.confusionMat));
+        stats_add(r,struct('loss',simout.loss.Data(1:istarttest),'cm',stats.confusionMat));
 
     end
 end
