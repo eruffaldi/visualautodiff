@@ -41,7 +41,7 @@ classdef MaxPoolOp < UnaryOp
             if nargin < 5
                 colmajor = 1;
             end
-            assert(all(ksize == [1,2,2,1]),'only size [1,2,2,1]');
+            assert(ksize(1) == 1 & ksize(end) == 1);
             %assert(all(strides == [1,2,2,1]),'only size [1,2,2,1]');
             assert(strcmp(pad,'SAME'),'only pad SAME');
             obj = obj@UnaryOp(x);
@@ -53,28 +53,20 @@ classdef MaxPoolOp < UnaryOp
         end
 
         function r = evalshape(obj)
-            xl = obj.left.evalshape();
+            xl =oneextend4(obj.left.evalshape());
                         
             if obj.colmajor
                 nC = xl(1);
                 w_image = xl(2);
                 h_image =  xl(3);
-                if length(xl) == 3
-                    nB =1;
-                else
-                    nB = xl(4);
-                end
+                nB = xl(4);
                 
                 h_filter = obj.ksize(3);
                 w_filter = obj.ksize(2);
                 
             else
                 nB = xl(1);
-                if length(xl) == 3
-                    nC = 1;
-                else
-                    nC = xl(4);
-                end
+                nC = xl(4);
                 h_filter = obj.ksize(2);
                 w_filter = obj.ksize(3);
                 h_image =  xl(2);
@@ -125,7 +117,7 @@ classdef MaxPoolOp < UnaryOp
                 [Y_BPC,Yind_BPC] = max(Xp_BPC_K,[],2);
 
                 obj.xvalue = reshape(Y_BPC,obj.xshape);
-                obj.maxindices_CPB = Yind_BPC; % in [nB P, S]            else
+                obj.maxindices_BPC = Yind_BPC; % in [nB P, S]            else
             end
             r = obj.xvalue;
         end

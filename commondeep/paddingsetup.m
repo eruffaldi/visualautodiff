@@ -14,7 +14,7 @@ if padding == -1
         paddingout = [tops,bots];
         sizeout = sizein;
     else
-        assert(all(stride == 2),'other not supported');
+        assert(all(stride == 2),'only');
         paddingout = [0,0,0,0];
         sizeout = sizein/2;
     end

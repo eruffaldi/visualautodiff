@@ -14,7 +14,7 @@ classdef Conv2dOp < BinaryOp
         colmajor
 
         Sel_IC_CKP
-        shape_CK_PB
+shape_CK_PB
         Xp_CK_PB
     end
     
@@ -41,9 +41,9 @@ classdef Conv2dOp < BinaryOp
             assert(strcmp(pad,'SAME'),'only pad SAME');
             assert(isa(W,'Variable') || isa(W,'Placeholder'),'W should be variable or placeholder');
             if colmajor
-            assert(length(W.xshape) == 4,'W should have 4D shape: Fout Fin Kw Kh');
+            assert(length(W.xshape) == 4 || length(W.xshape) == 3,'W should have 4D shape: Fout Fin Kw Kh');
             else
-            assert(length(W.xshape) == 4,'W should have 4D shape: Kh Kw Fin Fout');
+            assert(length(W.xshape) == 4 || length(W.xshape) == 3,'W should have 4D shape: Kh Kw Fin Fout');
             end
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
@@ -60,24 +60,20 @@ classdef Conv2dOp < BinaryOp
         %   B Ih Iw C
         %   Fh Fw C Q
         function r = evalshape(obj)
-            xl = obj.left.evalshape();
-            xr = obj.right.evalshape();  
+            xl = oneextend4(obj.left.evalshape());
+            xr = oneextend4(obj.right.evalshape());
             if obj.colmajor
                 assert(xl(1) == xr(2),'in_channel same'); 
                 nQ = xr(1);
-                if length(xl) == 3
-                    nB = 1;
-                else
-                    nB = xl(4);
-                end
+                nB = xl(4);
                 h_filter = xr(4);
                 w_filter = xr(3);
                 h_image =  xl(3);
                 w_image = xl(2);
                 
             else
-                assert(xl(1) == xr(2),'in_channel same'); 
-                nQ = xr(1);
+                assert(xl(end) == xr(3),'in_channel same'); 
+                nQ = xr(4);
                 nB = xl(1);
                 h_filter = xr(1);
                 w_filter = xr(2);
@@ -92,13 +88,16 @@ classdef Conv2dOp < BinaryOp
             
             [padding,sizeout,offsetout] = paddingsetup([h_image w_image],[h_filter,w_filter],obj.stride(2:3),obj.padding);
             
-            if obj.colmajor
-                obj.Sel_IC_CKP = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'CwhWHB',obj.colmajor); % N independent
+%function [Sel,outshape,nameddims] = mpatchprepare(inputmode,inputshape,filtersizesa,sizeout,stride,paddinga,outputmode,colmajor)
+    %mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'hwCWHB',obj.colmajor); % N independent
 
-                obj.shape_CK_PB = [prod(shape_CKPB(1:3)), prod(shape_CKPB(4:5))];
+            if obj.colmajor
+                mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,obj.stride,padding,'ChwWHB',obj.colmajor); % N independent
+
+                obj.shape_CK_PB = [mm.outshape.C*mm.outshape.w*mm.outshape.h,mm.outshape.W*mm.outshape.H*prod(shape_CKPB(1:3)), prod(shape_CKPB(4:5))];
                 obj.xshape = [nQ obj.shapeP(2) obj.shapeP(1) nB];
             else
-                obj.Sel_PKC_IC = mpatchprepare(xl,[h_filter w_filter],sizeout,obj.stride,padding, 'BHWhwC',obj.colmajor); % N independent
+                mm = mpatchprepare('BHWC',xl,[h_filter w_filter],sizeout,obj.stride,padding,'BHWwhC',obj.colmajor); % N independent
                 
                 obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
                 obj.xshape = [nB obj.shapeP(1) obj.shapeP(2) nQ];

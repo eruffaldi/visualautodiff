@@ -36,7 +36,7 @@ idC = reshape(iC,1,[]);
 
 % identify out of shape (due to padding) and remove them marking as special
 % extra item that will be removed from the sparse matrix
-n = idW < 0 | iH < 0 | idH >= Ih | idW >= Iw;
+n = idW < 0 | idH < 0 | idH >= Ih | idW >= Iw;
 if colmajor
 idH(n) = Ih; % last column (except Batch)
 idW(n) = 0;
@@ -50,9 +50,9 @@ end
 
 % build indexing inside the input that is: B Ih Iw C
 if colmajor
-    kq = sub2ind([nC,Iw,Ih+1],iC+1,iW+1,iH+1); 
+    kq = sub2ind([nC,Iw,Ih+1],idC+1,idW+1,idH+1); 
 else
-    kq = sub2ind([Ih,Iw,nC+1],iH+1,iW+1,iC+1); 
+    kq = sub2ind([Ih,Iw,nC+1],idH+1,idW+1,idC+1); 
 end
 if sum(n) > 0
     kq(n) = 0;  % mark as 0 for output
