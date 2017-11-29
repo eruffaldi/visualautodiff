@@ -85,8 +85,8 @@ end
 %cross_entropy.evalwith({x,mzeros([batchsize,784],deftype),y_,mzeros([batchsize,classes],deftype),keep_prob, 0.5});
 %cross_entropy.grad(1)
 prediction = ArgmaxOp(y_conv, 1);
-%correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 2));
-%accuracy = ReduceMeanOp(correct_prediction,0); 
+correct_prediction = EqualOp(prediction, ArgmaxOp(y_, 1));
+accuracy = ReduceMeanOp(correct_prediction,0); 
 
 mtr = MnistBatcher("train");
 train_step.reset();
@@ -130,7 +130,7 @@ if testtestcnn == 0
 end
 
 %%
-mte = MnistBatcher("test");
+mte = MnistBatcher("test",0);
 
 % it was
 %    [test_images,~,test_labels] = mtr.whole();c cv 
