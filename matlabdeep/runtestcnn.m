@@ -15,7 +15,7 @@ useadam=1;
 epochs = 5;
 dropout = 0.4;
 gpumode=[0,1];
-gpumode = 0;
+gpumode = 1;
 for KK=1:length(gpumode)
     if gpumode(KK)
         deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));

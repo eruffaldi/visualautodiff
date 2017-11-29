@@ -56,44 +56,46 @@ classdef MaxPoolOp < UnaryOp
             xl =oneextend4(obj.left.evalshape());
                         
             if obj.colmajor
-                nC = xl(1);
-                w_image = xl(2);
-                h_image =  xl(3);
-                nB = xl(4);
-                
-                h_filter = obj.ksize(3);
-                w_filter = obj.ksize(2);
-                
+                flipper = @(x) x(end:-1:1);
+                inmode= 'CWHB';
+                procmode='hwCWHB';
+                tdim = 1;
             else
-                nB = xl(1);
-                nC = xl(4);
-                h_filter = obj.ksize(2);
-                w_filter = obj.ksize(3);
-                h_image =  xl(2);
-                w_image = xl(3);
-            end            
+                flipper = @(x) x;
+                tdim = 2;
+                inmode= 'BHWC';
+                procmode='BHWCwh';
+            end
+            
+            xll = flipper(xl);
+            kl = flipper(obj.ksize);
+            nB = xll(1);
+            h_image =  xll(2);
+            w_image = xll(3);
+            nC = xll(4);
+            h_filter = kl(2);
+            w_filter = kl(3);
             
             [paddingout, sizeout, offsetout] = paddingsetup([h_image,w_image],[h_filter,w_filter],obj.strides(2:3),obj.padding);
 
+            mm = mpatchprepare(inmode,xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,procmode,obj.colmajor); % N independent
+            r = flipper([nB mm.outshape.H mm.outshape.W nC]);
+            
             if obj.colmajor
-                mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'hwCWHB',obj.colmajor); % N independent
                 assert(length(mm.pickidx) == mm.outshapegroup.H*mm.outshapegroup.W*mm.outshapegroup.C);
-                r = [nC mm.outshape.W mm.outshape.H nB]; % output CWHB
                 obj.Sel_IC_KCP = mm;
-                obj.xshape = r;            
-
+            
                 obj.shape_K_CPB = [mm.outshape.w*mm.outshape.h prod(r) ]; % patches for max: BPC K
-                [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_K_CPB,1); 
+                tshape = obj.shape_K_CPB;
             else
-                mm = mpatchprepare('BWHC',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'BHWCwh',obj.colmajor); % N independent
-                r = [nB mm.outshape.H mm.outshape.W nC]; % output BWHC
                 assert(length(mm.pickidx) == mm.outshapegroup.H*mm.outshapegroup.W*mm.outshapegroup.C);
                 obj.Sel_PCK_IC = mm;
-                obj.xshape = r;            
 
                 obj.shape_BPC_K = [prod(r) mm.outshape.w*mm.outshape.h]; % patches for max: BPC K
-                [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(obj.shape_BPC_K,2); 
+                tshape = obj.shape_BPC_K;
             end
+            [obj.argmaxbase,obj.argmaxbasescale] = argmax_to_max_setup(tshape,tdim); 
+            obj.xshape = r;            
         end
 
         % [batch fw fh channels]
@@ -128,7 +130,11 @@ classdef MaxPoolOp < UnaryOp
                 % [nB
                 up_CPB = up;
                 Jp_K_CPB = mzeros(obj.shape_K_CPB,obj.xtype); % empty patches            
-                ind = obj.argmaxbase + (obj.maxindices_CPB(:)-1)*obj.argmaxbasescale; % winning indices from eval step
+                if length(obj.argmaxbase) == 1 % identity case
+                    ind = obj.maxindices_CPB(:);
+                else
+                    ind = obj.argmaxbase + (obj.maxindices_CPB(:)-1)*obj.argmaxbasescale; % winning indices from eval step
+                end
 
                 %Alternative: dxcol(sub2ind(size(dxcol),1:length(max_idx),max_idx)) = dout(:); 
 

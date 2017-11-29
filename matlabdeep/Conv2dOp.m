@@ -40,11 +40,7 @@ shape_CK_PB
             assert(all(stride==1),'only stride 1');
             assert(strcmp(pad,'SAME'),'only pad SAME');
             assert(isa(W,'Variable') || isa(W,'Placeholder'),'W should be variable or placeholder');
-            if colmajor
-            assert(length(W.xshape) == 4 || length(W.xshape) == 3,'W should have 4D shape: Fout Fin Kw Kh');
-            else
-            assert(length(W.xshape) == 4 || length(W.xshape) == 3,'W should have 4D shape: Kh Kw Fin Fout');
-            end
+            assert(length(W.xshape) <= 4,'W should have maximum 4D shape');
             obj = obj@BinaryOp(x,W);
             obj.stride = stride;
             obj.matlabconv = 0;
@@ -60,26 +56,34 @@ shape_CK_PB
         %   B Ih Iw C
         %   Fh Fw C Q
         function r = evalshape(obj)
-            xl = oneextend4(obj.left.evalshape());
             xr = oneextend4(obj.right.evalshape());
+           
+            xl =oneextend4(obj.left.evalshape());
+                        
             if obj.colmajor
-                assert(xl(1) == xr(2),'in_channel same'); 
-                nQ = xr(1);
-                nB = xl(4);
-                h_filter = xr(4);
-                w_filter = xr(3);
-                h_image =  xl(3);
-                w_image = xl(2);
-                
+                flipper = @(x) x(end:-1:1);
+                inmode = 'CWHB';
+                procmode = 'ChwWHB';
             else
-                assert(xl(end) == xr(3),'in_channel same'); 
-                nQ = xr(4);
-                nB = xl(1);
-                h_filter = xr(1);
-                w_filter = xr(2);
-                h_image =  xl(2);
-                w_image = xl(3);
+                flipper = @(x) x;
+                inmode = 'BHWC';
+                procmode = 'BHWwhC';
             end
+            
+            xll = flipper(xl);
+            xrr = flipper(xr);
+            h_filter = xrr(1);
+            w_filter = xrr(2);
+            nCw = xrr(3); % Fout Fin w h
+            nQ = xrr(4);
+            
+            nB = xll(1);
+            nCi = xll(4);
+
+            assert(nCi == nCw,'same color input of kernel');
+            h_image =  xll(2);
+            w_image = xll(3);
+
             
             
             if obj.padding ~= -1
@@ -87,21 +91,17 @@ shape_CK_PB
             end
             
             [padding,sizeout,offsetout] = paddingsetup([h_image w_image],[h_filter,w_filter],obj.stride(2:3),obj.padding);
+            mm = mpatchprepare(inmode,xl,[h_filter w_filter],sizeout,obj.stride,padding,procmode,obj.colmajor); % N independent
+            preshape = [nB*mm.outshape.W*mm.outshape.H,mm.outshape.w*mm.outshape.h*mm.outshape.C];
             
-%function [Sel,outshape,nameddims] = mpatchprepare(inputmode,inputshape,filtersizesa,sizeout,stride,paddinga,outputmode,colmajor)
-    %mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,[obj.strides(2) obj.strides(3)],paddingout,'hwCWHB',obj.colmajor); % N independent
-
             if obj.colmajor
-                mm = mpatchprepare('CWHB',xl,[h_filter w_filter],sizeout,obj.stride,padding,'ChwWHB',obj.colmajor); % N independent
-
-                obj.shape_CK_PB = [mm.outshape.C*mm.outshape.w*mm.outshape.h,mm.outshape.W*mm.outshape.H*prod(shape_CKPB(1:3)), prod(shape_CKPB(4:5))];
-                obj.xshape = [nQ obj.shapeP(2) obj.shapeP(1) nB];
-            else
-                mm = mpatchprepare('BHWC',xl,[h_filter w_filter],sizeout,obj.stride,padding,'BHWwhC',obj.colmajor); % N independent
-                
-                obj.shape_BP_KC = [prod(shape_BPKC(1:2)), prod(shape_BPKC(3:5))];
-                obj.xshape = [nB obj.shapeP(1) obj.shapeP(2) nQ];
+                obj.shape_CK_PB = flipper(preshape);
+                obj.Sel_IC_CKP = mm;
+            else                
+                obj.shape_BP_KC = preshape;
+                obj.Sel_PKC_IC = mm;
             end
+            obj.xshape = flipper([nB mm.outshape.H mm.outshape.W nQ]);
             r = obj.xshape;
         end
         
@@ -127,14 +127,14 @@ shape_CK_PB
                         end
                     end
                 else
-                    obj.xvalue = reshape(reshape(W_Q_C_K,[],nQ)'*PA_CK_PB,obj.xshape);
+                    obj.xvalue = reshape(reshape(W_Q_C_K,nQ,[])*PA_CK_PB,obj.xshape);
                 end
             else
                 A_B_I_C = obj.left.eval();
                 W_K_C_Q = obj.right.eval();
                 nQ = obj.xshape(4); 
 
-                PA_BP_KC = mpatcher(A_B_I_C,obj.Sel_PKC_IC,obj.shape_BP_KC);             
+                PA_BP_KC = mpatcher(A_B_I_C,obj.Sel_PKC_IC,obj.shape_BP_KC,0);             
 
                 obj.Xp_BP_KC = PA_BP_KC; % for gradient
                 if obj.matlabconv
@@ -159,7 +159,7 @@ shape_CK_PB
         function grad(obj,in)
             if obj.colmajor
                 U_Q_Pw_Ph_B = in;
-                nB = obj.left.xshape(4);
+                nB = obj.xshape(end);
                 nP = size(U_Q_Pw_Ph_B,2)*size(U_Q_Pw_Ph_B,3);
                 nQ = size(U_Q_Pw_Ph_B,1);
                 U_Q_PB = reshape(U_Q_Pw_Ph_B,nQ,nB*nP); % B_Ph_Pw_Q => BP_Q
@@ -188,7 +188,7 @@ shape_CK_PB
                 W_K_C_Q = obj.right.xvalue;
                 dzdx_BP_KC = U_BP_Q * reshape(W_K_C_Q,[],nQ)';
                 dzdx_B_PKC  = reshape(dzdx_BP_KC,nB*nP,[]);
-                dzdx = munpatcher(dzdx_B_PKC,obj.Sel_PKC_IC,obj.left.xshape,prod(obj.left.xshape(2:end)));
+                dzdx = munpatcher(dzdx_B_PKC,obj.Sel_PKC_IC,obj.left.xshape,prod(obj.left.xshape(2:end)),0);
                 obj.left.grad(dzdx);
 
                 dzdW = reshape(obj.Xp_BP_KC' * U_BP_Q,obj.right.xshape);          

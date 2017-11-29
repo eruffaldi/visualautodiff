@@ -32,8 +32,8 @@ bias_variable = @(name,shape) Variable(name,0.1*mones(shape,deftype));
 max_pool_2x2 =@(x) MaxPoolOp(x,[1, 2, 2, 1],[1, 2, 2, 1],'SAME'); 
 conv2d = @(x,W) Conv2dOp(x,W,[1, 1, 1, 1],'SAME');
 
-x = Placeholder('float',[-1,784]);
-y_ = Placeholder('float',[-1,classes]);
+x = Placeholder('float',[784,-1]);
+y_ = Placeholder('float',[classes,-1]);
 
 x_image = ReshapeOp(x, [1, 28, 28, -1]);
 
@@ -44,6 +44,8 @@ x_image = ReshapeOp(x, [1, 28, 28, -1]);
 %   B Ih Iw C
 %   Fh Fw C Q
 
+%ROW: kw kh Cin Cout
+%COL: Cout Cin kw kh
 W_conv1 = weight_variable('W_conv1',[features1, 1, filtersize1, filtersize1]);
 b_conv1 = bias_variable('b_conv1',[features1,1]);
 h_conv1 = ReluOp(conv2d(x_image, W_conv1)+b_conv1);

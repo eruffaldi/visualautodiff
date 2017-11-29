@@ -12,29 +12,28 @@ stridex = stride(2);
 
 assert (mod(H + padding(1)+padding(3) - field_height,stridey) == 0,'alignment of pad and stride-size in H');
 assert (mod(W + padding(2)+padding(4) - field_width,  stridex) == 0,'alignment of pad and stride-size in W');
-out_height = (H + padding(1)+padding(3)-field_height ) / stridey+1 ;
-out_width = (W + padding(2)+padding(4)-field_width ) / stridex+1;
-outshape = [out_height out_width];
+%out_height = (H + padding(1)+padding(3)-field_height ) / stridey+1 ;
+%out_width = (W + padding(2)+padding(4)-field_width ) / stridex+1;
+%outshape = [out_height out_width];
 
 % np.repeat(np.arange(A), B) =>  as 0000 1111 2222 ..
 % np.tile(np.arange(A), B))  =>  as 012 012 012e
-blockrepeat0= @(A,B) reshape(repmat((1:A)-1,B,1),1,[]); % iterate 0..(A-1) repeating B times each: (0){B}...(A-1){B}
-interrepeat0= @(A,B) reshape(repmat((1:A)-1,1,B),1,[]); % iterate 0..(A-1) blockwise repeat:  ((0)..(A-1)){B}
+%blockrepeat0= @(A,B) reshape(repmat((1:A)-1,B,1),1,[]); % iterate 0..(A-1) repeating B times each: (0){B}...(A-1){B}
+%interrepeat0= @(A,B) reshape(repmat((1:A)-1,1,B),1,[]); % iterate 0..(A-1) blockwise repeat:  ((0)..(A-1)){B}
 blockrepeat= @(S,B) reshape(repmat(S,B,1),1,[]); % iterate 0..(A-1) repeating B times each: (0){B}...(A-1){B}
 interrepeat= @(S,B) reshape(repmat(S,1,B),1,[]); % iterate 0..(A-1) blockwise repeat:  ((0)..(A-1)){B}
 
 if colmajor == 0
-    loopnew0 = blockrepeat0;
     loopnew = blockrepeat;
-    loopold0 = interrepeat0;
     loopold = interrepeat;
 else
-    loopold0 = blockrepeat0;
     loopold = blockrepeat;
-    loopnew0 = interrepeat0;
     loopnew = interrepeat;
-    
+
 end
+% correct
+    loopnew = blockrepeat;
+    loopold = interrepeat;
 
 inputform = orderstructbyvalues(inputform);
 outputform = orderstructbyvalues(outputform);
