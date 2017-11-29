@@ -37,7 +37,8 @@ classdef ReshapeSystem < matlab.System  & matlab.system.mixin.Propagates
             s = propagatedInputSize(obj,1); 
             % -1 -1 == 2D with first as first
             if length(obj.shape) == 2 & all(obj.shape == -1)
-                sz_1 = [s(1), prod(s(2:end))];
+                %ROMAJOR sz_1 = [s(1), prod(s(2:end))];
+                sz_1 = [prod(s(1:end-1)),s(end)];
             % -1 == all 1D
             elseif length(obj.shape) == 1 & obj.shape == -1
                 sz_1 = prod(s);

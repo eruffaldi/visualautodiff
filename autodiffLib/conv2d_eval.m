@@ -40,7 +40,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
             nPh = sizeZero_Pw_Ph(1);
             nPw = sizeZero_Pw_Ph(2);
             nP = nPh*nPw;
-            nB = sizeC_I_A_B(1);
+            nB = sizeC_I_A_B(end);
             if length(sizeC_I_A_B) == 3
                 sizeC_I_A_B4 = [sizeC_I_A_B,1];
             else
@@ -53,7 +53,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
             nK = nKh*nKw;
             
             nC = sizeQa_C_K_W(3);
-            assert(nC == sizeC_I_A_B4(end));
+            assert(nC == sizeC_I_A_B4(1));
 
             a = [nQ,nPh,nPw,nB];
             b = [nK*nC,nB*nP];   

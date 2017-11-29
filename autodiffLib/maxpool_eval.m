@@ -54,8 +54,8 @@ ksize
             sizeA_C_I_B(1:length(sizeA_Cx_I_B)) = sizeA_Cx_I_B;
             
             sizeZero_Ph_Pw = propagatedInputSize(obj,3);
-            nB = sizeA_C_I_B(1); 
-            nC = sizeA_C_I_B(4);
+            nB = sizeA_C_I_B(4); 
+            nC = sizeA_C_I_B(1);
             nPh = sizeZero_Ph_Pw(1);
             nPw = sizeZero_Ph_Pw(2);
             nP = nPh*nPw;

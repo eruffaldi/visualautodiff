@@ -8,8 +8,8 @@ switch(phase)
             Zero_Ph_Pw=[];
             return
         end
-        [w,shape_CKPB,shapeP] = computeSomething(phase,inshape,padding,stride);
-        Sel_IC_CKP = size(w.pickidx); % decided only after SETUP
+        [mm,shape_CKPB,shapeP] = computeSomething(phase,inshape,padding,stride);
+        Sel_IC_CKP = size(mm.pickidx); % decided only after SETUP
         Zero_Ph_Pw = shapeP;
 %         disp('conv2d_constsetup')
 %         inshape{1}
@@ -20,14 +20,14 @@ switch(phase)
         Sel_IC_CKP = int32(0);
         Zero_Ph_Pw = false(0);
     case 2 % value
-        [w,shape_CKPB,shapeP] = computeSomething(phase,inshape,padding,stride);
-        Sel_IC_CKP = w.pickidx;
+        [mm,shape_CKPB,shapeP] = computeSomething(phase,inshape,padding,stride);
+        Sel_IC_CKP = mm.pickidx;
         Zero_Ph_Pw = false(shapeP);
         % no need to emit Zero_Ph_Pw
 end
 
 
-function [w,shape_CKPB,shapeP] = computeSomething(phase,inshape,padding,stride)
+function [mm,shape_CK_PB,shapeP] = computeSomething(phase,inshape,padding,stride)
     
 xla = inshape{1};
 xra = inshape{2};
@@ -43,6 +43,8 @@ xra = inshape{2};
             xl(1:numel(xla)) = xla;
             xr = ones(1,4);
             xr(1:numel(xra)) = xra;
+            nB=xl(end);
+            nQ=xr(end);
 
             % Fh Fw Fi Fo
             h_filter = xr(1); 
@@ -50,14 +52,22 @@ xra = inshape{2};
             stride1 = stride(1);
             [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],stride(2:3),padding);
 
+            flipper = @(x) x(end:-1:1);
 
             % Input:  B Ih Iw C
             % Output: B Ph Pw C
             % Patch Representation: B Ph Pw Kh Kw C
             %   the product is against: W as  [Kh Kw C Q]
             %   and we work in 2D: (B Ph Pw) (Kh Kw C) by (Kh Kw C) (Q)
-            [w,shape_CKPB,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[stride1 stride1],padding, 'CKPB'); % N independent
+            inmode='CWHB';
+            procmode='ChwWHB';
+            colmajor=1;
+            mm = mpatchprepare(inmode,xl,[h_filter w_filter],sizeout,[stride1 stride1],padding, procmode,colmajor); % N independent
 
-            %disp(sprintf('conv2d_setup(%d): %s input shapeP',state,gcb));
-            %disp(xla)
-            %disp(shapeP)
+            preshape = [nB*mm.outshape.W*mm.outshape.H,mm.outshape.w*mm.outshape.h*mm.outshape.C];
+
+            shape_CK_PB = flipper(preshape);
+            shapeP = [mm.outshape.W mm.outshape.H ];
+            
+            %xshape = flipper([nB mm.outshape.H mm.outshape.W nQ]);
+            

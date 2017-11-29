@@ -16,7 +16,7 @@ switch(phase)
             Sel_IC_KCP = size(w); % decided only after SETUP
             Sel_IC_KCP_A = 1; %size(wa);
             Zero_Ph_Pw = shapeP;
-            [ab,abs] = argmax_to_max_setup(shape_K_CPB,2); 
+            [ab,abs] = argmax_to_max_setup(shape_K_CPB,1); 
             argmaxbasescale = size(abs);
             argmaxbase =size(ab);
 
@@ -28,7 +28,7 @@ switch(phase)
         argmaxbasescale=int32(0);
     case 2 % value
         [Sel_IC_KCP,shape_K_CPB,shapeP,Sel_IC_KCP_A] = computeSomething(phase,inshape,ksize,stride,padding);
-        [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(shape_K_CPB,2); 
+        [objargmaxbase,objargmaxbasescale] = argmax_to_max_setup(shape_K_CPB,1); 
         argmaxbase = cast(objargmaxbase,'int32');
         argmaxbasescale = cast(objargmaxbasescale,'int32');
         Zero_Ph_Pw = false(shapeP);
@@ -65,8 +65,10 @@ function [Sel_IC_KCP,shape_K_CPB,shapeP,Sel_IC_KCP_A] = computeSomething(phase,i
             % Patch Representation: B Ph Pw C Kh Kw
             %   the max reduction is over the last two dimensions
             %   obtaining: B Ph Pw C
-            [w,~,shapeP] = mpatchprepare(xl,[h_filter w_filter],sizeout,[strides(2) strides(3)],padding,'KCPB'); % N independent
-            r = [nC shapeP(1) shapeP(2) nB]; % output BPC
+            inmode='CWHB';
+            procmode='hwCWHB';
+            colmajor=1;
+            mm = mpatchprepare(inmode,xl,[h_filter w_filter],sizeout,[strides(2) strides(3)],padding,procmode,colmajor); % N independent
             
             %disp(sprintf('maxpool_setup(%d): %s input shapeP and padding:',state,gcb));
             %disp(xl);
@@ -75,7 +77,10 @@ function [Sel_IC_KCP,shape_K_CPB,shapeP,Sel_IC_KCP_A] = computeSomething(phase,i
             
             %obj.xshape = r;            
             Sel_IC_KCP_A = int32(1);
-            Sel_IC_KCP = w.pickidx;
+            Sel_IC_KCP = mm.pickidx;
             
-            shape_K_CPB = [h_filter*w_filter prod(r) ]; % patches for max: BPC K
+            flipper = @(x) x(end:-1:1);            
+            r = flipper([nB mm.outshape.H mm.outshape.W nC]);
+            shape_K_CPB = [mm.outshape.w*mm.outshape.h prod(r) ]; % patches for max: BPC K
+            shapeP = [mm.outshape.H mm.outshape.W];
             
