@@ -9,9 +9,9 @@ assert(nsubs <= outrows);
 out = coder.nullcopy(zeros([outrows,cols],'like',A));
 
 for itarget_row=1:nsubs
-    input_col = S(itarget_row);
-    if itarget_row > 0
-        out(itarget_row,:) =A(itarget_row,:);
+    input_row = S(itarget_row);
+    if input_row > 0
+        out(itarget_row,:) =A(input_row,:);
     end
 end
 if coder.target('MATLAB')

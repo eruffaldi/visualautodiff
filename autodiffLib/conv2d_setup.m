@@ -44,8 +44,8 @@ classdef conv2d_setup < matlab.System &     matlab.system.mixin.Propagates
             xr(1:numel(xra)) = xra;
 
             % Fh Fw Fi Fo
-            h_filter = xr(1); 
-            w_filter = xr(2);
+            h_filter = xr(3); 
+            w_filter = xr(4);
             stride = obj.stride(1);
             [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],obj.stride(2:3),obj.padding);
 

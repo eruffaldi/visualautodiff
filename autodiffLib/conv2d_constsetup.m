@@ -44,11 +44,11 @@ xra = inshape{2};
             xr = ones(1,4);
             xr(1:numel(xra)) = xra;
             nB=xl(end);
-            nQ=xr(end);
+            nQ=xr(1);
 
             % Fh Fw Fi Fo
-            h_filter = xr(1); 
-            w_filter = xr(2);
+            h_filter = xr(3); 
+            w_filter = xr(4);
             stride1 = stride(1);
             [padding,sizeout,offsetout] = paddingsetup([xl(2) xl(3)],[h_filter,w_filter],stride(2:3),padding);
 

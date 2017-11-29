@@ -66,7 +66,7 @@ ksize
             obj.yshape = [nC,nPh,nPw,nB];
             
             y = obj.yshape;           
-            maxindices_C_PB = [shape_K_CPB(1),1];        
+            maxindices_C_PB = [1,shape_K_CPB(2)];        
         end
         function [y,maxindices_C_PB] = isOutputComplexImpl(obj)
             y = false;
@@ -77,7 +77,7 @@ ksize
         function [y_C_P_B,maxindices_CPB] = stepImpl(obj,X_C_I_B,Sel_IC_KCP,Zero_Ph_Pw)
             
             % [nB Ph Pw Fin] => [nB patches, Fh Fw Fin]
-            Xp_K_CPB = mpatcher(X_C_I_B,Sel_IC_KCP,obj.shape_K_CPB);
+            Xp_K_CPB = mpatcher(X_C_I_B,Sel_IC_KCP,obj.shape_K_CPB,1);
             % => [nB patches]
             [Y_CPB,Yind_CPB] = max(Xp_K_CPB,[],1);
                             

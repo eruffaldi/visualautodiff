@@ -3,7 +3,7 @@
  *
  * See TensorFlow equivalent
  * tensorflow/contrib/learn/python/learn/datasets/mnist.py
- *
+ *≠mrc
  */
 #define S_FUNCTION_NAME                 sfun_loadmnist
 #define S_FUNCTION_LEVEL                2

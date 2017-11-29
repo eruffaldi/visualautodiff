@@ -47,8 +47,8 @@ classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
             nQ = size(W_Q_C_K,1); % can be 1 if W is 3D
             nK = size(W_Q_C_K,3)*size(W_Q_C_K,4);
             nC = size(W_Q_C_K,2);
-            assert(size(A_C_I_B,4) == nC,'same input C');
-            assert(size(Xp_CK_PB,2) == nC*nK,'same input C and K for Xp_CK_PB');
+            assert(size(A_C_I_B,1) == nC,'same input C');
+            assert(size(Xp_CK_PB,1) == nC*nK,'same input C and K for Xp_CK_PB');
             
             U_Q_PB = reshape(U_Q_Pw_Ph_B,nQ,nB*nP); 
             
@@ -60,7 +60,7 @@ classdef conv2d_grad < matlab.System & matlab.system.mixin.Propagates
             dzdx_CKP_B  = reshape(dzdx_CK_PB,nP*nK*nC,nB);
 
             ss = size(A_C_I_B); % for thr intermediate result
-            dzdx_Q_Pw_Ph_B = munpatcher(dzdx_CKP_B,Sel_PKC_IC,size(A_C_I_B),prod(ss(1:end-1)));            
+            dzdx_Q_Pw_Ph_B = munpatcher(dzdx_CKP_B,Sel_PKC_IC,size(A_C_I_B),prod(ss(1:end-1)),1);            
             dzdQ_C_K_W = reshape(U_Q_PB*Xp_CK_PB',size(W_Q_C_K));          
         end
 

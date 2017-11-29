@@ -71,7 +71,7 @@ classdef maxpool_grad < matlab.System & matlab.system.mixin.Propagates
             
             % => [nB Ph Pw Fin] via unpatching
             ss = size(X_C_I_B);
-            J_CIB = munpatcher(Jp_K_CPB,Sel_PCK_IC,obj.yshape,prod(ss(2:end))); % aggregate contributions
+            J_CIB = munpatcher(Jp_K_CPB,Sel_PCK_IC,obj.yshape,prod(ss(1:end-1)),1); % aggregate contributions
             
         end
 

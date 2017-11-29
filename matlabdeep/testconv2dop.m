@@ -40,7 +40,7 @@ oo
 opImage.xgrad;
 %%
 % W is natively rowmajor: whCQ
-W0 = zeros([2,2,C,3]); % natively: Fout Fin w h
+W0 = zeros([2,2,C,3]); % natively is romajor: k k Fi Fo => colmajor: Fo Fi k k 
 %W(2,2,1,1) = 1.0/3; % identity
 %W(2,2,2,1) = 1.0/3; % identity
 %W(2,2,3,1) = 1.0/3; % identity

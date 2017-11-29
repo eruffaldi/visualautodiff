@@ -28,11 +28,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
         function [a,b,shape_CK_PB,wshape,xshape] = computeSizes(obj)
             sizeC_I_A_B = propagatedInputSize(obj,1);
             sizeQa_C_K_W = propagatedInputSize(obj,2);
-            if length(sizeQa_C_K_W) == 4
-                nQ = sizeQa_C_K_W(4);
-            else
-                nQ = 1;
-            end
+            nQ = sizeQa_C_K_W(1);
                 
             sizeQ_C_K_W = ones(1,4);
             sizeQ_C_K_W(1:numel(sizeQa_C_K_W)) = sizeQa_C_K_W;
@@ -46,13 +42,13 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
             else
                 sizeC_I_A_B4 = sizeC_I_A_B;
             end
-            nKh = sizeQa_C_K_W(1);
-            nKw = sizeQa_C_K_W(2);
+            nKh = sizeQa_C_K_W(3);
+            nKw = sizeQa_C_K_W(4);
             h_filter = nKh; %obj.ksize(2);
             w_filter = nKw; %obj.ksize(3);
             nK = nKh*nKw;
             
-            nC = sizeQa_C_K_W(3);
+            nC = sizeQa_C_K_W(2);
             assert(nC == sizeC_I_A_B4(1));
 
             a = [nQ,nPh,nPw,nB];
@@ -89,7 +85,7 @@ classdef conv2d_eval < matlab.System & matlab.system.mixin.Propagates
         
         function [y_Q_Pw_Ph_B,Xp_CK_PB] = stepImpl(obj,X_C_I_B,W_Q_C_K,Sel_IC_CKP,Zero_Pw_Ph)           
             
-            Xp_CK_PB = mpatcher(X_C_I_B,Sel_IC_CKP,obj.shape_CK_PB); % for gradient                        
+            Xp_CK_PB = mpatcher(X_C_I_B,Sel_IC_CKP,obj.shape_CK_PB,1); % for gradient                        
             y_Q_Pw_Ph_B = reshape(reshape(W_Q_C_K,obj.wshape)*Xp_CK_PB,obj.yshape); % B_Ph_Pw_Q
                        
         end
