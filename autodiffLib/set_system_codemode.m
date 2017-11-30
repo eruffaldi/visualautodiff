@@ -1,4 +1,4 @@
-function set_system_codemode(target,codemode)
+function [changed,total]=set_system_codemode(target,codemode)
 %get_param(gcb,'BlockType')
 %a = get_param(gcb,'DialogParameters')
 %a.SimulateUsing
@@ -9,7 +9,8 @@ if isempty(target)
 else
     allsys = find_system(target,'FollowLinks','on','LookUnderMasks','all','BlockType','MATLABSystem');
 end
-length(allsys)
+total=length(allsys)
+            changed=0;
 allvideo = {};
 recolor = 1;
 for I=1:length(allsys)
@@ -21,11 +22,15 @@ for I=1:length(allsys)
     if strcmp(using,'Interpreted execution')
         if codemode ~= 0
             set_param(allsys{I},'SimulateUsing','Code generation');
+            changed=changed+1;
         end
     else
         if codemode == 0
             set_param(allsys{I},'SimulateUsing','Interpreted execution');
+            changed=changed+1;
         end
     end
 end
+            
+
 

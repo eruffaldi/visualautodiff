@@ -1,14 +1,14 @@
 clear all
-codemodes = {1};
+codemodes = {0};
 runmodes = {'normal','accelerator'};
-runmodes = {'accelerator'};
+runmodes = {'normal'};
 modelname ='mnist_cnn_adam';
-open_system(modelname);
+load_system(modelname);
 for I=1:length(codemodes)
     for J=1:length(runmodes)
         codemode = codemodes{I};
         runmode = runmodes{J};
-        set_system_codemode(gcs,codemode);
+        changed=set_system_codemode(modelname,codemode)
         set_param(modelname,'SimulationMode',runmode)
         
         simout = sim(modelname);
