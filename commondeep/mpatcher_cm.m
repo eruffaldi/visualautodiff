@@ -39,7 +39,7 @@ else
             coder.ceval(['gathermatrix_cm_' class(w)],coder.rref(as),rows,cols,coder.rref(Sel),nsubs,coder.wref(as),outcols); % c version
         else
             % slow fallback
-            w = gathermatrixmat_cm(Sel,as,length(Sel));            
+            w = gathermatrixmat_cm(Sel,as,length(Sel));    
         end
     end
 end

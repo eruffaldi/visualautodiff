@@ -34,7 +34,7 @@ else
         f = Sel.accum;
         w = f(Sel.pickidx,Xpm,SelA); %size(Sel.A,2));
     else 
-        if coder.target('MATLAB')
+        if coder.target('MATLAB') 
             % MEX
             % also interpreted mode MATLAB System Blocks
             w = accummatrix_cm(Sel,Xpm,SelA);
