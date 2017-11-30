@@ -141,7 +141,7 @@ static void mdlStart(SimStruct *S)
 #define MDL_INITIALIZE_SAMPLE_TIMES
 static void mdlInitializeSampleTimes(SimStruct *S)
 {
-    ssSetSampleTime(S, 0, mxGetInf());
+    ssSetSampleTime(S, 0, -1); // mxGetInf());
     ssSetOffsetTime(S, 0, 0);  
 //    ssSetModelReferenceSampleTimeDefaultInheritance(S);
 }

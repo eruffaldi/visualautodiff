@@ -1,5 +1,5 @@
 clear all
-codemodes = {0};
+codemodes = {1};
 runmodes = {'normal','accelerator'};
 runmodes = {'accelerator'};
 %runmodes = {'normal'};
