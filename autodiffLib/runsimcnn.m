@@ -1,7 +1,7 @@
 clear all
 codemodes = {0};
 runmodes = {'normal','accelerator'};
-runmodes = {'normal'};
+runmodes = {'accelerator'};
 modelname ='mnist_cnn_adam';
 load_system(modelname);
 for I=1:length(codemodes)

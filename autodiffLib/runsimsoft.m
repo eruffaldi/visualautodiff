@@ -1,7 +1,7 @@
 clear all
-codemodes = {1};
-%runmodes = {'normal','accelerator'};
-runmodes = {'accelerator'};
+codemodes = {0,1};
+runmodes = {'normal','accelerator'};
+%runmodes = {'accelerator'};
 modelname ='mnist_softmax_adam_whole';
 load_system(modelname);
 
@@ -9,13 +9,13 @@ for I=1:length(codemodes)
     for J=1:length(runmodes)
         codemode = codemodes{I};
         runmode = runmodes{J};
-        set_system_codemode(gcs,codemode);
+        changed =set_system_codemode(modelname,codemode);
         set_param(modelname,'SimulationMode',runmode)
         
         simout = sim(modelname);
 
         r = [];
-        r.accuracy = simout.accuracy.Data(end);
+        r.accuracy = simout.accuracy.accuracy.Data(end);
         r.block_codegen = codemode;
         r.simulation_mode = runmode;
         
