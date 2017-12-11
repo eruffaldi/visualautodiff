@@ -1,4 +1,4 @@
-classdef ElementwiseUnaryOp < UnaryOp
+classdef VectorwiseUnaryOp < UnaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,7 +6,7 @@ classdef ElementwiseUnaryOp < UnaryOp
     end
     
     methods
-         function obj = ElementwiseUnaryOp(left)
+         function obj = VectorwiseUnaryOp(left)
             obj = obj@UnaryOp(left);
          end
 
