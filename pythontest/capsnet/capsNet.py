@@ -6,14 +6,14 @@ from .capsLayer import CapsConv
 
 
 class CapsNet(object):
-    def __init__(self, BS, is_training=True):
+    def __init__(self, BS, dense1=512,dense2=1024,features1=256,features2=32,is_training=True):
         self.graph = tf.Graph()
         self.BS = BS
         with self.graph.as_default():
             self.X = tf.placeholder(tf.float32, [BS, 28,28,1])
             self.Y = tf.placeholder(tf.float32, [BS, 10])
+            self.build_arch(features1=features1,dense1=dense1,dense2=dense2,is_training=is_training,features2=features2)
             if is_training:
-                self.build_arch()
                 self.loss()
 
                 # t_vars = tf.trainable_variables()
@@ -25,14 +25,14 @@ class CapsNet(object):
 
         tf.logging.info('Seting up the main structure')
 
-    def build_arch(self,feature1=256,fully1=512,fully2=1024):
+    def build_arch(self,features1,dense1,dense2,features2,is_training):
         BS = self.BS
         with tf.variable_scope('Conv1_layer'):
             # Conv1, [batch_size, 20, 20, 256]
-            conv1 = tf.contrib.layers.conv2d(self.X, num_outputs=feature1,
+            conv1 = tf.contrib.layers.conv2d(self.X, num_outputs=features1,
                                              kernel_size=9, stride=1,
                                              padding='VALID')
-            assert conv1.get_shape() == [BS, 20, 20, feature1]
+            assert conv1.get_shape() == [BS, 20, 20, features1]
 
         # TODO: Rewrite the 'CapsConv' class as a function, the capsLay
         # function should be encapsulated into tow function, one like conv2d
@@ -40,13 +40,15 @@ class CapsNet(object):
         # Primary Capsules, [batch_size, 1152, 8, 1]
         with tf.variable_scope('PrimaryCaps_layer'):
             primaryCaps = CapsConv(num_units=8, BS=BS,with_routing=False)
-            caps1 = primaryCaps(conv1, num_outputs=32, kernel_size=9, stride=2)
-            assert caps1.get_shape() == [BS, 1152, 8, 1]
+            caps1 = primaryCaps(conv1, num_outputs=features2, kernel_size=9, stride=2)
+            print ("caps 1 output ",caps1.get_shape())
+            #assert caps1.get_shape() == [BS, 1152, 8, 1]
 
         # DigitCaps layer, [batch_size, 10, 16, 1]
         with tf.variable_scope('DigitCaps_layer'):
             digitCaps = CapsConv(num_units=16, BS=BS,with_routing=True)
             self.caps2 = digitCaps(caps1, num_outputs=10)
+            print ("caps 2 num_outputs ",caps2.get_shape())
 
         # Decoder structure in Fig. 2
         # 1. Do masking, how:
@@ -68,6 +70,7 @@ class CapsNet(object):
             # as we are 3-dim animal
             masked_v = []
             argmax_idx = tf.reshape(argmax_idx, shape=(BS, ))
+            self.predicted = argmax_idx
             for batch_size in range(BS):
                 v = self.caps2[batch_size][argmax_idx[batch_size], :]
                 masked_v.append(tf.reshape(v, shape=(1, 1, 16, 1)))
@@ -75,15 +78,16 @@ class CapsNet(object):
             self.masked_v = tf.concat(masked_v, axis=0)
             assert self.masked_v.get_shape() == [BS, 1, 16, 1]
 
-        # 2. Reconstructe the MNIST images with 3 FC layers
-        # [batch_size, 1, 16, 1] => [batch_size, 16] => [batch_size, 512]
-        with tf.variable_scope('Decoder'):
-            vector_j = tf.reshape(self.masked_v, shape=(BS, -1))
-            fc1 = tf.contrib.layers.fully_connected(vector_j, num_outputs=fully1)
-            assert fc1.get_shape() == [BS, fully1]
-            fc2 = tf.contrib.layers.fully_connected(fc1, num_outputs=fully2)
-            assert fc2.get_shape() == [BS, fully2]
-            self.decoded = tf.contrib.layers.fully_connected(fc2, num_outputs=784, activation_fn=tf.sigmoid)
+        if  is_training:
+            # 2. Reconstructe the MNIST images with 3 FC layers
+            # [batch_size, 1, 16, 1] => [batch_size, 16] => [batch_size, 512]
+            with tf.variable_scope('Decoder'):
+                vector_j = tf.reshape(self.masked_v, shape=(BS, -1))
+                fc1 = tf.contrib.layers.fully_connected(vector_j, num_outputs=dense1)
+                assert fc1.get_shape() == [BS, dense1]
+                fc2 = tf.contrib.layers.fully_connected(fc1, num_outputs=dense2)
+                assert fc2.get_shape() == [BS, dense2]
+                self.decoded = tf.contrib.layers.fully_connected(fc2, num_outputs=784, activation_fn=tf.sigmoid)
 
     def loss(self):
         BS = self.BS

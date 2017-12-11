@@ -74,8 +74,8 @@ def main(_):
 
 
   if not FLAGS.test_only:
-    print "building CapsNet for training"
-    capsNetTr = CapsNet(BS,is_training=True)
+    print ("building CapsNet for training")
+    capsNetTr = CapsNet(BS,features2=FLAGS.features2,dense1=FLAGS.dense1,dense2=FLAGS.dense2,features1=FLAGS.features1,is_training=True)
     cfg.is_training = True
     with capsNetTr.graph.as_default():
       #sv = tf.train.Supervisor(graph=capsNet.graph,
@@ -105,14 +105,14 @@ def main(_):
         t0 = time.time()
         losses = np.zeros((iterations,1))
         # TODO: decoded is full image need to specify differently
-        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=capsNetTr.decoded))
+        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=capsNetTr.predicted))
         for i in range(iterations):
           batch = mnist.train.next_batch(FLAGS.batchsize)
           _,cross_entropy_value = sess.run([capsNetTr.train_op,cross_entropy], feed_dict={x: batch[0], y_: batch[1]})
           losses[i] = cross_entropy_value
         global_step = sess.run(capsNetTr.global_step) # unknown meaning 
         training_time = time.time()-t0
-        print "done ... saving"
+        print ("done ... saving")
         sv.saver.save(sess, cfg.logdir + '/model_epoch_%04d_step_%02d' % (epoch, global_step))
 
         print ("training_time",training_time)
@@ -122,7 +122,7 @@ def main(_):
   # Create the model
 
   cfg.is_training = False
-  capsNetTe = CapsNet(BS,is_training=False)
+  capsNetTe = CapsNet(BS,features2=FLAGS.features2,dense1=FLAGS.dense1,dense2=FLAGS.dense2,features1=FLAGS.features1,is_training=False)
 
   # Build the graph for the deep net
   with capsNetTe.graph.as_default():
@@ -130,16 +130,16 @@ def main(_):
       y_ = capsNetTe.Y
       sv = tf.train.Supervisor(logdir=cfg.logdir)
       with sv.managed_session(config=config) as sess:  
-        print "restoring for evaluation"
+        print ("restoring for evaluation")
         sv.saver.restore(sess, tf.train.latest_checkpoint(cfg.logdir))
-        print "go!"
+        print ("go!")
         t0 = time.time()
         accuracyvalue = 0
         accuracyvaluecount = 0
         reconstruction_err = []
         cm = None
         # TODO: decoded is full image need to specify differently
-        predictions = tf.argmax(capsNetTe.decoded, 1)
+        predictions = capsNetTe.predicted
         correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         for i in range(evaliterations):
@@ -183,10 +183,30 @@ if __name__ == '__main__':
   parser.add_argument('--no-gpu',action="store_true")
   parser.add_argument('--singlecore',action="store_true")
   parser.add_argument('--test-only',action="store_true")
+  parser.add_argument('-a', '--features1',type=int,default=256,help='first features size');
+  parser.add_argument('-b', '--features2',type=int,default=32,help='second features size');
+  parser.add_argument('-d','--dense1',type=int,default=512,help='dense bank');
+  parser.add_argument('-D','--dense2',type=int,default=1024,help='dense bank');
+  parser.add_argument('--original',action="store_true",help='picks original CapsNet values (8M parameters)')
+  parser.add_argument('--light',action="store_true",help='light values (? parameters)')
+  #parser.add_argument('-A','--features1',type=int,default=32,help='features of first');
+  #parser.add_argument('-B','--features2',type=int,default=64,help='features of second');
   parser.add_argument('--adam_rate',default=1e-4,type=float)
   parser.add_argument('--epochs',help="epochs",default=5,type=int)
   parser.add_argument('--batchsize',help="batch size",type=int,default=100)
   parser.add_argument('-w',action="store_true")
   FLAGS, unparsed = parser.parse_known_args()
+  if FLAGS.original:
+    # 1M
+    FLAGS.features1 = 256
+    FLAGS.features2 = 32
+    FLAGS.dense1= 512
+    FLAGS.dense2=1024
+  elif FLAGS.light:
+    # 400k
+    FLAGS.features1 = 256
+    FLAGS.features2 = 16
+    FLAGS.dense1= 256
+    FLAGS.dense2=256
 
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
