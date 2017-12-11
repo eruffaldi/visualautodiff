@@ -1,4 +1,4 @@
-classdef LengthOp < UnaryOp
+classdef LengthOp < UnaryOp & MixinDelegateUnaryOp
     % Computes the lenght of 
     
     properties
@@ -12,9 +12,6 @@ classdef LengthOp < UnaryOp
             obj.axis = axis;
         end
         
-        function r = eval(obj)
-            r = obj.left.eval();            
-        end
         
         function r = evalshape(obj)
             obj.left.evalshape();
@@ -22,10 +19,7 @@ classdef LengthOp < UnaryOp
             r(obj.axis) = [];
             obj.xshape = r;
         end
-        
-        function grad(obj,up)
-            r. = obj.left.grad(up);
-        end        
+      
     end
     
 end

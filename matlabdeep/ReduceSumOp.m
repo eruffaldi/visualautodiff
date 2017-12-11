@@ -4,12 +4,18 @@ classdef ReduceSumOp < UnaryOp
     
     properties
         axis 
+        keepdim
     end
     
     methods
         % only full reduction
-        function obj = ReduceSumOp(x,axis)            
+        function obj = ReduceSumOp(x,axis,keepdim)            
             obj = obj@UnaryOp(x);
+            if nargin < 3
+                obj.keepdim = 0;
+            else
+                obj.keepdim = keepdim;
+            end
             obj.axis = axis;
         end
         
@@ -19,6 +25,9 @@ classdef ReduceSumOp < UnaryOp
                 r = sum(x(:));
             else
                 r = squeeze(sum(x,obj.axis));
+                if obj.keepdim
+                    r = reshape(r,obj.xshape); % otherwise sum is already == obj.xshape
+                end
             end
         end
         
@@ -27,10 +36,15 @@ classdef ReduceSumOp < UnaryOp
             if obj.axis == 0
                 obj.xshape = 1;
             else
-                % remove the given axis
-                s = obj.left.xshape;
-                s(obj.axis) = [];
-                obj.xshape = s;
+                if obj.keepdim
+                    r(obj.axis) = 1;
+                    obj.xshape = r;
+                else
+                    % remove the given axis
+                    s = obj.left.xshape;
+                    s(obj.axis) = [];
+                    obj.xshape = s;
+                end
             end
             r = obj.xshape;
         end

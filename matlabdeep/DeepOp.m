@@ -46,14 +46,37 @@ classdef (Abstract) DeepOp < handle
         end
 
         function r = plus(a,b)
+            % TODO make b a ConstantOp
             assert(isa(a,'DeepOp'));
-            assert(isa(b,'DeepOp'));
+            if(isa(b,'DeepOp') == 0)
+                b = ConstantOp(b);
+            end
             r = AddOp(a,b);
+        end
+
+        function r = divide(a,b)
+            % TODO make b a ConstantOp
+            assert(isa(a,'DeepOp'));
+            if(isa(b,'DeepOp') == 0)
+                b = ConstantOp(b);
+            end
+            r = DivOp(a,b);
+        end
+
+        function r = times(a,b)
+            % TODO make b a ConstantOp
+            assert(isa(a,'DeepOp'));
+            if(isa(b,'DeepOp') == 0)
+                b = ConstantOp(b);
+            end
+            r = MulOp(a,b);
         end
 
         function r = mtimes(a,b)
             assert(isa(a,'DeepOp'));
-            assert(isa(b,'DeepOp'));
+            if(isa(b,'DeepOp') == 0)
+                b = ConstantOp(b);
+            end
             r = MatmulOp(a,b);            
         end
         
