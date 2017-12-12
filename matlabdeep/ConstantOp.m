@@ -4,6 +4,10 @@ classdef ConstantOp < DeepOp
     end
     
     methods
+        function obj = ConstantOp(x)
+            obj.xvalue = x;
+        end
+        
         function r = eval(obj)
             r = obj.xvalue;
         end
@@ -18,8 +22,11 @@ classdef ConstantOp < DeepOp
         end
         
         function up = grad(obj,up)
+            
         end
 
+        function r = gradshape(obj)
+        end
 
     end
     

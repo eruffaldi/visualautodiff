@@ -16,6 +16,11 @@ classdef UnaryOp < DeepOp
              obj.left.reset();
          end
          
+         function r = evalshape(obj)
+            obj.xshape = obj.left.evalshape();
+            r = obj.xshape;
+         end
+         
          function visit(obj,fx)
              if fx(obj) == 0
                  return;

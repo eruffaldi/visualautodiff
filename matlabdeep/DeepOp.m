@@ -19,7 +19,7 @@ classdef (Abstract) DeepOp < handle
             obj.reset();
             sa = 0;
             for I=1:2:length(placeholders)
-                sa = sa | placeholders{I}.set(placeholders{I+1});
+                sa = sa | placeholdgiters{I}.set(placeholders{I+1});
             end
             if sa ~= 0
                 obj.evalshape();
@@ -78,6 +78,15 @@ classdef (Abstract) DeepOp < handle
                 b = ConstantOp(b);
             end
             r = MatmulOp(a,b);            
+        end
+        
+        function r = tanh(a)
+            r= TanhOp(a);
+        end
+        
+        
+        function r = sigmoid(a)
+            r= SigmoidOp(a);
         end
         
         
