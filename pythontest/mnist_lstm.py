@@ -117,7 +117,7 @@ def main(_):
 
   iterations = FLAGS.epochs*int(math.ceil(60000.0/FLAGS.batchsize))
   config = tf.ConfigProto(**kw)
-  sess = tf.InteractiveSession(config=config)
+  sess = tf.InteractiveSession(contribfig=config)
   #train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
   predictions = tf.argmax(y_conv, 1)
   correct_prediction = tf.equal(predictions, tf.argmax(y_, 1))
