@@ -33,12 +33,8 @@ classdef toOpaque < matlab.System &  matlab.system.mixin.Propagates
         
 
         function out = getOutputSizeImpl(obj)
-            s = propagatedInputSize(obj,1);
-            if isempty(s)
-              out = [];
-            else
+            
                 out = 1;
-            end
         end
 
         function out = isOutputComplexImpl(obj)
@@ -46,19 +42,23 @@ classdef toOpaque < matlab.System &  matlab.system.mixin.Propagates
         end
 
         function out = getOutputDataTypeImpl(obj)
-            try
             t = propagatedInputDataType(obj,1);
             s = propagatedInputSize(obj,1);
-            if isempty(s)
+            disp([gcb 'getOutputDataTypeImpl'])
+            if isempty(t)
+                disp('*no t');
                 out = [];
-            else
-               [~,oname]= createOpaqueTypeBus(t,s);
-            %   obj.OutputBus = oname;
-                 out = oname;
+                return;
             end
-            catch me
-                warning(me)
+            if isempty(s)
+                disp('*no s');
+                out = [];
+                return;
             end
+            disp(t)
+            disp(s)
+           [~,oname]= createOpaqueTypeBus(t,s);
+            out = oname;
         end
 
     end

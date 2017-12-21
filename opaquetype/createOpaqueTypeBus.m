@@ -24,4 +24,8 @@ r = Simulink.Bus;
 r.Description = name;
 r.Elements = elems;
 oname = [name,'_bus'];
-assignin('base',oname,r);
+q = evalin('base',['exist(''' oname ''',''var'')']);
+if q == 0
+    assignin('base',oname,r);
+end
+

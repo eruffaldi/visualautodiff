@@ -1,14 +1,17 @@
-function [type,sizes] = decodeOpaqueTypeName(name)
+function [type,sizes,mt] = decodeOpaqueTypeName(name)
 
 a = strsplit(name,'_');
 
 switch(a{1})
     case 'f'
         type = 'single';
+        mt = single(0);
     case 'd'
         type = 'double';
+        mt = double(0);
     otherwise
         type = 'uint32';
+        mt = uint32(0);
 end
 if length(a) == 1
     sizes = [];
