@@ -12,18 +12,28 @@ classdef fromOpaque < matlab.System &  matlab.system.mixin.Propagates
 
     end
 
-    % Pre-computed constants
+    % Pre-computed constants (setupImpl)
     properties(Access = private)
-
-    end
+        outsize
+        outtype
+    end    
 
     methods(Access = protected)
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+            % executed AFTER
+            t = propagatedInputDataType(obj,1);
+            bu = evalin('base',t);
+            [type,sizes] = decodeOpaqueTypeName(bu.Description);
+             obj.outsize = sizes;
+             obj.outtype = type;
         end
 
         function y = stepImpl(obj,u)
-            y = 0;
+            % u is struct with .value as the opaque data (e.g. GPU)
+            % create an output structure with field value sized accordingly
+            % to the output size
+            y.value = zeros(obj.outsize,obj.outtype);
         end
 
         function resetImpl(obj)
@@ -32,13 +42,7 @@ classdef fromOpaque < matlab.System &  matlab.system.mixin.Propagates
         
 
         function out = getOutputSizeImpl(obj)
-            t = propagatedInputDataType(obj,1);
-            if isempty(t)
                 out= 1;
-            else
-                [type,sizes] = decodeOpaqueTypeName(t);
-             out = sizes;
-            end
         end
 
         function out = isOutputComplexImpl(obj)
@@ -46,13 +50,25 @@ classdef fromOpaque < matlab.System &  matlab.system.mixin.Propagates
         end
 
         function out = getOutputDataTypeImpl(obj)
-            t = propagatedInputDataType(obj,1);
-            if isempty(t)
-                out= [];
-            else
-                [type,sizes] = decodeOpaqueTypeName(t);
-             out = type;
-            end
+            
+             t = propagatedInputDataType(obj,1);
+             if isempty(t)
+                 disp([gcb ' getOutputDataTypeImpl - no type'])
+             else
+                out= strrep(strrep([gcb '_bus'],'/','_'),' ','_');
+                 disp([gcb ' getOutputDataTypeImpl - with type'])
+                 try
+                     bu = evalin('base',t);
+                 [type,sizes] = decodeOpaqueTypeName(bu.Description);
+                 disp([gcb ' getOutputDataTypeImpl - with decoded ' type])
+                 disp(sizes)
+                 [~,out]= createWrapTypeBus(type,sizes,out);
+                 catch me
+                     disp([gcb ' getOutputDataTypeImpl - error'])
+                     disp(me)
+                 end
+             disp([gcb ' getOutputDataTypeImpl - quit ' out])
+             end
         end
 
     end

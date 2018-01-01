@@ -37,7 +37,7 @@ classdef infoOpaque < matlab.System &  matlab.system.mixin.Propagates
             
             t = propagatedInputDataType(obj,1);
             s = propagatedInputSize(obj,1);
-            disp([gcb 'getOutputSizeImpl'])
+            disp([gcb '/getOutputSizeImpl'])
             if isempty(t)
                 disp('*no t');
                 out2 = 1;
@@ -66,7 +66,7 @@ classdef infoOpaque < matlab.System &  matlab.system.mixin.Propagates
 
         function [out1,out2] = getOutputDataTypeImpl(obj)
             t = propagatedInputDataType(obj,1);
-            disp([gcb 'getOutputDataTypeImpl'])
+            disp([gcb '/getOutputDataTypeImpl'])
             if isempty(t)
                 disp('*no t');
                 out1='';

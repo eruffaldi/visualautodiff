@@ -4,9 +4,8 @@ function [r,oname] = createOpaqueTypeBus(type,sizes,oname)
 name = encodeOpaqueTypeName(type,sizes);
 
 if nargin == 2
-oname = [name,'_bus'];
-end
-% no caching if specified name
+oname = [name,'_wrap_bus'];
+    end
 %try
 %    r = evalin('base',oname);
 %catch me
@@ -21,9 +20,9 @@ end
     i=1;
     elems(i) = Simulink.BusElement;
     elems(i).Name = 'value';
-    elems(i).Dimensions = [1,2];
+    elems(i).Dimensions = sizes;
     elems(i).DimensionsMode = 'Fixed';
-    elems(i).DataType = 'uint32';
+    elems(i).DataType = type;
     elems(i).SampleTime = -1;
     elems(i).Complexity = 'real';
     r = Simulink.Bus;

@@ -17,15 +17,25 @@ classdef toOpaque < matlab.System &  matlab.system.mixin.Propagates
      OutputBus; 
 
     end
+    methods
+        function obj=toOpaque(varargin)
+                  setProperties(obj,nargin,varargin{:});
+        end
+        
+    end
 
     methods(Access = protected)
+        
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
         end
 
         function y = stepImpl(obj,u)
-            y.value = [1,2];
+            y.value = zeros([1,2],'uint32');
         end
+    function out = isOutputFixedSizeImpl(obj)
+      out = propagatedInputFixedSize(obj, 1);
+    end
 
         function resetImpl(obj)
             % Initialize / reset discrete-state properties
@@ -44,21 +54,23 @@ classdef toOpaque < matlab.System &  matlab.system.mixin.Propagates
         function out = getOutputDataTypeImpl(obj)
             t = propagatedInputDataType(obj,1);
             s = propagatedInputSize(obj,1);
-            disp([gcb 'getOutputDataTypeImpl'])
+            %
+            out= strrep(strrep([gcb '_bus'],'/','_'),' ','_');
             if isempty(t)
-                disp('*no t');
-                out = [];
-                return;
+                disp([gcb ' getOutputDataTypeImpl - no type'])
+                  [~,out]= createOpaqueTypeBus([],[],out);
+            else                
+                disp([gcb ' getOutputDataTypeImpl - with type'])
+                disp(t);
+                if isempty(s)
+                    disp([gcb ' getOutputDataTypeImpl - no size'])
+                else
+                    disp([gcb ' getOutputDataTypeImpl - with size'])
+                    disp(s);
+                  [~,out]= createOpaqueTypeBus(t,s,out);
+                end
             end
-            if isempty(s)
-                disp('*no s');
-                out = [];
-                return;
-            end
-            disp(t)
-            disp(s)
-           [~,oname]= createOpaqueTypeBus(t,s);
-            out = oname;
+                disp([gcb ' getOutputDataTypeImpl - quit ' out])
         end
 
     end

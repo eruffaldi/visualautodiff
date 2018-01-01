@@ -10,7 +10,7 @@
  *  Copyright 1990-2009 The MathWorks, Inc.
  */
 
-#define S_FUNCTION_NAME  sfun_superconst
+#define S_FUNCTION_N\AME  sfun_superconst
 #define S_FUNCTION_LEVEL 2
 
 #include "simstruc.h"
