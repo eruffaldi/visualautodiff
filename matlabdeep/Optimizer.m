@@ -12,7 +12,7 @@ classdef (Abstract) Optimizer < DeepOp
         function grad(obj,up)
         end
         
-        function gradshape(obj,up)
+        function gradshape(obj,ts)
         end
         function r = evalshape(obj)
             r = 1;

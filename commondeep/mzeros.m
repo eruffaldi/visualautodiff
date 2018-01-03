@@ -28,8 +28,7 @@ else
     if ischar(t)    
         r = zeros(a,t);
     else
-        r = zeros(a,'like',t);
+        r = zeros(a,class(t));
     end
-end
-    
+end 
     

@@ -27,11 +27,7 @@ classdef UnaryOp < DeepOp
              end
              obj.left.visit(fx);
          end
-         
-            
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
-        end
+                   
      
     end
     

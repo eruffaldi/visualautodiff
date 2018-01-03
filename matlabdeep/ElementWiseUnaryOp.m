@@ -14,10 +14,9 @@ classdef ElementwiseUnaryOp < UnaryOp
             obj.xshape = obj.left.evalshape();
             r = obj.xshape;
           end
-        
-         
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
+                 
+        function gradshape(obj,ts)
+            obj.left.gradshape(ts);
         end
     end
     

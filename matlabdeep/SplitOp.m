@@ -25,9 +25,9 @@ classdef SplitOp < UnaryOp
             r = obj.xshape;
         end
         
-        function grad(obj,up)
-            obj.left.grad(up);
-            obj.right.grad(up);
+        function grad(obj,ts)
+            obj.left.grad(ts);
+            obj.right.grad(ts);
         end
         
         function gradshape(obj)

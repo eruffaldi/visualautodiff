@@ -25,7 +25,7 @@ classdef ConstantOp < DeepOp
             
         end
 
-        function r = gradshape(obj)
+        function r = gradshape(obj,ts)
         end
 
     end

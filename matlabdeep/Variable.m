@@ -6,6 +6,7 @@ classdef Variable < DeepOp
         initvalue
         xid
         xtype
+        gshape
     end
     
      methods (Static)
@@ -34,15 +35,21 @@ classdef Variable < DeepOp
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-             obj.xgrad = mzeros(obj.xshape,obj.xtype);
+            % xgrad unknown until target size is known in gradshape
+            %obj.xgrad = mzeros(obj.xshape,obj.xtype);
          end
          
          function r = evalshape(obj)
              r = obj.xshape;
          end
+         
+         function gradshape(obj,ts)
+             obj.ts = ts;
+             obj.gshape = [obj.xshape,ts.fullshape];
+         end
 
          function resetgrad(obj)             
-             obj.xgrad = mzeros(obj.xshape,obj.xtype);
+             obj.xgrad = mzeros(obj.gshape,obj.xtype);
          end
          
          function set(obj,value)
@@ -60,7 +67,7 @@ classdef Variable < DeepOp
             end
             obj.xvalue = v;
             obj.xshape = size(v);
-            obj.xgrad = mzeros(obj.xshape,obj.xtype);
+            obj.xgrad = mzeros(obj.gshape,obj.xtype);
          end
 
          function reset(obj)             
@@ -79,10 +86,11 @@ classdef Variable < DeepOp
 
          function grad(obj,v)
              assert(numel(v) == 1 || all(size(v) == size(obj.xvalue)),'gradient same size or scalar');
-             obj.xgrad = obj.xgrad + cast(v,'like',obj.xtype);
-         end
-         
-         function gradshape(obj,up)
+             if isempty(obj.ts)
+                 obj.xgrad = obj.xgrad + cast(v,'like',obj.xtype);
+             else
+                 error('Variable grad for non empty ts not specified');
+             end
          end
          
          function g = getgrad(obj)

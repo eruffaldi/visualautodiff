@@ -1,32 +1,29 @@
-classdef BinaryOp < DeepOp
+classdef NAryOp < DeepOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        left
-        right
+        children
     end
     
     methods
-        function obj = BinaryOp(a,b)
+        function obj = NAryOp(varargin)
             obj = obj@DeepOp();
-            obj.left = a;
-            obj.right = b;
+            obj.children = varargin;
+            assert(all(cellfun(@(x) isa(x,'DeepOp'),obj.children)),'all DeepOp in NAryOp');
         end
 
          function visit(obj,fx)
              if fx(obj) == 0
                  return;
              end
-             obj.left.visit(fx);
-             obj.right.visit(fx);
+             cellfun(@(x) x.visit(fx),obj.children);
          end
        
          function reset(obj)
-            obj.left.reset()
-            obj.right.reset();
+             cellfun(@(x) x.reset(),obj.children);
          end
-    
+
     end
     
 end

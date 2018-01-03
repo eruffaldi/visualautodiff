@@ -1,4 +1,4 @@
-classdef EqualOp < BinaryOp
+classdef EqualOp < ElementWiseBinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -25,10 +25,6 @@ classdef EqualOp < BinaryOp
         end
 
         function grad(obj,up)
-            error('EqualOp gradient not implemented');
-        end
-
-        function gradshape(obj,up)
             error('EqualOp gradient not implemented');
         end
 

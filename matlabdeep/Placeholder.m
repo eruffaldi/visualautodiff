@@ -38,7 +38,7 @@ classdef Placeholder < DeepOp
              % no gradient for placeholder!
          end
          
-         function gradshape(obj,up)
+         function gradshape(obj,ts)
              % no gradient for placeholder!
          end
          

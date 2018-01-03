@@ -16,8 +16,8 @@ classdef VectorwiseUnaryOp < UnaryOp
           end
         
          
-        function gradshape(obj,up)
-            obj.left.gradshape(up);
+        function gradshape(obj,ts)
+            obj.left.gradshape(ts);
         end
     end
     

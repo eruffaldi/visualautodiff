@@ -114,7 +114,12 @@ classdef ElementwiseBinaryOp < BinaryOp
             obj.xshape = sxl;
             r = obj.xshape;
         end
-         
+
+        function gradshape(obj,ts)
+            obj.left.gradshape(ts);
+            obj.right.gradshape(ts);
+        end
+
     end
     
 end

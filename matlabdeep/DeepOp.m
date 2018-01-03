@@ -5,36 +5,49 @@ classdef (Abstract) DeepOp < handle
         xshape
         xgrad
         name
+        ts
     end
     
     methods (Abstract)        
         eval(obj)
         evalshape(obj)
         grad(obj,up)
-        gradshape(obj,up)
+        gradshape(obj,ts)
     end   
     
     methods
         function r = evalwith(obj,placeholders)
-            obj.reset();
-            sa = 0;
+            sa = isempty(obj.xshape);
             for I=1:2:length(placeholders)
-                sa = sa | placeholdgiters{I}.set(placeholders{I+1});
+                sa = sa | placeholders{I}.set(placeholders{I+1});
             end
             if sa ~= 0
                 obj.evalshape();
+                obj.ts = TargetSpec.makeFull(obj.xshape);
+                obj.gradshape(obj.ts);
             end
+            obj.reset();
             r = obj.eval();
         end
 
         function r = evalshapewith(obj,placeholders)
-            obj.reset();
             sa = 0;
             for I=1:2:length(placeholders)
                sa = sa | placeholders{I}.set(placeholders{I+1});
             end
             if sa ~= 0
                 obj.evalshape();
+                obj.ts = TargetSpec.makeFull(obj.xshape);
+                obj.gradshape(obj.ts);
+            end
+        end
+        
+        % call this after
+        function evalgrad(obj)
+            if numel(obj.xshape) == 1
+                obj.grad(1,[]);
+            else
+                obj.grad(mones(obj.xshape,DeepOp.setgetDefaultType()));
             end
         end
 
