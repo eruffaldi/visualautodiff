@@ -14,36 +14,40 @@ batchsize = 50; % was 64
 useadam=1;
 epochs = 5;
 dropout = 0.4;
-gpumode=[0,1];
-gpumode = 0;
-for KK=1:length(gpumode)
-    if gpumode(KK)
-        deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
-    else
-        deftype = DeepOp.setgetDefaultType(single(0));
+gpumode = [1,0];
+experimentid = {'C2','C5'};
+repetitions = 10;
+for R=1:repetitions
+    for Q=1:length(gpumode)
+        if gpumode(KK)
+            deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
+        else
+            deftype = DeepOp.setgetDefaultType(single(0));
+        end
+        testcnn
+        r = [];
+        r.training_time = training_time;
+        r.testing_time = testing_time;
+        r.total_params = total_params;
+        r.accuracy = accuracy;
+        r.type = 'single';
+        r.test = 'cnn';
+        r.implementation = 'matlab';
+        r.gpu = gpumode(KK);
+        r.epochs = epochs;
+        r.batchsize = batchsize;
+        r.use_adam = useadam;
+        r.id = experimentid{Q};
+        if useadam
+            r.adam_rate = adam_rate;
+        else
+            r.gradient_rate = gradient_rate;
+        end
+        r.cnn_specs = cnn_specs;
+        r.iterations = iterations;
+        r.cm_accuracy = mean(stats.accuracy);
+        r.cm_Fscore = mean(stats.Fscore);
+        stats_add(r,struct('loss',gather(losshistory),'cm',stats.confusionMat));
     end
-    testcnn
-    r = [];
-    r.training_time = training_time;
-    r.testing_time = testing_time;
-    r.total_params = total_params;
-    r.accuracy = accuracy;
-    r.type = 'single';
-    r.test = 'cnn';
-    r.implementation = 'matlab';
-    r.gpu = gpumode(KK);
-    r.epochs = epochs;
-    r.batchsize = batchsize;
-    r.use_adam = useadam;
-    if useadam
-        r.adam_rate = adam_rate;
-    else
-        r.gradient_rate = gradient_rate;
-    end
-    r.cnn_specs = cnn_specs;
-    r.iterations = iterations;
-    r.cm_accuracy = mean(stats.accuracy);
-    r.cm_Fscore = mean(stats.Fscore);
-    stats_add(r,struct('loss',gather(losshistory),'cm',stats.confusionMat));
 end
 
