@@ -196,6 +196,10 @@ shape_CK_PB
             end
         end
         
+        function r = gradshape(obj,up)
+        end
+        
+        
     end
     
 end

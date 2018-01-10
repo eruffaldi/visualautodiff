@@ -18,6 +18,7 @@ classdef ReshapeOp < UnaryOp
             
         function r = evalshape(obj)
             xs = obj.left.evalshape();
+            s =  obj.eshape;
             if strcmp(s,'last')
                 obj.xshape = [prod(xs(1:end-1)) xs(1)];                
             elseif strcmp(s,'first')
@@ -43,6 +44,9 @@ classdef ReshapeOp < UnaryOp
             obj.xvalue = reshape(xl,obj.xshape);
             r = obj.xvalue;
             assert(~isempty(r));
+        end
+        
+        function r = gradshape(obj,up)
         end
         
         function grad(obj,up)

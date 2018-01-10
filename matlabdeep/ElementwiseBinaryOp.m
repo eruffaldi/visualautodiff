@@ -60,7 +60,7 @@ classdef ElementwiseBinaryOp < BinaryOp
          end
          
         % given right up sizes it
-         function r = upsizesum(obj,a,b)
+         function r = upsizesum(obj,xl,xr)
                         % r = bsxfun(@plus,a,b); 
             switch(obj.broadcastmode)
                 case 0 % same

@@ -39,7 +39,11 @@ classdef MatmulOp < BinaryOp
             obj.left.grad(up*xr');
             obj.right.grad(xl'*up);
         end
+    
+                function r = gradshape(obj,up)
+        end
         
+
     end
     
 end

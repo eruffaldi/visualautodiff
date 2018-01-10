@@ -46,6 +46,11 @@ classdef ReduceMeanOp < UnaryOp
             end
                 
         end        
+        
+        function r = gradshape(obj,up)
+        end
+        
+        
     end
     
 end

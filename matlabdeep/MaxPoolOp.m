@@ -162,6 +162,11 @@ classdef MaxPoolOp < UnaryOp
                 obj.left.grad(J_BIC);
             end
         end
+    
+        function r = gradshape(obj,up)
+        end
+        
+        
     end
     
 end

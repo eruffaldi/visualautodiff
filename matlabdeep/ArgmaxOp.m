@@ -31,7 +31,7 @@ classdef ArgmaxOp < UnaryOp
         end
 
         function gradshape(obj,up)
-            obj.left.evalshape(up);
+            obj.left.gradshape(up);
         end
 
     end

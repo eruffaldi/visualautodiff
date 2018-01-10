@@ -1,4 +1,4 @@
-classdef EqualOp < ElementWiseBinaryOp
+classdef EqualOp < ElementwiseBinaryOp
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -7,7 +7,7 @@ classdef EqualOp < ElementWiseBinaryOp
     
     methods
         function obj = EqualOp(a,b)
-            obj = obj@BinaryOp(a,b);
+            obj = obj@ElementwiseBinaryOp(a,b);
         end
         
         function r = eval(obj)

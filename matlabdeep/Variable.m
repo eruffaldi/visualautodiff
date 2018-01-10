@@ -48,7 +48,10 @@ classdef Variable < DeepOp
              obj.gshape = [obj.xshape,ts.fullshape];
          end
 
-         function resetgrad(obj)             
+         function resetgrad(obj)   
+             if isempty(obj.gshape)
+                 obj.gshape = obj.xshape;
+             end
              obj.xgrad = mzeros(obj.gshape,obj.xtype);
          end
          

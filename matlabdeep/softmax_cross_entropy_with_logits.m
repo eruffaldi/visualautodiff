@@ -98,7 +98,11 @@ classdef softmax_cross_entropy_with_logits < BinaryOp
             end
             obj.logits.grad(up*J);
         end
+       
+                function r = gradshape(obj,up)
+        end
         
+
     end
     
 end

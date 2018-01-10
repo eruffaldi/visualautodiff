@@ -24,7 +24,7 @@ classdef TargetSpec
         % make convex mode along all shape
         function obj = makeFull(fullshape)
             % scalar shape
-            if length(fullshape) == 1 && fullShape(1) == 1
+            if length(fullshape) == 1 && fullshape(1) == 1
                 obj.mode = 1;
                 obj.fullshape = fullshape;
                 obj.partshape = 1;
