@@ -12,7 +12,7 @@ for I=1:length(codemodes)
         changed =set_system_codemode(modelname,codemode);
         set_param(modelname,'SimulationMode',runmode)
         
-st        simout = sim(modelname);
+        simout = sim(modelname);
 
         r = [];
         r.accuracy = simout.accuracy.accuracy.Data(end);
