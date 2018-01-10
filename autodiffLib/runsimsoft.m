@@ -1,14 +1,16 @@
 clear all
 codemodes = {0,1};
-runmodes = {'normal','accelerator'};
-%runmodes = {'accelerator'};
+%runmodes = {'normal','accelerator'};
+runmodes = {'accelerator','accelerator'};
 modelname ='mnist_softmax_adam_whole';
+ids = {'C6','C7'};
 load_system(modelname);
 
-for I=1:length(codemodes)
-    for J=1:length(runmodes)
+
+for I=1:length(ids)
+    for R=1:10
         codemode = codemodes{I};
-        runmode = runmodes{J};
+        runmode = runmodes{I};
         changed =set_system_codemode(modelname,codemode);
         set_param(modelname,'SimulationMode',runmode)
         
@@ -34,6 +36,7 @@ for I=1:length(codemodes)
         r.gradient_rate =  hws.getVariable('learningrate');
                 istarttest = simout.predictions.Time(1);
         r.iterations = istarttest; % or -1
+        r.id = ids{I};
         r.training_time = simout.realtout.Data(istarttest)-simout.realtout.Data(2);
         % +1 because of the loading spike
         r.testing_time = simout.realtout.Data(end)-simout.realtout.Data(istarttest+1);
@@ -46,6 +49,6 @@ for I=1:length(codemodes)
         r.total_params = 7850;
         stats_add(r,struct('loss',simout.loss.Data(1:istarttest),'cm',stats.confusionMat));
 
-    end
+        end
 end
 

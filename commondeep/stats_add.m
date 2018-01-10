@@ -4,6 +4,8 @@ data.now_unix = 864e5 * (now - datenum('1970', 'yyyy'));
 %data.machine = computer('arch');
 data.machine = lower(computer); % plus other sig
 pa = stats_path();
+pa =pa{1};
+
 q= randi(10000,1);
 out = datestr(now,'yyyymmddTHHMMSS.FFF');
 pf = [pa,filesep,out,sprintf('-%d',q),'.mat'];

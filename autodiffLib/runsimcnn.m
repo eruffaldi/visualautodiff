@@ -1,14 +1,19 @@
 clear all
-codemodes = {0};
-runmodes = {'normal','accelerator'};
-%runmodes = {'accelerator'};
-runmodes = {'normal'};
+
+codemodes = {0,1};
+runmodes = {'accelerator','accelerator'};
+modelname ='mnist_softmax_adam_whole';
+ids = {'C6','C7'};
+
 modelname ='mnist_cnn_adam';
 load_system(modelname);
 for I=1:length(codemodes)
-    for J=1:length(runmodes)
+    for R=1:2
         codemode = codemodes{I};
-        runmode = runmodes{J};
+        runmode = runmodes{I};
+        if codemode == 1 & R > 1
+            break;
+        end
         changed=set_system_codemode(modelname,codemode)
         set_param(modelname,'SimulationMode',runmode)
         
@@ -26,6 +31,7 @@ for I=1:length(codemodes)
         r.type = 'single';
         r.test = 'cnn';
         r.gpu = 0;
+        r.id = ids{I};
         hws = get_param(modelname,'modelworkspace');
         r.cnn_specs = [hws.getVariable('filtersize1'),hws.getVariable('filtersize2'),hws.getVariable('features1'),hws.getVariable('filtersize2'),hws.getVariable('densesize')];
         r.epochs = hws.getVariable('epochs');
