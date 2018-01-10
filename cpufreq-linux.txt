@@ -1,0 +1,5 @@
+https://askubuntu.com/questions/619875/disabling-intel-turbo-boost-in-ubuntu
+
+Disable Turbo Boost
+
+cpufreq-selector -f ....
