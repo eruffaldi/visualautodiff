@@ -1,7 +1,9 @@
 function o = stats_collect(fields)
 
 o = [];
-pa = stats_path();
+pas = stats_path();
+for K=1:length(pas)
+    pa = pas{K}
 d = dir(pa);
 for I=1:length(d)
     if d(I).isdir == 0 & d(I).name(1) ~= '.'
@@ -67,4 +69,5 @@ for I=1:length(d)
             end
         end
     end
+end
 end
