@@ -15,6 +15,12 @@ for I=1:length(d)
             continue
         end
         if isstruct(w)
+            if isfield(w,'cnn_specs')
+                w.cnn_specs = w.cnn_specs(:)';
+            end
+            if isempty(w.machine)
+                w.machine = 'unknown';
+            end
             if isempty(o)
                 o = struct2table(w);
             else

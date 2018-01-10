@@ -19,7 +19,8 @@ experimentid = {'C2','C5'};
 repetitions = 10;
 for R=1:repetitions
     for Q=1:length(gpumode)
-        if gpumode(KK)
+        disp(sprintf('------------------------ %s %d',experimentid{Q},R));
+        if gpumode(Q)
             deftype = DeepOp.setgetDefaultType(gpuArray(single(0)));
         else
             deftype = DeepOp.setgetDefaultType(single(0));
@@ -33,8 +34,8 @@ for R=1:repetitions
         r.type = 'single';
         r.test = 'cnn';
         r.implementation = 'matlab';
-        r.gpu = gpumode(KK);
-        r.epochs = epochs;
+        r.gpu = gpumode(Q);
+        r.epochs = epochs;  
         r.batchsize = batchsize;
         r.use_adam = useadam;
         r.id = experimentid{Q};
