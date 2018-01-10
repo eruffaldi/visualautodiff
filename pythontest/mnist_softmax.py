@@ -134,7 +134,7 @@ def main(_):
 
   go = str(uuid.uuid1())+'.json';
   args = FLAGS
-  out = dict(accuracy=float(accuracyvalue),machine=machine(),training_time=training_time,implementation="tf",single_core=1 if args.singlecore else 0,type='single',test='softmax',gpu=0 if args.no_gpu else 1,epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters,cm_fpr=float(cm_fpr),use_adam=FLAGS.adam,rate=FLAGS.adam_rate if FLAGS.adam else FLAGS.gradient_rate)
+  out = dict(accuracy=float(accuracyvalue),id=args.id,machine=machine(),training_time=training_time,implementation="tf",single_core=1 if args.singlecore else 0,type='single',test='softmax',gpu=0 if args.no_gpu else 1,epochs=args.epochs,batchsize=args.batchsize,now_unix=time.time(),cm_accuracy=float(cm_accuracy),cm_Fscore=float(cm_Fscore),iterations=iterations,testing_time=test_time,total_params=total_parameters,cm_fpr=float(cm_fpr),use_adam=FLAGS.adam,rate=FLAGS.adam_rate if FLAGS.adam else FLAGS.gradient_rate)
   open(go,"w").write(json.dumps(out))
   np.savetxt(go+".loss.txt", losses)
   np.savetxt(go+".cm.txt", cm)
@@ -147,6 +147,7 @@ if __name__ == '__main__':
   parser.add_argument('--singlecore',action="store_true")
   parser.add_argument('--adam',action="store_true")
   parser.add_argument('--adam_rate',default=1e-4,type=float)
+  parser.add_argument('--id',default="")
   parser.add_argument('--gradient_rate',default=0.5,type=float)
   parser.add_argument('--epochs',help="epohcs",type=int,default=5)
   parser.add_argument('--batchsize',help="batch size",type=int,default=100)
