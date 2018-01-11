@@ -47,11 +47,11 @@ for I=1:9
             continue
         end
         if lightout == 1
-            out{I,1+J*2} = sprintf('%3.1f +-%3.3f',oI.mean_training_time,(oI.std_training_time));
-            out{I,1+J*2+1} = sprintf('%3.4f +-%3.4f',oI.mean_testing_time,(oI.std_testing_time));
+            out{I,1+J*2} = sprintf('%3.1f +-%3.3f%%',oI.mean_training_time,(oI.std_training_time)/oI.mean_training_time*100);
+            out{I,1+J*2+1} = sprintf('%3.4f +-%3.4f%%',oI.mean_testing_time,(oI.std_testing_time)/oI.mean_testing_time*100);
         else            
-            out{I,1+J*2} = sprintf('$%3.1f \\pm %s$',oI.mean_training_time,annotatesmall(oI.std_training_time));
-            out{I,1+J*2+1} = sprintf('$%3.4f \\pm %s$',oI.mean_testing_time,annotatesmall(oI.std_testing_time));
+            out{I,1+J*2} = sprintf('$%3.1f \\pm %s$',oI.mean_training_time,annotatesmall(oI.std_training_time/oI.mean_training_time*100));
+            out{I,1+J*2+1} = sprintf('$%3.4f \\pm %s$',oI.mean_testing_time,annotatesmall(oI.std_testing_time/oI.mean_testing_time*100));
         end
     end
 end

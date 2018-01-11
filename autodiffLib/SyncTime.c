@@ -39,6 +39,15 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <time.h>
+#ifndef CLOCK_REALTIME
+#define CLOCK_REALTIME                  0
+typedef int   __kernel_clockid_t;
+typedef __kernel_clockid_t  clockid_t;
+typedef long    __kernel_long_t;
+typedef __kernel_long_t __kernel_time_t;
+typedef __kernel_time_t   time_t;
+extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
+#endif
 #endif
 
 // compute

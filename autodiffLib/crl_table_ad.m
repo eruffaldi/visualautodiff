@@ -80,6 +80,11 @@ function locSetBLASProps( hEnt, key, implName, LibPath )
   extralink = {};
   if ismac
     extralink = {'-framework','Accelerate'};
+  else isunix()
+      % https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+      % -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_tbb_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -ltbb -lstdc++ -lpthread -lm -ldl
+      % -m64 -I${MKLROOT}/include
+    extralink = {'-L/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/lib/intel64_lin  -Wl,--start-group -lmkl_intel_ilp64 -lmkl_tbb_thread -ltbb -lmkl_core -Wl,--end-group'};
   end
 
   hEnt.setTflCOperationEntryParameters( ...
