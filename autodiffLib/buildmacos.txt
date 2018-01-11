@@ -1,0 +1,5 @@
+-framework Accelerate
+-march=native
+-O3
+
+switch configuration linux
