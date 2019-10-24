@@ -1,7 +1,7 @@
 
 Example Visual Reverse Autodifferentiation in Simulink
 ------------------
-Emanuele Ruffaldi, Scuola Superiore Sant'Anna 2016
+Emanuele Ruffaldi, Scuola Superiore Sant'Anna 2016-2019
 
 
 Use one.slx and then two.slx to understand. The one_support contains functions for obtaining generic function
@@ -79,3 +79,10 @@ In the following we'll use both scalar top function and non-scalar sized (T,S)
 
 
 See the related problem
+
+
+# Requirements
+
+Matlab and Simulink without other toolboxes 
+
+Last test on R2019a

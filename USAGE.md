@@ -3,27 +3,42 @@
 
 ## Build
 
-mex -O SyncTime.c
-mex -O sfun_loadmnist.c
-mex -O ../commondeep/accummatrix.cpp -outdir ../commondeep
-mex -O ../commondeep/gethermatrix.cpp -outdir ../commondeep
+    setup.m
 
-## Downoad MNIST
-
-Required to have the files (four files, 52MB uncompressed)
+This script does:
+- build some Mex
+- downloads MNIST
+- unpacks MNIST
 
 # Always
 
-init.m
+    init.m
 
 # Library
 
-ad_blocks.slx
+    ad_blocks.slx
 
 # Testing
 
-mnist_cnn_adam.slx
-mnist_softmax_adam_whole.slx
+Use the following two:
 
+    mnist_cnn_adam.slx
+    mnist_softmax_adam_whole.slx
+
+Example from command line:
+
+    tic
+    sim('mnist_cnn_adam')
+    toc
+
+And
+
+    tic
+    sim('mnist_softmax_adam_whole')
+    toc
+
+# Issues
+
+sim('mnist_cnn_adam')
 
 
