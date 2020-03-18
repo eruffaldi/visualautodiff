@@ -14,13 +14,27 @@ classdef AtJ_sys < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
-
+    properties(Nontunable, Access = private)
+        isscalar
+        szJBv
+        szJ
+        n
     end
 
     methods(Access = protected)
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+            % vec J ~ [t,mn] --> [m,n] if t=1
+            % vec A ~ [m,q]  --> JB ~ [t,nq]
+            sJ = propagatedInputSize(obj,1); 
+            sA = propagatedInputSize(obj,2); 
+            m = sA(1);
+            q = sA(2);
+            n = sJ(2)/q;
+            obj.n = n;
+            obj.isscalar = sJ(1) == 1;
+            obj.szJBv = [sJ(1),n*q];
+            obj.szJ = [m,n];
         end
 
         function  [p1] = isOutputFixedSizeImpl(obj)
@@ -36,14 +50,20 @@ classdef AtJ_sys < matlab.System & matlab.system.mixin.Propagates
         end
             
         function [sz_1] = getOutputSizeImpl(obj) 
-            s1 = propagatedInputSize(obj,1); % J 
-            s2 = propagatedInputSize(obj,2); % A
-            sz_1 =  [s2(2) s1(2)];
+            sJ = propagatedInputSize(obj,1); 
+            sA = propagatedInputSize(obj,2); 
+            q = sA(2);
+            n = sJ(2)/q;
+            sz_1 =  [sJ(1) n*q]; 
         end
         
 
         function y = stepImpl(obj,J,A)
-            y = A'*J;
+            if obj.isscalar
+                y = reshape(A'*reshape(J, obj.szJ),obj.szJBv);
+            else
+                y = J*kron(eye(obj.n),A);
+            end
         end
 
         function resetImpl(obj)

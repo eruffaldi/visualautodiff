@@ -14,13 +14,27 @@ classdef JBt_sys < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
-
+    properties(Nontunable, Access = private)
+        isscalar
+        szJAv
+        szJ
+        m
     end
 
     methods(Access = protected)
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+            % flattened vec J~[t, mn]
+            % J~[m,n] B~[q,n] -> JA~[m,q]
+            sJ = propagatedInputSize(obj,1); 
+            sB = propagatedInputSize(obj,2); 
+            m = sJ(2)/sB(2);
+            n = sB(2);
+            q = sB(1);
+            obj.m = m;
+            obj.isscalar = sJ(1) == 1;
+            obj.szJAv = [sJ(1),m*q];
+            obj.szJ = [m,n];
         end
 
         function  [p1] = isOutputFixedSizeImpl(obj)
@@ -35,15 +49,21 @@ classdef JBt_sys < matlab.System & matlab.system.mixin.Propagates
             p1 = false;
         end
             
-        function [sz_1] = getOutputSizeImpl(obj) 
-            s1 = propagatedInputSize(obj,1); % J 
-            s2 = propagatedInputSize(obj,2); % B
-            sz_1 = [s1(1) s2(1)];
+        function [szJAv] = getOutputSizeImpl(obj) 
+            sJ = propagatedInputSize(obj,1); 
+            sB = propagatedInputSize(obj,2); 
+            m = sJ(2)/sB(2);
+            q = sB(1);
+            szJAv = [sJ(1), m*q];
         end
         
 
         function y = stepImpl(obj,J,B)
-            y = J*B';
+            if obj.isscalar
+                y = reshape(reshape(J, obj.szJ)*B',obj.szJAv);
+            else
+                y =  J*kron(B',eye(obj.m));
+            end
         end
 
         function resetImpl(obj)

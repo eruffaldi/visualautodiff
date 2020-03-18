@@ -14,13 +14,18 @@ classdef MeanGradient_sys < matlab.System & matlab.system.mixin.Propagates
     end
 
     % Pre-computed constants
-    properties(Access = private)
-
+    properties(Nontunable,Access = private)
+        isscalar
+        szJXv
     end
 
     methods(Access = protected)
         function setupImpl(obj)
             % Perform one-time calculations, such as computing constants
+            sX = propagatedInputSize(obj,1); % [m1,...mk]
+            sJ = propagatedInputSize(obj,2); % [t,1]
+            obj.isscalar = sJ(1) == 1;
+            obj.szJXv = [sJ(1),prod(sX)];
         end
 
         function  [p1] = isOutputFixedSizeImpl(obj)
@@ -36,12 +41,22 @@ classdef MeanGradient_sys < matlab.System & matlab.system.mixin.Propagates
         end
             
         function [sz_1] = getOutputSizeImpl(obj) 
-            sz_1 = propagatedInputSize(obj,1); % J 
+            sJ = propagatedInputSize(obj,2); 
+            sX = propagatedInputSize(obj,1); 
+            sz_1 =  [sJ(1) prod(sX)]; 
         end
         
 
         function JX = stepImpl(obj,X,JY)
-            JX = ones(size(X))*(JY/numel(X));
+            if obj.isscalar
+                % JY is just a scalar
+                JX = ones(obj.szJXv)*(JY/numel(X));
+            else
+                % JY ~ [t,1]
+                % JX ~ [t,prod]
+                % JX = JY*K   with K~[1,prod]
+                JX = (JY/numel(X))*ones(1,numel(X));
+            end
         end
 
         function resetImpl(obj)
